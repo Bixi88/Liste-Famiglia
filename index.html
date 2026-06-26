@@ -160,14 +160,14 @@
         
         .bottom-sheet { 
             position: fixed; 
-            top: 0; /* Spostato in alto */
+            top: 0; 
             left: 50%; 
-            transform: translate(-50%, -100%); /* Parte nascosto verso l'alto */
+            transform: translate(-50%, -100%); 
             width: 100%; 
             max-width: 600px; 
             background: var(--bg-color); 
             padding: 24px; 
-            border-radius: 0 0 20px 20px; /* Arrotondato solo sotto */
+            border-radius: 0 0 20px 20px; 
             z-index: 101; 
             transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94); 
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
@@ -190,27 +190,53 @@
         }
         .select-chip { 
             padding: 12px; 
-            background: var(--surface-color); 
             border-radius: 16px; 
-            border: 1px solid var(--border-color); 
             cursor: pointer; 
             font-size: 13px; 
             font-weight: 700; 
             text-align: center;
-            color: var(--text-color); /* Colore base (Nero in Light, Bianco in Dark) */
             transition: 0.2s; 
         }
+        .btn-confirm {
+            width: 100%; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 20px; 
+            font-weight: 700; 
+            cursor: pointer;
+            transition: background 0.2s;
+        }
 
-        /* Correzione contrasti Light e Dark Mode per chip selezionato */
+        /* ☀️ REGOLE DI CONTRASTO TASSATIVE PER LIGHT MODE ☀️ */
+        body:not([data-theme="dark"]) .select-chip {
+            background: #f6f8fa;       /* Sfondo Chiaro */
+            color: #000000;            /* Font Nero */
+            border: 1px solid #e1e4e6;
+        }
         body:not([data-theme="dark"]) .select-chip.selected { 
-            background: var(--accent-color) !important; 
-            color: #ffffff !important; /* Testo Bianco su sfondo Blu in Light Mode */
-            border-color: var(--accent-color) !important;
+            background: #0061FF !important; /* Sfondo Blu */
+            color: #ffffff !important;      /* Font Bianco */
+            border-color: #0061FF !important;
+        }
+        body:not([data-theme="dark"]) .btn-confirm {
+            background: #0061FF;       /* Sfondo Blu */
+            color: #ffffff;            /* Font Bianco */
+        }
+
+        /* 🌙 REGOLE DI CONTRASTO TASSATIVE PER DARK MODE 🌙 */
+        [data-theme="dark"] .select-chip {
+            background: #161b16;       /* Sfondo Scuro */
+            color: #ffffff;            /* Font Bianco */
+            border: 1px solid #252e25;
         }
         [data-theme="dark"] .select-chip.selected { 
-            background: var(--accent-color) !important; 
-            color: #121612 !important; /* Testo Scuro su sfondo Verde in Dark Mode */
-            border-color: var(--accent-color) !important;
+            background: #10B981 !important; /* Sfondo Verde */
+            color: #121612 !important;      /* Font Nero */
+            border-color: #10B981 !important;
+        }
+        [data-theme="dark"] .btn-confirm {
+            background: #10B981;       /* Sfondo Verde */
+            color: #121612;            /* Font Nero */
         }
         
         .selector-label {
@@ -302,7 +328,7 @@
                 <div class="select-chip" onclick="selectChip('ACTION', this)">ACTION</div>
             </div>
         </div>
-        <button class="btn btn-confirm" style="width:100%; background:var(--accent-color); border:none; padding:15px; border-radius:20px; font-weight:700; color:#121612" onclick="addItem()">Aggiungi</button>
+        <button class="btn btn-confirm" onclick="addItem()">Aggiungi</button>
     </div>
 
     <script>
