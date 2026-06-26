@@ -207,36 +207,36 @@
             transition: background 0.2s;
         }
 
-        /* ☀️ REGOLE DI CONTRASTO TASSATIVE PER LIGHT MODE ☀️ */
+        /* ☀️ STILI ESCLUSIVI LIGHT MODE ☀️ */
         body:not([data-theme="dark"]) .select-chip {
-            background: #f6f8fa;       /* Sfondo Chiaro */
-            color: #000000;            /* Font Nero */
-            border: 1px solid #e1e4e6;
+            background: #f6f8fa !important;
+            color: #000000 !important;
+            border: 1px solid #e1e4e6 !important;
         }
         body:not([data-theme="dark"]) .select-chip.selected { 
-            background: #0061FF !important; /* Sfondo Blu */
-            color: #ffffff !important;      /* Font Bianco */
+            background: #0061FF !important; /* Blu */
+            color: #ffffff !important;      /* Bianco */
             border-color: #0061FF !important;
         }
         body:not([data-theme="dark"]) .btn-confirm {
-            background: #0061FF;       /* Sfondo Blu */
-            color: #ffffff;            /* Font Bianco */
+            background: #0061FF !important; /* Blu */
+            color: #ffffff !important;      /* Bianco */
         }
 
-        /* 🌙 REGOLE DI CONTRASTO TASSATIVE PER DARK MODE 🌙 */
+        /* 🌙 STILI ESCLUSIVI DARK MODE 🌙 */
         [data-theme="dark"] .select-chip {
-            background: #161b16;       /* Sfondo Scuro */
-            color: #ffffff;            /* Font Bianco */
-            border: 1px solid #252e25;
+            background: #161b16 !important;
+            color: #ffffff !important;
+            border: 1px solid #252e25 !important;
         }
         [data-theme="dark"] .select-chip.selected { 
-            background: #10B981 !important; /* Sfondo Verde */
-            color: #121612 !important;      /* Font Nero */
+            background: #10B981 !important; /* Verde */
+            color: #121612 !important;      /* Nero */
             border-color: #10B981 !important;
         }
         [data-theme="dark"] .btn-confirm {
-            background: #10B981;       /* Sfondo Verde */
-            color: #121612;            /* Font Nero */
+            background: #10B981 !important; /* Verde */
+            color: #121612 !important;      /* Nero */
         }
         
         .selector-label {
