@@ -22,7 +22,7 @@
             --transition-speed: 0.35s;
         }
 
-        [data-theme="dark"] {
+        html[data-theme="dark"] {
             --bg-color: #121612;
             --surface-color: #1a201a;
             --card-color: #161b16;
@@ -179,7 +179,7 @@
         .input-field { width: 100%; padding: 16px; border-radius: 20px; border: 2px solid var(--border-color); background: var(--surface-color); color: var(--text-color); margin-bottom: 20px; outline: none; }
         .theme-switch { width: 44px; height: 22px; background: var(--surface-color); border-radius: 11px; position: relative; border: 1px solid var(--border-color); cursor: pointer; }
         .theme-switch-handle { width: 16px; height: 16px; background: var(--accent-color); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s; }
-        [data-theme="dark"] .theme-switch-handle { transform: translateX(22px); }
+        html[data-theme="dark"] .theme-switch-handle { transform: translateX(22px); }
         
         /* GRIGLIA COMPATTA PER SUPERMERCATI */
         .market-selector { 
@@ -207,36 +207,36 @@
             transition: background 0.2s;
         }
 
-        /* ☀️ STILI ESCLUSIVI LIGHT MODE ☀️ */
-        body:not([data-theme="dark"]) .select-chip {
+        /* ☀️ STILI LIGHT MODE (html senza data-theme="dark") ☀️ */
+        html:not([data-theme="dark"]) .select-chip {
             background: #f6f8fa !important;
             color: #000000 !important;
             border: 1px solid #e1e4e6 !important;
         }
-        body:not([data-theme="dark"]) .select-chip.selected { 
-            background: #0061FF !important; /* Blu */
-            color: #ffffff !important;      /* Bianco */
+        html:not([data-theme="dark"]) .select-chip.selected { 
+            background: #0061FF !important; /* Sfondo Blu */
+            color: #ffffff !important;      /* Font Bianco */
             border-color: #0061FF !important;
         }
-        body:not([data-theme="dark"]) .btn-confirm {
-            background: #0061FF !important; /* Blu */
-            color: #ffffff !important;      /* Bianco */
+        html:not([data-theme="dark"]) .btn-confirm {
+            background: #0061FF !important; /* Sfondo Blu */
+            color: #ffffff !important;      /* Font Bianco */
         }
 
-        /* 🌙 STILI ESCLUSIVI DARK MODE 🌙 */
-        [data-theme="dark"] .select-chip {
+        /* 🌙 STILI DARK MODE (html con data-theme="dark") 🌙 */
+        html[data-theme="dark"] .select-chip {
             background: #161b16 !important;
             color: #ffffff !important;
             border: 1px solid #252e25 !important;
         }
-        [data-theme="dark"] .select-chip.selected { 
-            background: #10B981 !important; /* Verde */
-            color: #121612 !important;      /* Nero */
+        html[data-theme="dark"] .select-chip.selected { 
+            background: #10B981 !important; /* Sfondo Verde Smeraldo */
+            color: #121612 !important;      /* Font Nero */
             border-color: #10B981 !important;
         }
-        [data-theme="dark"] .btn-confirm {
-            background: #10B981 !important; /* Verde */
-            color: #121612 !important;      /* Nero */
+        html[data-theme="dark"] .btn-confirm {
+            background: #10B981 !important; /* Sfondo Verde Smeraldo */
+            color: #121612 !important;      /* Font Nero */
         }
         
         .selector-label {
