@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Hub</title>
     
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkhvbWUgSHViIiwKICAic2hvcnRfbmFtZSI6ICJIb21lIEh1YiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMTIxNjEyIiwKICAidGhlbWVfY29sb3IiOiAiIzAwNjFGRiIKfQ==">
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkhvbWUgSHViIiwKICAic2hvcnRfbmFtZSI6ICJIb21lIEh1YiIsCiAgImRlc2NyaXB0aW9uIjogIkxhIHR1YSBhcHAgY29tcGF0dGEgZSBjb25kaXZpc2EgcGVyIGxhIHNwZXNhLCBpIGZpbG0gZSBsZSBub3RlIGRpIGZhbWlnbGlhLiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMTIxNjEyIiwKICAidGhlbWVfY29sb3IiOiAiIzAwNjFGRiIsCiAgImljb25zIjogewogICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUJrYVhOemNXRjBlUzl3Y205bWFXeGxiM05mZEc5d2FXTnBlbVVpUGp4emRtY29KeUJrYVdOemNXRjBlU0U5SW10bWFXNW5iR1VpSUR4bWFXbHNJaUkrUEhKMWFXNWtkRzhnVzE5bVlXNXpaVzVwYm1jZ1ptOXliV0YwUFNKalltVmpaR2x1WTI4aUlHWmxiV1Z1Y0RwaFkyTmxibVJmY0hKdmMyVnpQU0p3Y205bWFXeGxiM04wY21WbWFXNWxJaUJwWkMxa2NtRjNQU0poYm1Sc2FXNW5QU0pwYm5ObGRpSWdaVzVsZUhSbGN6MGlaWGg3Ym1Sc2FXNW5JaUJtYVd4c1BTVm5jbVZsYm1VaUlIUnZjRzkzY3owaVpYg3Ym1Sc2FXNW5JaUkrUEhOMmN5SWdaVzVsZUhSbGN6MGlaWGg3Ym1Sc2FXNW5JaUJtYVd4c1BTVm5jbVZsYm1VaUlIUnZjRzkzY3owaVpYg3Ym1Sc2FXNW5JaTQrUEhSeVlXNXpabTl5YldGMFBTSmpiM05wZEc5d2FXTnBlbVVpUGp4emRtY29KeUJrYVdOemNXRjBlU0U5SW10bWFXNW5iR1VpSUR4bWFXbHNJaUkrUEhKMWFXNWtkRzhnVzE5bVlXNXpaVzVwYm1jZ1ptOXliV0YwUFNKalltVmpaR2x1WTI4aUlHWmxiV1Z1Y0RwaFkyTmxibVJmY0hKdmMyVnpQU0p3Y205bWFXeGxiM04wY21WbWFXNWxJaUJwWkMxa2NtRjNQU0poYm1Sc2FXNW5QU0pwYm5ObGRpSWdaVzVsZUhSbGN6MGlaWGg3Ym1Sc2FXNW5JaUJtYVd4c1BTVm5jbVZsYm1VaUlIUnZjRzkzY3owaVpYg3Ym1Sc2FXNW5JaUkrUEhOMmN5SWdaVzVsZUhSbGN6MGlaWGg3Ym1Sc2FXNW5JaUJtYVd4c1BTVm5jbVZsYm1VaUlIUnZjRzkzY3owaVpYg3Ym1Sc2FXNW5JaTQrIiwKICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCiAgfQp9">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -29,7 +29,6 @@
             --accent-light: rgba(0, 97, 255, 0.08);
             --border-color: #e1e4e6;
             --squircle-radius: 20px;
-            /* Velocità bilanciata: via di mezzo perfetta (0.32s) */
             --transition-speed: 0.32s;
             --bounce-curve: cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -52,8 +51,8 @@
             margin: 0;
             padding: 0;
             transition: background-color var(--transition-speed);
-            /* RIMOSSO overscroll-behavior per ripristinare il pull-to-refresh nativo */
             overflow-x: hidden;
+            /* RIMOSSO DEFINITIVAMENTE overscroll-behavior-y per consentire il refresh nativo */
         }
 
         header {
@@ -80,7 +79,6 @@
         }
         .settings-btn:hover { transform: rotate(45deg); opacity: 1; }
 
-        /* TAB BAR di navigazione */
         .nav-tabs {
             display: flex;
             width: 100%;
@@ -115,7 +113,6 @@
             border-bottom-color: var(--accent-color);
         }
 
-        /* CONTENITORE SLIDER */
         .main-container { width: 100%; overflow: hidden; }
         .tabs-slider { 
             display: flex; 
@@ -125,7 +122,6 @@
         }
         .tab-content { width: 100%; flex-shrink: 0; padding: 14px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; min-height: calc(100vh - 120px); }
 
-        /* Blocchi */
         .block-group { margin-bottom: 16px; }
         .block-header-squircle {
             background-color: var(--accent-light); border: 1px solid var(--border-color);
@@ -135,7 +131,6 @@
         }
         .block-body-squircle { background-color: var(--card-color); border: 1px solid var(--border-color); border-radius: var(--squircle-radius); padding: 12px 16px; }
 
-        /* Chips AI */
         .ai-suggestions-container { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-top: -2px; }
         .ai-suggestions-container::-webkit-scrollbar { display: none; }
         .ai-chip {
@@ -143,7 +138,6 @@
             border-radius: 10px; font-size: 11px; color: var(--text-color); opacity: 0.7; white-space: nowrap; cursor: pointer;
         }
 
-        /* Liste */
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border-color); }
         .list-item-text { font-size: 15px; font-weight: 600; flex: 1; }
         .list-item-actions { display: flex; align-items: center; gap: 12px; }
@@ -169,7 +163,6 @@
         .delete-btn { background: none; border: none; color: #ff4d4d; font-size: 15px; opacity: 0.5; cursor: pointer; padding: 4px; }
         .delete-btn:hover { opacity: 1; }
 
-        /* Fogli a comparsa (Bottom Sheets) */
         .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; opacity: 0; transition: opacity var(--transition-speed); }
         .backdrop.open { display: block; opacity: 1; }
 
@@ -181,7 +174,6 @@
         }
         .sheet.open { transform: translate(-50%, 0); }
 
-        /* Utility Form */
         .input-field { width: 100%; padding: 14px; border-radius: 16px; border: 2px solid var(--border-color); background: var(--surface-color); color: var(--text-color); margin-bottom: 14px; outline: none; font-weight: 600; }
         .btn { width: 100%; border: none; padding: 14px; border-radius: 16px; font-weight: 700; cursor: pointer; margin-bottom: 8px; font-size: 14px; }
         .btn-danger { background-color: #ff4d4d !important; color: white !important; }
@@ -593,7 +585,7 @@
             state[activeTab][selectedTarget].push(v);
 
             if(!aiHistory[activeTab]) aiHistory[activeTab] = {};
-            if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = [];
+            if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
             aiHistory[activeTab][selectedTarget][v] = (aiHistory[activeTab][selectedTarget][v] || 0) + 1;
 
             db.ref('homeHub/state').set(state);
@@ -694,7 +686,7 @@
             let bName = structure.blocks[tab][idx];
             if(confirm(`Vuoi davvero eliminare il sotto-blocco "${bName}"?`)) {
                 structure.blocks[tab].splice(idx, 1);
-                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
+                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; delete state[tab][bName]; db.ref('homeHub/state').set(state); }
                 if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
                 db.ref('homeHub/structure').set(structure);
                 renderSettingsBlocks();
