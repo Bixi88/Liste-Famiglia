@@ -166,18 +166,29 @@
         /* Forza l'input dei tab in stampatello */
         .uppercase-input { text-transform: uppercase; }
 
-        /* 📉 MODIFICA FONT SOTTO-BLOCCHI (DIFFERENZA VISIVA) 📉 */
-        .manage-item-block input { font-size: 12px !important; padding: 6px 10px !important; }
-        .manage-item-block .delete-btn { font-size: 12px !important; }
-        .btn-small { padding: 8px !important; font-size: 12px !important; border-radius: 12px !important; }
+        /* 📉 STRUTTURA SOTTO-BLOCCHI GERARCHICA (Soluzione Elegante) 📉 */
+        .manage-item-block { gap: 6px; margin-bottom: 6px; padding-left: 8px; }
+        .manage-item-block input { 
+            font-size: 13px !important; 
+            font-weight: 400 !important; /* Rimosso il grassetto */
+            padding: 6px 10px !important; 
+            color: var(--text-secondary) !important; /* Colore più discreto */
+            border-radius: 8px !important;
+        }
+        .manage-item-block input:focus { color: var(--text-color) !important; }
+        .manage-item-block .delete-btn { font-size: 12px !important; opacity: 0.4; padding: 4px 8px; }
+        .btn-small { padding: 8px 12px !important; font-size: 12px !important; border-radius: 10px !important; width: auto !important; margin-left: 8px; }
 
-        /* Toggle Switch Struttura Unificata */
+        /* Toggle Switch Struttura Unificata e Pulita */
         .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
         .switch-label { font-size: 14px; font-weight: 700; }
 
         .theme-switch { width: 44px; height: 22px; background: var(--surface-color); border-radius: 11px; position: relative; border: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; }
-        .theme-switch-handle { width: 16px; height: 16px; background: var(--accent-color); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s; }
-        html[data-theme="dark"] .theme-switch-handle { transform: translateX(22px); }
+        .theme-switch-handle { width: 16px; height: 16px; background: var(--text-secondary); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s, background-color 0.2s; }
+        
+        /* Tema Generale Header Switch */
+        html[data-theme="dark"] header .theme-switch-handle { transform: translateX(22px); background: var(--accent-color); }
+        html:not([data-theme="dark"]) header .theme-switch-handle { background: var(--accent-color); }
 
         .fab { position: fixed; bottom: 24px; right: 24px; background-color: var(--accent-color); border-radius: var(--squircle-radius); width: 50px; height: 50px; font-size: 22px; z-index: 99; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; }
         .selector-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; display: block; letter-spacing: 0.5px; }
@@ -244,7 +255,7 @@
         <div class="settings-section">
             <div class="settings-title">Gestisci Sotto-Blocchi (es. Supermercati per Tab Spesa)</div>
             <label class="selector-label">Seleziona il tab da modificare:</label>
-            <select id="settings-tab-select" class="input-field" style="padding:10px; margin-bottom:10px;" onchange="renderSettingsBlocks()"></select>
+            <select id="settings-tab-select" class="input-field" style="padding:10px; margin-bottom:12px;" onchange="renderSettingsBlocks()"></select>
             <div id="manage-blocks-list"></div>
             <button class="btn btn-secondary btn-small" onclick="addNewBlockStructure()">+ Aggiungi Sotto-Blocco / Negozio</button>
         </div>
@@ -559,7 +570,7 @@
             
             blocksList.forEach((block, index) => {
                 const row = document.createElement('div');
-                row.className = 'manage-item manage-item-block'; // aggiunge la classe ridotta per i sotto-blocchi
+                row.className = 'manage-item manage-item-block'; 
                 row.innerHTML = `
                     <input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)">
                     <button class="delete-btn" onclick="removeBlock('${activeTab}', ${index})">✕</button>
@@ -667,12 +678,18 @@
         function updateAISwitchUI() {
             const sw = document.getElementById('ai-toggle-switch');
             const handle = document.getElementById('ai-toggle-handle');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
             if(showAI) {
-                sw.style.backgroundColor = "var(--accent-color)";
+                // ACCESO -> Destra + Colore specifico del tema attivo
+                sw.style.backgroundColor = isDark ? "#10B981" : "#0061FF";
                 handle.style.transform = "translateX(22px)";
+                handle.style.backgroundColor = isDark ? "#121612" : "#ffffff";
             } else {
+                // SPENTO -> Sinistra + Sfondo neutro grigio/scuro
                 sw.style.backgroundColor = "var(--surface-color)";
                 handle.style.transform = "translateX(0px)";
+                handle.style.backgroundColor = "var(--text-secondary)";
             }
         }
 
@@ -685,7 +702,7 @@
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', t);
             localStorage.setItem('theme', t);
-            updateAISwitchUI(); 
+            updateAISwitchUI(); // Ricalcola i colori corretti dell'interruttore AI al cambio tema
         }
 
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
