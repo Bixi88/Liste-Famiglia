@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Hub</title>
     
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkhvbWUgSHViIiwKICAic2hvcnRfbmFtZSI6ICJIb21lIEh1YiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMTIxNjEyIiwKICAidGhlbWVfY29sb3IiOiAiIzAwNjFGRiIKfQ==">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -28,9 +29,9 @@
             --accent-light: rgba(0, 97, 255, 0.08);
             --border-color: #e1e4e6;
             --squircle-radius: 20px;
-            /* Animazione via di mezzo: 0.35s con curva fluida */
-            --transition-speed: 0.35s;
-            --bounce-curve: cubic-bezier(0.4, 0, 0.2, 1);
+            /* Animazione velocizzata (da 0.35s a 0.22s) e curva più reattiva */
+            --transition-speed: 0.22s;
+            --bounce-curve: cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         html[data-theme="dark"] {
@@ -147,9 +148,11 @@
         .list-item-text { font-size: 15px; font-weight: 600; flex: 1; }
         .list-item-actions { display: flex; align-items: center; gap: 12px; }
         
+        /* Stile specifico e compatto per i film */
         .film-list .list-item { padding: 6px 4px; }
         .film-list .list-item-text { font-size: 12.5px; font-weight: 500; }
         
+        /* Icona di trascinamento ☰ */
         .drag-handle { 
             color: var(--text-secondary); 
             font-size: 16px; 
@@ -412,6 +415,7 @@
             area.addEventListener('touchend', e => {
                 let tEnd = e.changedTouches[0].clientX;
                 let diff = tStart - tEnd;
+                // Abbassata la soglia di trigger dello swipe a 50px per renderlo ancora più reattivo al tocco
                 if (Math.abs(diff) > 50 && structure.tabs.length > 0) {
                     if (diff > 0 && currentTabIdx < structure.tabs.length - 1) switchTab(currentTabIdx + 1);
                     else if (diff < 0 && currentTabIdx > 0) switchTab(currentTabIdx - 1);
@@ -694,7 +698,7 @@
             let bName = structure.blocks[tab][idx];
             if(confirm(`Vuoi davvero eliminare il sotto-blocco "${bName}"?`)) {
                 structure.blocks[tab].splice(idx, 1);
-                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/bName'); db.ref('homeHub/state').set(state); }
+                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
                 if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
                 db.ref('homeHub/structure').set(structure);
                 renderSettingsBlocks();
