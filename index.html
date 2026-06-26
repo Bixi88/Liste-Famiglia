@@ -7,6 +7,8 @@
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
     <style>
         *, *::before, *::after {
@@ -133,10 +135,29 @@
         /* Liste */
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border-color); }
         .list-item-text { font-size: 15px; font-weight: 600; flex: 1; }
-        .list-item-actions { display: flex; align-items: center; gap: 8px; }
+        .list-item-actions { display: flex; align-items: center; gap: 12px; }
         
-        .reorder-btn { background: none; border: none; color: var(--text-secondary); font-size: 14px; opacity: 0.5; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
-        .reorder-btn:hover { opacity: 1; }
+        /* Stile specifico e compatto per i film */
+        .film-list .list-item { padding: 6px 4px; }
+        .film-list .list-item-text { font-size: 12.5px; font-weight: 500; }
+        
+        /* Icona di trascinamento ☰ */
+        .drag-handle { 
+            color: var(--text-secondary); 
+            font-size: 16px; 
+            cursor: grab; 
+            opacity: 0.4; 
+            padding: 4px; 
+            display: flex; 
+            align-items: center; 
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .drag-handle:active { cursor: grabbing; opacity: 0.9; }
+        
+        /* Stile elemento trascinato visivamente */
+        .sortable-ghost { opacity: 0.3; background-color: var(--surface-color); }
+
         .delete-btn { background: none; border: none; color: #ff4d4d; font-size: 15px; opacity: 0.5; cursor: pointer; padding: 4px; }
         .delete-btn:hover { opacity: 1; }
 
@@ -424,12 +445,14 @@
 
                     const body = document.createElement('div');
                     body.className = 'block-body-squircle';
+                    
+                    // Se siamo nel tab film, applichiamo la classe .film-list per rimpicciolire il font
                     const listDiv = document.createElement('div');
                     listDiv.id = `list-${tab}-${block}`;
-                    listDiv.className = 'list-container';
+                    listDiv.className = `list-container ${tab.toLowerCase() === 'film' ? 'film-list' : ''}`;
+                    
                     body.appendChild(listDiv);
                     group.appendChild(body);
-
                     container.appendChild(group);
 
                     const blockItems = (state[tab] && state[tab][block]) ? state[tab][block] : [];
@@ -446,47 +469,50 @@
             if (!container) return;
             container.innerHTML = data.length ? '' : '<div class="empty-text">Nessun elemento</div>';
             
-            // Verifica se questo specifico tab è quello dedicato ai film
             const isFilmTab = (tab.toLowerCase() === 'film');
 
             data.forEach((item, i) => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
+                // Memorizziamo il testo originario per rintracciarlo dopo il drag & drop
+                div.setAttribute('data-item-value', item);
                 
-                // Generazione controlli di movimento solo se siamo nel tab film
-                let reorderControls = '';
+                let leftAction = '';
                 if (isFilmTab) {
-                    reorderControls = `
-                        <button class="reorder-btn" onclick="moveItem('${tab}', '${block}', ${i}, -1)" ${i === 0 ? 'style="visibility:hidden;"' : ''}>▲</button>
-                        <button class="reorder-btn" onclick="moveItem('${tab}', '${block}', ${i}, 1)" ${i === data.length - 1 ? 'style="visibility:hidden;"' : ''}>▼</button>
-                    `;
+                    // Maniglia ☰ a sinistra per trascinare comodamente
+                    leftAction = `<div class="drag-handle">☰</div>`;
                 }
 
                 div.innerHTML = `
+                    ${leftAction}
                     <div class="list-item-text">${item}</div>
                     <div class="list-item-actions">
-                        ${reorderControls}
                         <button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button>
                     </div>
                 `;
                 container.appendChild(div);
             });
-        }
 
-        // Funzione per spostare gli elementi su e giù nell'array e salvare su Firebase
-        function moveItem(tab, block, index, direction) {
-            if (!state[tab] || !state[tab][block]) return;
-            
-            let targetIndex = index + direction;
-            if (targetIndex < 0 || targetIndex >= state[tab][block].length) return;
-            
-            // Scambio di posizione degli elementi
-            let temp = state[tab][block][index];
-            state[tab][block][index] = state[tab][block][targetIndex];
-            state[tab][block][targetIndex] = temp;
-            
-            // Salvataggio immediato sul database online
-            db.ref('homeHub/state').set(state);
+            // Se è il tab FILM, attiviamo la libreria SortableJS su questo specifico contenitore
+            if (isFilmTab && data.length > 1) {
+                Sortable.create(container, {
+                    handle: '.drag-handle', // Il trascinamento si attiva solo toccando le 3 righine
+                    animation: 200,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: function () {
+                        // Ricostruiamo il nuovo array basandoci sull'ordine visivo degli elementi modificati dall'utente
+                        let updatedArray = [];
+                        container.querySelectorAll('.list-item').forEach(el => {
+                            updatedArray.push(el.getAttribute('data-item-value'));
+                        });
+                        
+                        // Aggiorniamo lo stato locale e salviamo su Firebase
+                        if (!state[tab]) state[tab] = {};
+                        state[tab][block] = updatedArray;
+                        db.ref('homeHub/state').set(state);
+                    }
+                });
+            }
         }
 
         function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
@@ -744,6 +770,23 @@
         }
 
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
+
+        // Correzioni glitch multitasking / viewport Android
+        window.addEventListener('focus', () => {
+            window.scrollTo(window.scrollX, window.scrollY + 1);
+            window.scrollTo(window.scrollX, window.scrollY - 1);
+        });
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const fab = document.querySelector('.fab');
+                if (fab) {
+                    fab.style.display = 'none';
+                    fab.offsetHeight; 
+                    fab.style.display = 'block';
+                }
+            });
+        }
     </script>
 </body>
 </html>
