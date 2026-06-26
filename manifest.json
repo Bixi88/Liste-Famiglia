@@ -1,24 +1,24 @@
 {
   "name": "Home Hub",
   "short_name": "Home Hub",
-  "start_url": "/Liste-Famiglia/",
-  "id": "/Liste-Famiglia/",
+  "description": "Piattaforma di gestione e organizzazione della casa, spesa e note di famiglia.",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121612",
   "theme_color": "#0061FF",
-  "description": "Gestione liste e spesa per la famiglia",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://bixi88.github.io/Liste-Famiglia/Copilot_20260626_143903.jpg",
-      "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://bixi88.github.io/Liste-Famiglia/Copilot_20260626_143903.jpg",
-      "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
