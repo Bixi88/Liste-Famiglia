@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Hub - Condiviso</title>
+    <title>Home Hub - Personalizzabile</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -62,9 +62,17 @@
             z-index: 10;
         }
 
+        .header-left { display: flex; align-items: center; gap: 12px; }
         h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+        
+        .settings-btn {
+            background: none; border: none; color: var(--text-color);
+            font-size: 20px; cursor: pointer; padding: 4px; display: flex; align-items: center;
+            opacity: 0.8; transition: transform 0.2s;
+        }
+        .settings-btn:hover { transform: rotate(45deg); opacity: 1; }
 
-        /* TAB BAR */
+        /* TAB BAR di navigazione */
         .nav-tabs {
             display: flex;
             width: 100%;
@@ -75,268 +83,172 @@
             position: sticky;
             top: 55px;
             z-index: 10;
+            overflow-x: auto;
         }
+        .nav-tabs::-webkit-scrollbar { display: none; }
 
         .tab-btn {
             flex: 1;
+            min-width: 80px;
             text-align: center;
-            padding: 12px 0;
+            padding: 14px 10px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 0.8px;
             color: var(--text-secondary);
             border-bottom: 3px solid transparent;
             transition: all var(--transition-speed);
+            white-space: nowrap;
+            text-transform: uppercase;
         }
-
         .tab-btn.active {
             color: var(--accent-color);
             border-bottom-color: var(--accent-color);
         }
 
-        /* STRUTTURA SLIDER FLUIDO */
-        .main-container {
-            width: 100%;
-            overflow: hidden;
-        }
+        /* CONTENITORE SLIDER */
+        .main-container { width: 100%; overflow: hidden; }
+        .tabs-slider { display: flex; width: 100%; transition: transform var(--transition-speed) cubic-bezier(0.18, 0.06, 0.2, 1); will-change: transform; }
+        .tab-content { width: 100%; flex-shrink: 0; padding: 14px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; min-height: calc(100vh - 120px); }
 
-        .tabs-slider {
-            display: flex;
-            width: 300%;
-            transition: transform var(--transition-speed) cubic-bezier(0.18, 0.06, 0.2, 1);
-            will-change: transform;
-        }
-
-        .tab-content {
-            width: 33.3333%;
-            padding: 14px;
-            max-width: 600px;
-            margin: 0 auto;
-            padding-bottom: 100px;
-            min-height: calc(100vh - 120px);
-        }
-
-        /* Blocchi Squircle */
+        /* Blocchi */
         .block-group { margin-bottom: 16px; }
         .block-header-squircle {
-            background-color: var(--accent-light);
-            border: 1px solid var(--border-color);
-            border-radius: var(--squircle-radius);
-            padding: 10px 16px;
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--accent-color);
-            margin-bottom: 6px;
+            background-color: var(--accent-light); border: 1px solid var(--border-color);
+            border-radius: var(--squircle-radius); padding: 10px 16px; font-size: 13px;
+            font-weight: 800; color: var(--accent-color); margin-bottom: 6px;
+            text-transform: uppercase;
         }
-        .block-body-squircle {
-            background-color: var(--card-color);
-            border: 1px solid var(--border-color);
-            border-radius: var(--squircle-radius);
-            padding: 12px 16px;
-        }
+        .block-body-squircle { background-color: var(--card-color); border: 1px solid var(--border-color); border-radius: var(--squircle-radius); padding: 12px 16px; }
 
-        /* Suggerimenti AI */
+        /* Chips AI */
         .ai-suggestions-container { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-top: -2px; }
         .ai-suggestions-container::-webkit-scrollbar { display: none; }
         .ai-chip {
-            padding: 4px 10px;
-            background-color: var(--surface-color);
-            border: 1px solid var(--accent-color); 
-            border-radius: 10px;
-            font-size: 11px;
-            color: var(--text-color);
-            opacity: 0.6; 
-            white-space: nowrap;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            padding: 5px 11px; background-color: var(--surface-color); border: 1px solid var(--accent-color); 
+            border-radius: 10px; font-size: 11px; color: var(--text-color); opacity: 0.7; white-space: nowrap; cursor: pointer;
         }
-        .ai-chip:hover { opacity: 1; }
 
-        /* Lista Elementi */
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--border-color); }
+        /* Liste */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border-color); }
         .list-item-text { font-size: 15px; font-weight: 600; }
         .delete-btn { background: none; border: none; color: #ff4d4d; font-size: 15px; opacity: 0.5; cursor: pointer; }
 
-        /* FAB e TOP SHEET IN ALTO */
-        .fab { position: fixed; bottom: 24px; right: 24px; background-color: var(--accent-color); border-radius: var(--squircle-radius); width: 50px; height: 50px; font-size: 22px; z-index: 99; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; }
-        .bottom-sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; opacity: 0; transition: opacity 0.3s; }
-        
-        .bottom-sheet { 
-            position: fixed; 
-            top: 0; 
-            left: 50%; 
-            transform: translate(-50%, -100%); 
-            width: 100%; 
-            max-width: 600px; 
-            background: var(--bg-color); 
-            padding: 24px; 
-            border-radius: 0 0 20px 20px; 
-            z-index: 101; 
-            transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94); 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        .bottom-sheet.open { transform: translate(-50%, 0); }
-        .bottom-sheet-backdrop.open { display: block; opacity: 1; }
+        /* Fogli a comparsa (Bottom Sheets) */
+        .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; opacity: 0; transition: opacity 0.3s; }
+        .backdrop.open { display: block; opacity: 1; }
 
-        /* Utility */
-        .input-field { width: 100%; padding: 16px; border-radius: 20px; border: 2px solid var(--border-color); background: var(--surface-color); color: var(--text-color); margin-bottom: 20px; outline: none; }
-        .theme-switch { width: 44px; height: 22px; background: var(--surface-color); border-radius: 11px; position: relative; border: 1px solid var(--border-color); cursor: pointer; }
+        .sheet { 
+            position: fixed; top: 0; left: 50%; transform: translate(-50%, -100%); width: 100%; max-width: 600px; 
+            background: var(--bg-color); padding: 24px; border-radius: 0 0 20px 20px; z-index: 101; 
+            transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94); box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-height: 90vh; overflow-y: auto;
+        }
+        .sheet.open { transform: translate(-50%, 0); }
+
+        /* Utility Form */
+        .input-field { width: 100%; padding: 14px; border-radius: 16px; border: 2px solid var(--border-color); background: var(--surface-color); color: var(--text-color); margin-bottom: 14px; outline: none; font-weight: 600; }
+        .btn { width: 100%; border: none; padding: 14px; border-radius: 16px; font-weight: 700; cursor: pointer; margin-bottom: 8px; font-size: 14px; }
+        .btn-danger { background-color: #ff4d4d !important; color: white !important; }
+        .btn-secondary { background-color: var(--surface-color) !important; color: var(--text-color) !important; border: 1px solid var(--border-color); }
+        
+        /* Griglia Selettore */
+        .market-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 20px; }
+        .select-chip { padding: 12px; border-radius: 16px; cursor: pointer; font-size: 13px; font-weight: 700; text-align: center; text-transform: uppercase; }
+
+        /* Area Impostazioni Editabili */
+        .settings-section { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+        .settings-title { font-size: 14px; font-weight: 800; margin-bottom: 10px; color: var(--accent-color); }
+        .manage-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .manage-item input { flex: 1; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--surface-color); color: var(--text-color); font-weight: 600; }
+        
+        /* Forza l'input dei tab in stampatello */
+        .uppercase-input { text-transform: uppercase; }
+
+        /* Toggle Switch Struttura Unificata */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+        .switch-label { font-size: 14px; font-weight: 700; }
+
+        .theme-switch { width: 44px; height: 22px; background: var(--surface-color); border-radius: 11px; position: relative; border: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; }
         .theme-switch-handle { width: 16px; height: 16px; background: var(--accent-color); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s; }
         html[data-theme="dark"] .theme-switch-handle { transform: translateX(22px); }
-        
-        /* GRIGLIA COMPATTA PER SUPERMERCATI */
-        .market-selector { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            padding-bottom: 20px; 
-        }
-        .select-chip { 
-            padding: 12px; 
-            border-radius: 16px; 
-            cursor: pointer; 
-            font-size: 13px; 
-            font-weight: 700; 
-            text-align: center;
-            transition: 0.2s; 
-        }
-        .btn-confirm {
-            width: 100%; 
-            border: none; 
-            padding: 15px; 
-            border-radius: 20px; 
-            font-weight: 700; 
-            cursor: pointer;
-            transition: background 0.2s;
-        }
 
-        /* ☀️ STILI LIGHT MODE ☀️ */
-        html:not([data-theme="dark"]) .select-chip {
-            background: #f6f8fa !important;
-            color: #000000 !important;
-            border: 1px solid #e1e4e6 !important;
-        }
-        html:not([data-theme="dark"]) .select-chip.selected { 
-            background: #0061FF !important; 
-            color: #ffffff !important;      
-            border-color: #0061FF !important;
-        }
-        html:not([data-theme="dark"]) .btn-confirm {
-            background: #0061FF !important; 
-            color: #ffffff !important;      
-        }
+        .fab { position: fixed; bottom: 24px; right: 24px; background-color: var(--accent-color); border-radius: var(--squircle-radius); width: 50px; height: 50px; font-size: 22px; z-index: 99; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; }
+        .selector-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; display: block; letter-spacing: 0.5px; }
+        .empty-text { color: var(--text-secondary); font-size: 13px; font-style: italic; opacity: 0.5; }
 
-        /* 🌙 STILI DARK MODE 🌙 */
-        html[data-theme="dark"] .select-chip {
-            background: #161b16 !important;
-            color: #ffffff !important;
-            border: 1px solid #252e25 !important;
-        }
-        html[data-theme="dark"] .select-chip.selected { 
-            background: #10B981 !important; 
-            color: #121612 !important;      
-            border-color: #10B981 !important;
-        }
-        html[data-theme="dark"] .btn-confirm {
-            background: #10B981 !important; 
-            color: #121612 !important;      
-        }
-        
-        .selector-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            display: block;
-            letter-spacing: 0.5px;
-        }
-        .empty-text {
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-style: italic;
-            padding: 4px 4px;
-            opacity: 0.5;
-        }
+        /* ☀️ TEMI LIGHT MODE ☀️ */
+        html:not([data-theme="dark"]) .select-chip { background: #f6f8fa !important; color: #000000 !important; border: 1px solid #e1e4e6 !important; }
+        html:not([data-theme="dark"]) .select-chip.selected { background: #0061FF !important; color: #ffffff !important; border-color: #0061FF !important; }
+        html:not([data-theme="dark"]) .btn-confirm { background: #0061FF !important; color: #ffffff !important; }
+
+        /* 🌙 TEMI DARK MODE 🌙 */
+        html[data-theme="dark"] .select-chip { background: #161b16 !important; color: #ffffff !important; border: 1px solid #252e25 !important; }
+        html[data-theme="dark"] .select-chip.selected { background: #10B981 !important; color: #121612 !important; border-color: #10B981 !important; }
+        html[data-theme="dark"] .btn-confirm { background: #10B981 !important; color: #121612 !important; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Home Hub</h1>
+        <div class="header-left">
+            <button class="settings-btn" onclick="openSettingsSheet()">⚙️</button>
+            <h1>Home Hub</h1>
+        </div>
         <div class="theme-switch" onclick="toggleTheme()"><div class="theme-switch-handle"></div></div>
     </header>
 
-    <div class="nav-tabs">
-        <div id="btn-spesa" class="tab-btn active" onclick="switchTab('spesa', 0)">SPESA</div>
-        <div id="btn-film" class="tab-btn" onclick="switchTab('film', 1)">FILM</div>
-        <div id="btn-famiglia" class="tab-btn" onclick="switchTab('famiglia', 2)">FAMIGLIA</div>
-    </div>
+    <div class="nav-tabs" id="nav-tabs-container"></div>
 
     <div class="main-container" id="swipe-area">
-        <div class="tabs-slider" id="tabs-slider">
-            
-            <div id="tab-spesa" class="tab-content">
-                <div class="block-group">
-                    <div class="block-header-squircle">LIDL</div>
-                    <div id="ai-LIDL" class="ai-suggestions-container"></div>
-                    <div class="block-body-squircle"><div id="list-LIDL" class="list-container"></div></div>
-                </div>
-                <div class="block-group">
-                    <div class="block-header-squircle">EUROSPIN</div>
-                    <div id="ai-EUROSPIN" class="ai-suggestions-container"></div>
-                    <div class="block-body-squircle"><div id="list-EUROSPIN" class="list-container"></div></div>
-                </div>
-                <div class="block-group">
-                    <div class="block-header-squircle">SOLE365</div>
-                    <div id="ai-SOLE365" class="ai-suggestions-container"></div>
-                    <div class="block-body-squircle"><div id="list-SOLE365" class="list-container"></div></div>
-                </div>
-                <div class="block-group">
-                    <div class="block-header-squircle">ACTION</div>
-                    <div id="ai-ACTION" class="ai-suggestions-container"></div>
-                    <div class="block-body-squircle"><div id="list-ACTION" class="list-container"></div></div>
-                </div>
-            </div>
-
-            <div id="tab-film" class="tab-content">
-                <div class="block-group">
-                    <div class="block-header-squircle">DA VEDERE</div>
-                    <div class="block-body-squircle"><div id="list-film" class="list-container"></div></div>
-                </div>
-            </div>
-
-            <div id="tab-famiglia" class="tab-content">
-                <div class="block-group">
-                    <div class="block-header-squircle">NOTE DI FAMIGLIA</div>
-                    <div id="ai-famiglia" class="ai-suggestions-container"></div>
-                    <div class="block-body-squircle"><div id="list-famiglia" class="list-container"></div></div>
-                </div>
-            </div>
-
-        </div>
+        <div class="tabs-slider" id="tabs-slider"></div>
     </div>
 
-    <button class="fab" style="color:white" onclick="openBottomSheet()">+</button>
+    <button class="fab" style="color:white" onclick="openAddSheet()">+</button>
 
-    <div class="bottom-sheet-backdrop" id="backdrop" onclick="closeBottomSheet()"></div>
-    <div class="bottom-sheet" id="bottomSheet">
-        <h3 id="sheet-title">Aggiungi Elemento</h3>
+    <div class="backdrop" id="backdrop" onclick="closeAllSheets()"></div>
+
+    <div class="sheet" id="addSheet">
+        <h3>Aggiungi Elemento</h3>
         <input type="text" id="item-input" class="input-field" placeholder="Cosa vuoi aggiungere?" onkeyup="handleKeyUp(event)">
         <div id="target-selector-container">
-            <span class="selector-label">SCEGLI SUPERMERCATO:</span>
-            <div class="market-selector">
-                <div class="select-chip selected" onclick="selectChip('LIDL', this)">LIDL</div>
-                <div class="select-chip" onclick="selectChip('EUROSPIN', this)">EUROSPIN</div>
-                <div class="select-chip" onclick="selectChip('SOLE365', this)">SOLE365</div>
-                <div class="select-chip" onclick="selectChip('ACTION', this)">ACTION</div>
-            </div>
+            <span class="selector-label" id="selector-label-text">SCEGLI DOVE INSERIRE:</span>
+            <div class="market-selector" id="market-selector-chips"></div>
         </div>
         <button class="btn btn-confirm" onclick="addItem()">Aggiungi</button>
     </div>
 
+    <div class="sheet" id="settingsSheet">
+        <h3>Impostazioni Struttura</h3>
+        
+        <div class="settings-section">
+            <div class="toggle-row">
+                <span class="switch-label">Mostra suggerimenti AI predittivi</span>
+                <div class="theme-switch" id="ai-toggle-switch" onclick="toggleAISuggestions()"><div class="theme-switch-handle" id="ai-toggle-handle"></div></div>
+            </div>
+            <button class="btn btn-danger" style="padding: 10px;" onclick="resetAllAIClicks()">Reset Totale Cache Suggerimenti</button>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-title">Gestisci Tab Principali</div>
+            <div id="manage-tabs-list"></div>
+            <button class="btn btn-secondary" style="padding: 10px;" onclick="addNewTabStructure()">+ Aggiungi Nuovo Tab</button>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-title">Gestisci Sotto-Blocchi (es. Supermercati per Tab Spesa)</div>
+            <label class="selector-label">Seleziona il tab da modificare:</label>
+            <select id="settings-tab-select" class="input-field" style="padding:10px; margin-bottom:10px;" onchange="renderSettingsBlocks()"></select>
+            <div id="manage-blocks-list"></div>
+            <button class="btn btn-secondary" style="padding: 10px;" onclick="addNewBlockStructure()">+ Aggiungi Sotto-Blocco / Negozio</button>
+        </div>
+        
+        <button class="btn btn-confirm" onclick="closeAllSheets()" style="margin-top:10px;">Salva e Chiudi</button>
+    </div>
+
     <script>
-        // CONFIGURAZIONE REALE CONFIGURATA CON I TUOI DATI DI CLOUD FIREBASE
+        // Configurazione Cloud Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAM0QE9NR7V_xwQ8UjfEc9M5y_HiCnV1fo",
             authDomain: "homehub-96c18.firebaseapp.com",
@@ -350,58 +262,101 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let state = { spesa: { LIDL: [], EUROSPIN: [], SOLE365: [], ACTION: [] }, film: [], famiglia: [] };
-        let aiHistory = { spesa: { LIDL: {}, EUROSPIN: {}, SOLE365: {}, ACTION: {} }, famiglia: {} };
+        let structure = {
+            tabs: ['spesa', 'film', 'famiglia'],
+            blocks: {
+                spesa: ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'],
+                film: ['DA VEDERE'],
+                famiglia: ['NOTE DI FAMIGLIA']
+            }
+        };
+
+        let state = {};
+        let aiHistory = {};
         
-        let currentTab = 'spesa';
-        let selectedTarget = 'LIDL';
-        const tabOrder = ['spesa', 'film', 'famiglia'];
+        let currentTabIdx = 0;
+        let selectedTarget = '';
         let tStart = 0;
+        let showAI = localStorage.getItem('showAI') !== 'false'; 
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Modalità Dark/Light salvata solo sul dispositivo locale per non influenzare gli altri utenti
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            
+            updateAISwitchUI();
             initSwipe();
             initFirebaseSync();
         });
 
-        // Sincronizzazione Realtime online
         function initFirebaseSync() {
-            db.ref('homeHub/state').on('value', (snapshot) => {
+            db.ref('homeHub/structure').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
-                    state = data;
-                    if(!state.spesa) state.spesa = { LIDL: [], EUROSPIN: [], SOLE365: [], ACTION: [] };
-                    ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'].forEach(m => { if(!state.spesa[m]) state.spesa[m] = []; });
-                    if(!state.film) state.film = [];
-                    if(!state.famiglia) state.famiglia = [];
+                if(data) {
+                    structure = data;
+                    if(!structure.tabs) structure.tabs = [];
+                    if(!structure.blocks) structure.blocks = {};
+                } else {
+                    db.ref('homeHub/structure').set(structure);
                 }
+                buildTabsUI();
+                renderAll();
+            });
+
+            db.ref('homeHub/state').on('value', (snapshot) => {
+                state = snapshot.val() || {};
                 renderAll();
             });
 
             db.ref('homeHub/aiHistory').on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    aiHistory = data;
-                    if(!aiHistory.spesa) aiHistory.spesa = { LIDL: {}, EUROSPIN: {}, SOLE365: {}, ACTION: {} };
-                    ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'].forEach(m => { if(!aiHistory.spesa[m]) aiHistory.spesa[m] = {}; });
-                    if(!aiHistory.famiglia) aiHistory.famiglia = {};
-                }
+                aiHistory = snapshot.val() || {};
                 renderAll();
             });
         }
 
-        function saveStateToFirebase() { db.ref('homeHub/state').set(state); }
-        function saveAIHistoryToFirebase() { db.ref('homeHub/aiHistory').set(aiHistory); }
-
-        function switchTab(tabId, index) {
-            currentTab = tabId;
+        function buildTabsUI() {
+            const tabsContainer = document.getElementById('nav-tabs-container');
             const slider = document.getElementById('tabs-slider');
-            slider.style.transform = `translateX(-${(index * 100) / 3}%)`;
+            const selectDropdown = document.getElementById('settings-tab-select');
+            
+            if(!structure.tabs[currentTabIdx] && structure.tabs.length > 0) currentTabIdx = 0;
+
+            tabsContainer.innerHTML = '';
+            slider.innerHTML = '';
+            selectDropdown.innerHTML = '';
+
+            slider.style.width = `${structure.tabs.length * 100}%`;
+
+            structure.tabs.forEach((tab, index) => {
+                const btn = document.createElement('div');
+                btn.id = `btn-tab-${index}`;
+                btn.className = `tab-btn ${index === currentTabIdx ? 'active' : ''}`;
+                btn.innerText = tab;
+                btn.onclick = () => switchTab(index);
+                tabsContainer.appendChild(btn);
+
+                const content = document.createElement('div');
+                content.id = `content-tab-${tab}`;
+                content.className = 'tab-content';
+                content.style.width = `${100 / structure.tabs.length}%`;
+                slider.appendChild(content);
+
+                const opt = document.createElement('option');
+                opt.value = tab;
+                opt.innerText = tab.toUpperCase();
+                selectDropdown.appendChild(opt);
+            });
+
+            slider.style.transform = `translateX(-${(currentTabIdx * 100) / structure.tabs.length}%)`;
+        }
+
+        function switchTab(index) {
+            if (index < 0 || index >= structure.tabs.length) return;
+            currentTabIdx = index;
+            const slider = document.getElementById('tabs-slider');
+            slider.style.transform = `translateX(-${(currentTabIdx * 100) / structure.tabs.length}%)`;
+            
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-${tabId}`).classList.add('active');
+            const activeBtn = document.getElementById(`btn-tab-${index}`);
+            if(activeBtn) activeBtn.classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -411,39 +366,73 @@
             area.addEventListener('touchend', e => {
                 let tEnd = e.changedTouches[0].clientX;
                 let diff = tStart - tEnd;
-                let idx = tabOrder.indexOf(currentTab);
-                if (Math.abs(diff) > 70) {
-                    if (diff > 0 && idx < 2) switchTab(tabOrder[idx+1], idx+1);
-                    else if (diff < 0 && idx > 0) switchTab(tabOrder[idx-1], idx-1);
+                if (Math.abs(diff) > 70 && structure.tabs.length > 0) {
+                    if (diff > 0 && currentTabIdx < structure.tabs.length - 1) switchTab(currentTabIdx + 1);
+                    else if (diff < 0 && currentTabIdx > 0) switchTab(currentTabIdx - 1);
                 }
             }, {passive: true});
         }
 
         function renderAll() {
-            const markets = ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'];
-            markets.forEach(m => {
-                renderSingleList(`list-${m}`, state.spesa[m] || [], 'spesa', m);
-                renderAISuggestions(`ai-${m}`, aiHistory.spesa[m] || {}, state.spesa[m] || [], 'spesa', m);
+            if (!structure.tabs.length) return;
+            
+            structure.tabs.forEach(tab => {
+                const container = document.getElementById(`content-tab-${tab}`);
+                if (!container) return;
+                container.innerHTML = '';
+
+                const blocksList = structure.blocks[tab] || [];
+                if(blocksList.length === 0) {
+                    container.innerHTML = '<div class="empty-text">Nessun sotto-blocco configurato in questa sezione. Vai nelle impostazioni per aggiungerne uno.</div>';
+                }
+
+                blocksList.forEach(block => {
+                    const group = document.createElement('div');
+                    group.className = 'block-group';
+
+                    const header = document.createElement('div');
+                    header.className = 'block-header-squircle';
+                    header.innerText = block;
+                    group.appendChild(header);
+
+                    const aiCont = document.createElement('div');
+                    aiCont.id = `ai-${tab}-${block}`;
+                    aiCont.className = 'ai-suggestions-container';
+                    if(!showAI) aiCont.style.display = 'none';
+                    group.appendChild(aiCont);
+
+                    const body = document.createElement('div');
+                    body.className = 'block-body-squircle';
+                    const listDiv = document.createElement('div');
+                    listDiv.id = `list-${tab}-${block}`;
+                    listDiv.className = 'list-container';
+                    body.appendChild(listDiv);
+                    group.appendChild(body);
+
+                    container.appendChild(group);
+
+                    const blockItems = (state[tab] && state[tab][block]) ? state[tab][block] : [];
+                    renderSingleListItems(`list-${tab}-${block}`, blockItems, tab, block);
+                    
+                    const blockHistory = (aiHistory[tab] && aiHistory[tab][block]) ? aiHistory[tab][block] : {};
+                    renderAISuggestionsItems(`ai-${tab}-${block}`, blockHistory, blockItems, tab, block);
+                });
             });
-            renderSingleList('list-film', state.film || [], 'film');
-            renderSingleList('list-famiglia', state.famiglia || [], 'famiglia');
-            renderAISuggestions('ai-famiglia', aiHistory.famiglia || {}, state.famiglia || [], 'famiglia');
         }
 
-        function renderSingleList(cId, data, type, mKey = null) {
+        function renderSingleListItems(cId, data, tab, block) {
             const container = document.getElementById(cId);
             if (!container) return;
             container.innerHTML = data.length ? '' : '<div class="empty-text">Nessun elemento</div>';
             data.forEach((item, i) => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
-                div.innerHTML = `<div class="list-item-text">${item}</div><button class="delete-btn" onclick="deleteItem('${type}', ${i}, '${mKey}')">✕</button>`;
+                div.innerHTML = `<div class="list-item-text">${item}</div><button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button>`;
                 container.appendChild(div);
             });
         }
 
-        // Predittivo Globale Condiviso (Mostra le prime 3 riproposte totali)
-        function renderAISuggestions(cId, hData, activeList, type, mKey = null) {
+        function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
             const container = document.getElementById(cId);
             if (!container) return;
             
@@ -457,72 +446,243 @@
                 chip.className = 'ai-chip';
                 chip.innerText = `+ ${it}`;
                 chip.onclick = () => {
-                    if(type === 'spesa') { 
-                        if(!state.spesa[mKey]) state.spesa[mKey] = [];
-                        state.spesa[mKey].push(it); 
-                        hData[it] = (hData[it] || 0) + 1; 
-                    } else { 
-                        if(!state.famiglia) state.famiglia = [];
-                        state.famiglia.push(it); 
-                        hData[it] = (hData[it] || 0) + 1; 
-                    }
-                    saveStateToFirebase(); 
-                    saveAIHistoryToFirebase();
+                    if(!state[tab]) state[tab] = {};
+                    if(!state[tab][block]) state[tab][block] = [];
+                    state[tab][block].push(it);
+                    
+                    if(!aiHistory[tab]) aiHistory[tab] = {};
+                    if(!aiHistory[tab][block]) aiHistory[tab][block] = {};
+                    aiHistory[tab][block][it] = (aiHistory[tab][block][it] || 0) + 1;
+                    
+                    db.ref('homeHub/state').set(state);
+                    db.ref('homeHub/aiHistory').set(aiHistory);
                 };
                 container.appendChild(chip);
             });
         }
 
-        function deleteItem(type, i, mKey) { 
-            if(type === 'spesa') state.spesa[mKey].splice(i,1); 
-            else state[type].splice(i,1); 
-            saveStateToFirebase(); 
+        function deleteItem(tab, block, idx) {
+            if(state[tab] && state[tab][block]) {
+                state[tab][block].splice(idx, 1);
+                db.ref('homeHub/state').set(state);
+            }
         }
-        
+
+        function openAddSheet() {
+            const activeTab = structure.tabs[currentTabIdx];
+            if(!activeTab) return;
+
+            document.getElementById('item-input').value = '';
+            document.getElementById('backdrop').classList.add('open');
+            document.getElementById('addSheet').classList.add('open');
+
+            const blocksList = structure.blocks[activeTab] || [];
+            const selectorContainer = document.getElementById('target-selector-container');
+            
+            if (blocksList.length <= 1) {
+                selectorContainer.style.display = 'none';
+                selectedTarget = blocksList[0] || '';
+            } else {
+                selectorContainer.style.display = 'block';
+                document.getElementById('selector-label-text').innerText = `SCEGLI SEZIONE / NEGOZIO DI ${activeTab.toUpperCase()}:`;
+                const chipsCont = document.getElementById('market-selector-chips');
+                chipsCont.innerHTML = '';
+                
+                selectedTarget = blocksList[0];
+                blocksList.forEach((block, idx) => {
+                    const chip = document.createElement('div');
+                    chip.className = `select-chip ${idx === 0 ? 'selected' : ''}`;
+                    chip.innerText = block;
+                    chip.onclick = function() {
+                        selectedTarget = block;
+                        document.querySelectorAll('.select-chip').forEach(c => c.classList.remove('selected'));
+                        chip.classList.add('selected');
+                    };
+                    chipsCont.appendChild(chip);
+                });
+            }
+            document.getElementById('item-input').focus();
+        }
+
+        function addItem() {
+            const activeTab = structure.tabs[currentTabIdx];
+            let v = document.getElementById('item-input').value.trim();
+            if(!v || !activeTab || !selectedTarget) return;
+
+            if(!state[activeTab]) state[activeTab] = {};
+            if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = [];
+            state[activeTab][selectedTarget].push(v);
+
+            if(!aiHistory[activeTab]) aiHistory[activeTab] = {};
+            if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
+            aiHistory[activeTab][selectedTarget][v] = (aiHistory[activeTab][selectedTarget][v] || 0) + 1;
+
+            db.ref('homeHub/state').set(state);
+            db.ref('homeHub/aiHistory').set(aiHistory);
+            closeAllSheets();
+        }
+
+        function openSettingsSheet() {
+            document.getElementById('backdrop').classList.add('open');
+            document.getElementById('settingsSheet').classList.add('open');
+            renderSettingsTabs();
+            renderSettingsBlocks();
+        }
+
+        function renderSettingsTabs() {
+            const cont = document.getElementById('manage-tabs-list');
+            cont.innerHTML = '';
+            structure.tabs.forEach((tab, index) => {
+                const row = document.createElement('div');
+                row.className = 'manage-item';
+                row.innerHTML = `
+                    <input type="text" class="uppercase-input" value="${tab.toUpperCase()}" onchange="renameTab(${index}, this.value)">
+                    <button class="delete-btn" style="padding: 6px 10px;" onclick="removeTab(${index})">✕</button>
+                `;
+                cont.appendChild(row);
+            });
+        }
+
+        function renderSettingsBlocks() {
+            const dropdown = document.getElementById('settings-tab-select');
+            const activeTab = dropdown.value || structure.tabs[0];
+            const cont = document.getElementById('manage-blocks-list');
+            cont.innerHTML = '';
+            
+            if(!activeTab) return;
+            const blocksList = structure.blocks[activeTab] || [];
+            
+            blocksList.forEach((block, index) => {
+                const row = document.createElement('div');
+                row.className = 'manage-item';
+                row.innerHTML = `
+                    <input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)">
+                    <button class="delete-btn" style="padding: 6px 10px;" onclick="removeBlock('${activeTab}', ${index})">✕</button>
+                `;
+                cont.appendChild(row);
+            });
+        }
+
+        function renameTab(idx, newVal) {
+            let val = newVal.trim().toLowerCase();
+            if(!val) return;
+            let oldName = structure.tabs[idx];
+            structure.tabs[idx] = val;
+            
+            if(structure.blocks[oldName]) {
+                structure.blocks[val] = structure.blocks[oldName];
+                delete structure.blocks[oldName];
+            }
+            if(state[oldName]) { state[val] = state[oldName]; delete state[oldName]; db.ref('homeHub/state').set(state); }
+            if(aiHistory[oldName]) { aiHistory[val] = aiHistory[oldName]; delete aiHistory[oldName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+            
+            db.ref('homeHub/structure').set(structure);
+        }
+
+        function removeTab(idx) {
+            let tabName = structure.tabs[idx];
+            if(confirm(`Vuoi davvero eliminare la sezione "${tabName.toUpperCase()}" e tutte le sue liste interne?`)) {
+                structure.tabs.splice(idx, 1);
+                if(structure.blocks[tabName]) delete structure.blocks[tabName];
+                if(state[tabName]) { delete state[tabName]; db.ref('homeHub/state').set(state); }
+                if(aiHistory[tabName]) { delete aiHistory[tabName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+                
+                db.ref('homeHub/structure').set(structure);
+            }
+        }
+
+        function addNewTabStructure() {
+            let n = prompt("Inserisci il nome del nuovo Tab (Sezione):");
+            if(!n) return;
+            let val = n.trim().toLowerCase();
+            if(structure.tabs.includes(val)) return alert("Tab già esistente!");
+            
+            structure.tabs.push(val);
+            structure.blocks[val] = ['GENERALE']; 
+            db.ref('homeHub/structure').set(structure);
+            renderSettingsTabs();
+        }
+
+        function renameBlock(tab, idx, newVal) {
+            let val = newVal.trim().toUpperCase();
+            if(!val) return;
+            let oldBlockName = structure.blocks[tab][idx];
+            structure.blocks[tab][idx] = val;
+
+            if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; db.ref('homeHub/state').set(state); }
+            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+            
+            db.ref('homeHub/structure').set(structure);
+        }
+
+        function removeBlock(tab, idx) {
+            let bName = structure.blocks[tab][idx];
+            if(confirm(`Vuoi davvero eliminare il sotto-blocco "${bName}"?`)) {
+                structure.blocks[tab].splice(idx, 1);
+                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
+                if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+                
+                db.ref('homeHub/structure').set(structure);
+                renderSettingsBlocks();
+            }
+        }
+
+        function addNewBlockStructure() {
+            const dropdown = document.getElementById('settings-tab-select');
+            const activeTab = dropdown.value;
+            if(!activeTab) return;
+
+            let n = prompt(`Aggiungi un nuovo sotto-blocco/negozio alla sezione ${activeTab.toUpperCase()}:`);
+            if(!n) return;
+            let val = n.trim().toUpperCase();
+            
+            if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
+            if(structure.blocks[activeTab].includes(val)) return alert("Sotto-blocco già esistente!");
+
+            structure.blocks[activeTab].push(val);
+            db.ref('homeHub/structure').set(structure);
+            renderSettingsBlocks();
+        }
+
+        function resetAllAIClicks() {
+            if(confirm("Vuoi azzerare la cronologia dei prodotti suggeriti più cliccati per tutta la famiglia?")) {
+                aiHistory = {};
+                db.ref('homeHub/aiHistory').set(aiHistory);
+                alert("Cache dei suggerimenti pulita online!");
+            }
+        }
+
+        function toggleAISuggestions() {
+            showAI = !showAI;
+            localStorage.setItem('showAI', showAI);
+            updateAISwitchUI();
+            renderAll();
+        }
+
+        function updateAISwitchUI() {
+            const sw = document.getElementById('ai-toggle-switch');
+            const handle = document.getElementById('ai-toggle-handle');
+            if(showAI) {
+                sw.style.backgroundColor = "var(--accent-color)";
+                handle.style.transform = "translateX(22px)";
+            } else {
+                sw.style.backgroundColor = "var(--surface-color)";
+                handle.style.transform = "translateX(0px)";
+            }
+        }
+
+        function closeAllSheets() {
+            document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open'));
+            document.getElementById('item-input').blur();
+        }
+
         function toggleTheme() {
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', t);
             localStorage.setItem('theme', t);
+            updateAISwitchUI(); // Forza il rinfresco visivo del colore del toggle in base al tema
         }
-        
-        function openBottomSheet() {
-            document.getElementById('item-input').value = '';
-            document.getElementById('backdrop').classList.add('open');
-            document.getElementById('bottomSheet').classList.add('open');
-            document.getElementById('target-selector-container').style.display = currentTab === 'spesa' ? 'block' : 'none';
-        }
-        
-        function closeBottomSheet() { 
-            document.getElementById('backdrop').classList.remove('open'); 
-            document.getElementById('bottomSheet').classList.remove('open'); 
-            document.getElementById('item-input').blur();
-        }
-        
-        function selectChip(t, el) { selectedTarget = t; document.querySelectorAll('.select-chip').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
-        
-        function addItem() {
-            let v = document.getElementById('item-input').value.trim();
-            if(!v) return;
-            if(currentTab === 'spesa') { 
-                if(!state.spesa[selectedTarget]) state.spesa[selectedTarget] = [];
-                state.spesa[selectedTarget].push(v); 
-                if(!aiHistory.spesa[selectedTarget]) aiHistory.spesa[selectedTarget] = {};
-                aiHistory.spesa[selectedTarget][v] = (aiHistory.spesa[selectedTarget][v] || 0) + 1; 
-            }
-            else if(currentTab === 'famiglia') { 
-                if(!state.famiglia) state.famiglia = [];
-                state.famiglia.push(v); 
-                if(!aiHistory.famiglia) aiHistory.famiglia = {};
-                aiHistory.famiglia[v] = (aiHistory.famiglia[v] || 0) + 1; 
-            }
-            else {
-                if(!state.film) state.film = [];
-                state.film.push(v);
-            }
-            saveStateToFirebase(); 
-            saveAIHistoryToFirebase(); 
-            closeBottomSheet();
-        }
+
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
     </script>
 </body>
