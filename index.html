@@ -166,13 +166,13 @@
         /* Forza l'input dei tab in stampatello */
         .uppercase-input { text-transform: uppercase; }
 
-        /* 📉 STRUTTURA SOTTO-BLOCCHI GERARCHICA (Soluzione Elegante) 📉 */
+        /* STRUTTURA SOTTO-BLOCCHI GERARCHICA */
         .manage-item-block { gap: 6px; margin-bottom: 6px; padding-left: 8px; }
         .manage-item-block input { 
             font-size: 13px !important; 
-            font-weight: 400 !important; /* Rimosso il grassetto */
+            font-weight: 400 !important; 
             padding: 6px 10px !important; 
-            color: var(--text-secondary) !important; /* Colore più discreto */
+            color: var(--text-secondary) !important; 
             border-radius: 8px !important;
         }
         .manage-item-block input:focus { color: var(--text-color) !important; }
@@ -194,12 +194,12 @@
         .selector-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; display: block; letter-spacing: 0.5px; }
         .empty-text { color: var(--text-secondary); font-size: 13px; font-style: italic; opacity: 0.5; }
 
-        /* ☀️ TEMI LIGHT MODE ☀️ */
+        /* TEMI LIGHT MODE */
         html:not([data-theme="dark"]) .select-chip { background: #f6f8fa !important; color: #000000 !important; border: 1px solid #e1e4e6 !important; }
         html:not([data-theme="dark"]) .select-chip.selected { background: #0061FF !important; color: #ffffff !important; border-color: #0061FF !important; }
         html:not([data-theme="dark"]) .btn-confirm { background: #0061FF !important; color: #ffffff !important; }
 
-        /* 🌙 TEMI DARK MODE 🌙 */
+        /* TEMI DARK MODE */
         html[data-theme="dark"] .select-chip { background: #161b16 !important; color: #ffffff !important; border: 1px solid #252e25 !important; }
         html[data-theme="dark"] .select-chip.selected { background: #10B981 !important; color: #121612 !important; border-color: #10B981 !important; }
         html[data-theme="dark"] .btn-confirm { background: #10B981 !important; color: #121612 !important; }
@@ -517,7 +517,8 @@
                     chipsCont.appendChild(chip);
                 });
             }
-            document.getElementById('item-input').focus();
+
+            // CORREZIONE: Rimossa l'apertura automatica. La tastiera si aprirà solo se clicchi sull'input.
         }
 
         function addItem() {
@@ -626,7 +627,7 @@
             structure.blocks[tab][idx] = val;
 
             if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; db.ref('homeHub/state').set(state); }
-            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/oldBlockName'); db.ref('homeHub/aiHistory').set(aiHistory); }
             
             db.ref('homeHub/structure').set(structure);
         }
@@ -681,12 +682,10 @@
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
             if(showAI) {
-                // ACCESO -> Destra + Colore specifico del tema attivo
                 sw.style.backgroundColor = isDark ? "#10B981" : "#0061FF";
                 handle.style.transform = "translateX(22px)";
                 handle.style.backgroundColor = isDark ? "#121612" : "#ffffff";
             } else {
-                // SPENTO -> Sinistra + Sfondo neutro grigio/scuro
                 sw.style.backgroundColor = "var(--surface-color)";
                 handle.style.transform = "translateX(0px)";
                 handle.style.backgroundColor = "var(--text-secondary)";
@@ -702,7 +701,7 @@
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', t);
             localStorage.setItem('theme', t);
-            updateAISwitchUI(); // Ricalcola i colori corretti dell'interruttore AI al cambio tema
+            updateAISwitchUI(); 
         }
 
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
