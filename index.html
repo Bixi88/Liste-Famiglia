@@ -154,22 +154,23 @@
         .list-item-text { font-size: 15px; font-weight: 600; }
         .delete-btn { background: none; border: none; color: #ff4d4d; font-size: 15px; opacity: 0.5; cursor: pointer; }
 
-        /* FAB e Bottom Sheet */
+        /* FAB e TOP SHEET IN ALTO */
         .fab { position: fixed; bottom: 24px; right: 24px; background-color: var(--accent-color); border-radius: var(--squircle-radius); width: 50px; height: 50px; font-size: 22px; z-index: 99; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; }
         .bottom-sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; opacity: 0; transition: opacity 0.3s; }
         
         .bottom-sheet { 
             position: fixed; 
-            bottom: 0; 
+            top: 0; /* Spostato in alto */
             left: 50%; 
-            transform: translate(-50%, 100%); 
+            transform: translate(-50%, -100%); /* Parte nascosto verso l'alto */
             width: 100%; 
             max-width: 600px; 
             background: var(--bg-color); 
             padding: 24px; 
-            border-radius: 20px 20px 0 0; 
+            border-radius: 0 0 20px 20px; /* Arrotondato solo sotto */
             z-index: 101; 
             transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94); 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         .bottom-sheet.open { transform: translate(-50%, 0); }
         .bottom-sheet-backdrop.open { display: block; opacity: 1; }
@@ -180,7 +181,7 @@
         .theme-switch-handle { width: 16px; height: 16px; background: var(--accent-color); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s; }
         [data-theme="dark"] .theme-switch-handle { transform: translateX(22px); }
         
-        /* GRIGLIA COMPATTA COMPLETA PER SUPERMERCATI */
+        /* GRIGLIA COMPATTA PER SUPERMERCATI */
         .market-selector { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -196,9 +197,21 @@
             font-size: 13px; 
             font-weight: 700; 
             text-align: center;
+            color: var(--text-color); /* Colore base (Nero in Light, Bianco in Dark) */
             transition: 0.2s; 
         }
-        .select-chip.selected { background: var(--accent-color) !important; color: #121612 !important; }
+
+        /* Correzione contrasti Light e Dark Mode per chip selezionato */
+        body:not([data-theme="dark"]) .select-chip.selected { 
+            background: var(--accent-color) !important; 
+            color: #ffffff !important; /* Testo Bianco su sfondo Blu in Light Mode */
+            border-color: var(--accent-color) !important;
+        }
+        [data-theme="dark"] .select-chip.selected { 
+            background: var(--accent-color) !important; 
+            color: #121612 !important; /* Testo Scuro su sfondo Verde in Dark Mode */
+            border-color: var(--accent-color) !important;
+        }
         
         .selector-label {
             font-size: 12px;
@@ -359,13 +372,8 @@
             const container = document.getElementById(cId);
             if (!container) return;
             
-            // Ordina gli elementi per frequenza (dal più alto al più basso)
             let sorted = Object.keys(hData).sort((a,b) => hData[b] - hData[a]);
-            
-            // Filtra: mantieni solo gli elementi aggiunti ALMENO 3 VOLTE e NON presenti nella lista attuale
             let filtered = sorted.filter(it => hData[it] >= 3 && !activeList.includes(it));
-            
-            // Prendi solo i 3 migliori
             let itemsToDisplay = filtered.slice(0, 3);
             
             container.innerHTML = '';
@@ -384,6 +392,7 @@
 
         function saveState() { localStorage.setItem('homeHubState', JSON.stringify(state)); localStorage.setItem('homeHubAIHistory', JSON.stringify(aiHistory)); }
         function deleteItem(type, i, mKey) { if(type === 'spesa') state.spesa[mKey].splice(i,1); else state[type].splice(i,1); saveState(); renderAll(); }
+        
         function toggleTheme() {
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', t);
