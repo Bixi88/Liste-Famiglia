@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Hub</title>
     
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkhvbWUgSHViIiwKICAic2hvcnRfbmFtZSI6ICJIb21lIEh1YiIsCiAgImRlc2NyaXB0aW9uIjogIkxhIHR1YSBhcHAgY29tcGF0dGEgZSBjb25kaXZpc2EgcGVyIGxhIHNwZXNhLCBpIGZpbG0gZSBsZSBub3RlIGRpIGZhbWlnbGlhLiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMTIxNjEyIiwKICAidGhlbWVfY29sb3IiOiAiIzAwNjFGRiIsCiAgImljb25zIjogewogICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUJrYVhOemNXRjBlUzl3Y205bWFXeGxiM05mZEc5d2FXTnBlbVVpUGp4emRtY29KeUJrYVdOemNXRjBlU0U5SW10bWFXNW5iR1VpSUR4bWFXbHNJaUkrUEhKMWFXNWtkRzhnVzE5bVlXNXpaVzVwYm1jZ1ptOXliV0YwUFNKalltVmpaR2x1WTI4aUlHWmxiV1Z1Y0RwaFkyTmxibVJmY0hKdmMyVnpQU0p3Y205bWFXeGxiM04wY21WbWFXNWxJaUJwWkMxa2NtRjNQU0poYm1Sc2FXNW5QU0pwYm5ObGRpSWdaVzVsZUhSbGN6MGlaWGg3Ym1Sc2FXNW5JaUJtYVd4c1BTVm5jbVZsYm1VaUlIUnZjRzkzY3owaVpYg3Ym1Sc2FXNW5JaUkrUEhOMmN5SWdaVzVsZUhSbGN6MGlaWGg3Ym1Sc2FXNW5JaUJtYVd4c1BTVm5jbVZsYm1VaUlIUnZjRzkzY3owaVpYg3Ym1Sc2FXNW5JaTQrUEhSeVlXNXpabTl5YldGMFBTSmpiM05wZEc5d2FXTnBlbVVpUGp4emRtY29KeUJrYVdOemNXRjBlU0U5SW10bWFXNW5iR1VpSUR4bWFXbHNJaUkrUEhKMWFXNWtkRzhnVzE5bVlXNXpaVzVwYm1jZ1ptOXliV0YwUFNKalltVmpaR2x1WTI4aUlHWmxiV1Z1Y0RwaFkyTmxibVJmY0hKdmMyVnpQU0p3Y205bWFXeGxiM04wY21WbWFXNWxJaUJwWkMxa2NtRjNQU0poYm1Sc2FXNW5QU0pwYm5ObGRpSWdaVzVsZUhSbGN6MGlaWGg3Ym1Sc2FXNW5JaUJtYVd4c1BTVm5jbVZsYm1VaUlIUnZjRzkzY3owaVpYg3Ym1Sc2FXNW5JaUkrUEhOMmN5SWdaVzVsZUhSbGN6MGlaWGg3Ym1Sc2FXNW5JaUJtYVd4c1BTVm5jbVZsYm1VaUlIUnZjRzkzY3owaVpYg3Ym1Sc2FXNW5JaTQrIiwKICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCiAgfQp9">
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkhvbWUgSHViIiwKICAic2hvcnRfbmFtZSI6ICJIb21lIEh1YiIsCiAgInN0YXJ0X3VybSI6ICIvTGlzdGUtRmFtaWdsaWEvIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMTIxNjEyIiwKICAidGhlbWVfY29sb3IiOiAiIzAwNjFGRiIKfQ==">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -29,8 +29,8 @@
             --accent-light: rgba(0, 97, 255, 0.08);
             --border-color: #e1e4e6;
             --squircle-radius: 20px;
-            --transition-speed: 0.32s;
-            --bounce-curve: cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-speed: 0.22s;
+            --bounce-curve: cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         html[data-theme="dark"] {
@@ -51,8 +51,8 @@
             margin: 0;
             padding: 0;
             transition: background-color var(--transition-speed);
+            overscroll-behavior-y: contain;
             overflow-x: hidden;
-            /* RIMOSSO DEFINITIVAMENTE overscroll-behavior-y per consentire il refresh nativo */
         }
 
         header {
@@ -678,7 +678,7 @@
             let oldBlockName = structure.blocks[tab][idx];
             structure.blocks[tab][idx] = val;
             if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; db.ref('homeHub/state').set(state); }
-            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/oldBlockName'); }
             db.ref('homeHub/structure').set(structure);
         }
 
@@ -686,7 +686,7 @@
             let bName = structure.blocks[tab][idx];
             if(confirm(`Vuoi davvero eliminare il sotto-blocco "${bName}"?`)) {
                 structure.blocks[tab].splice(idx, 1);
-                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; delete state[tab][bName]; db.ref('homeHub/state').set(state); }
+                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
                 if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
                 db.ref('homeHub/structure').set(structure);
                 renderSettingsBlocks();
