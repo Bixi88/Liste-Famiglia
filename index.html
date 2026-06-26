@@ -316,7 +316,8 @@
         let state = {};
         let aiHistory = {};
         
-        let currentTabIdx = 0;
+        // Recupera l'ultimo indice salvato o imposta 0 se non esiste
+        let currentTabIdx = parseInt(localStorage.getItem('activeTabIdx')) || 0;
         let selectedTarget = '';
         let tStart = 0;
         let showAI = localStorage.getItem('showAI') !== 'false'; 
@@ -359,7 +360,10 @@
             const slider = document.getElementById('tabs-slider');
             const selectDropdown = document.getElementById('settings-tab-select');
             
-            if(!structure.tabs[currentTabIdx] && structure.tabs.length > 0) currentTabIdx = 0;
+            // Controllo di sicurezza se l'indice memorizzato è fuori dai limiti attuali
+            if (currentTabIdx >= structure.tabs.length || currentTabIdx < 0) {
+                currentTabIdx = 0;
+            }
 
             tabsContainer.innerHTML = '';
             slider.innerHTML = '';
@@ -393,6 +397,10 @@
         function switchTab(index) {
             if (index < 0 || index >= structure.tabs.length) return;
             currentTabIdx = index;
+            
+            // Salva l'indice del tab corrente nel browser
+            localStorage.setItem('activeTabIdx', currentTabIdx);
+
             const slider = document.getElementById('tabs-slider');
             slider.style.transform = `translateX(-${(currentTabIdx * 100) / structure.tabs.length}%)`;
             
@@ -446,7 +454,6 @@
                     const body = document.createElement('div');
                     body.className = 'block-body-squircle';
                     
-                    // Se siamo nel tab film, applichiamo la classe .film-list per rimpicciolire il font
                     const listDiv = document.createElement('div');
                     listDiv.id = `list-${tab}-${block}`;
                     listDiv.className = `list-container ${tab.toLowerCase() === 'film' ? 'film-list' : ''}`;
@@ -474,12 +481,10 @@
             data.forEach((item, i) => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
-                // Memorizziamo il testo originario per rintracciarlo dopo il drag & drop
                 div.setAttribute('data-item-value', item);
                 
                 let leftAction = '';
                 if (isFilmTab) {
-                    // Maniglia ☰ a sinistra per trascinare comodamente
                     leftAction = `<div class="drag-handle">☰</div>`;
                 }
 
@@ -493,20 +498,17 @@
                 container.appendChild(div);
             });
 
-            // Se è il tab FILM, attiviamo la libreria SortableJS su questo specifico contenitore
             if (isFilmTab && data.length > 1) {
                 Sortable.create(container, {
-                    handle: '.drag-handle', // Il trascinamento si attiva solo toccando le 3 righine
+                    handle: '.drag-handle',
                     animation: 200,
                     ghostClass: 'sortable-ghost',
                     onEnd: function () {
-                        // Ricostruiamo il nuovo array basandoci sull'ordine visivo degli elementi modificati dall'utente
                         let updatedArray = [];
                         container.querySelectorAll('.list-item').forEach(el => {
                             updatedArray.push(el.getAttribute('data-item-value'));
                         });
                         
-                        // Aggiorniamo lo stato locale e salviamo su Firebase
                         if (!state[tab]) state[tab] = {};
                         state[tab][block] = updatedArray;
                         db.ref('homeHub/state').set(state);
