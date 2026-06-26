@@ -132,8 +132,13 @@
 
         /* Liste */
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border-color); }
-        .list-item-text { font-size: 15px; font-weight: 600; }
-        .delete-btn { background: none; border: none; color: #ff4d4d; font-size: 15px; opacity: 0.5; cursor: pointer; }
+        .list-item-text { font-size: 15px; font-weight: 600; flex: 1; }
+        .list-item-actions { display: flex; align-items: center; gap: 8px; }
+        
+        .reorder-btn { background: none; border: none; color: var(--text-secondary); font-size: 14px; opacity: 0.5; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+        .reorder-btn:hover { opacity: 1; }
+        .delete-btn { background: none; border: none; color: #ff4d4d; font-size: 15px; opacity: 0.5; cursor: pointer; padding: 4px; }
+        .delete-btn:hover { opacity: 1; }
 
         /* Fogli a comparsa (Bottom Sheets) */
         .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; opacity: 0; transition: opacity 0.3s; }
@@ -399,7 +404,7 @@
 
                 const blocksList = structure.blocks[tab] || [];
                 if(blocksList.length === 0) {
-                    container.innerHTML = '<div class="empty-text">Nessun sotto-blocco configurato in questa sezione. Vai nelle impostazioni per aggiungerne uno.</div>';
+                    container.innerHTML = '<div class="empty-text">Nessun sotto-blocco configurato in questa sezione. Vai nelle impostazioni per aggiugrene uno.</div>';
                 }
 
                 blocksList.forEach(block => {
@@ -440,12 +445,48 @@
             const container = document.getElementById(cId);
             if (!container) return;
             container.innerHTML = data.length ? '' : '<div class="empty-text">Nessun elemento</div>';
+            
+            // Verifica se questo specifico tab è quello dedicato ai film
+            const isFilmTab = (tab.toLowerCase() === 'film');
+
             data.forEach((item, i) => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
-                div.innerHTML = `<div class="list-item-text">${item}</div><button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button>`;
+                
+                // Generazione controlli di movimento solo se siamo nel tab film
+                let reorderControls = '';
+                if (isFilmTab) {
+                    reorderControls = `
+                        <button class="reorder-btn" onclick="moveItem('${tab}', '${block}', ${i}, -1)" ${i === 0 ? 'style="visibility:hidden;"' : ''}>▲</button>
+                        <button class="reorder-btn" onclick="moveItem('${tab}', '${block}', ${i}, 1)" ${i === data.length - 1 ? 'style="visibility:hidden;"' : ''}>▼</button>
+                    `;
+                }
+
+                div.innerHTML = `
+                    <div class="list-item-text">${item}</div>
+                    <div class="list-item-actions">
+                        ${reorderControls}
+                        <button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button>
+                    </div>
+                `;
                 container.appendChild(div);
             });
+        }
+
+        // Funzione per spostare gli elementi su e giù nell'array e salvare su Firebase
+        function moveItem(tab, block, index, direction) {
+            if (!state[tab] || !state[tab][block]) return;
+            
+            let targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= state[tab][block].length) return;
+            
+            // Scambio di posizione degli elementi
+            let temp = state[tab][block][index];
+            state[tab][block][index] = state[tab][block][targetIndex];
+            state[tab][block][targetIndex] = temp;
+            
+            // Salvataggio immediato sul database online
+            db.ref('homeHub/state').set(state);
         }
 
         function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
@@ -517,8 +558,6 @@
                     chipsCont.appendChild(chip);
                 });
             }
-
-            // CORREZIONE: Rimossa l'apertura automatica. La tastiera si aprirà solo se clicchi sull'input.
         }
 
         function addItem() {
