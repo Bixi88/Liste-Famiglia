@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Hub - Spesa & Famiglia</title>
+    <title>Home Hub - Spesa & Animazioni</title>
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -19,7 +19,7 @@
             --accent-light: rgba(0, 97, 255, 0.08);
             --border-color: #e1e4e6;
             --squircle-radius: 20px;
-            --transition-speed: 0.25s;
+            --transition-speed: 0.35s;
         }
 
         [data-theme="dark"] {
@@ -39,12 +39,11 @@
             color: var(--text-color);
             margin: 0;
             padding: 0;
-            transition: background-color var(--transition-speed), color var(--transition-speed);
-            /* Previene comportamenti di swipe del browser fastidiosi (come il refresh a trascino) */
+            transition: background-color var(--transition-speed);
             overscroll-behavior-y: contain;
+            overflow-x: hidden;
         }
 
-        /* Header & Toggle Minimal */
         header {
             padding: 16px 20px;
             display: flex;
@@ -53,41 +52,15 @@
             border-bottom: 1px solid var(--border-color);
             max-width: 600px;
             margin: 0 auto;
+            background: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
+        h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
 
-        .theme-switch {
-            width: 44px;
-            height: 22px;
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 11px;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .theme-switch-handle {
-            width: 16px;
-            height: 16px;
-            background-color: var(--accent-color);
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        [data-theme="dark"] .theme-switch-handle {
-            transform: translateX(24px);
-        }
-
-        /* Navigation Tabs */
+        /* TAB BAR */
         .nav-tabs {
             display: flex;
             width: 100%;
@@ -95,6 +68,9 @@
             margin: 0 auto;
             background-color: var(--surface-color);
             border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 55px;
+            z-index: 10;
         }
 
         .tab-btn {
@@ -107,7 +83,7 @@
             letter-spacing: 0.8px;
             color: var(--text-secondary);
             border-bottom: 3px solid transparent;
-            transition: color var(--transition-speed), border-bottom-color var(--transition-speed);
+            transition: all var(--transition-speed);
         }
 
         .tab-btn.active {
@@ -115,8 +91,21 @@
             border-bottom-color: var(--accent-color);
         }
 
-        /* Main Container */
+        /* STRUTTURA SLIDER FLUIDO */
         .main-container {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .tabs-slider {
+            display: flex;
+            width: 300%;
+            transition: transform var(--transition-speed) cubic-bezier(0.18, 0.06, 0.2, 1);
+            will-change: transform;
+        }
+
+        .tab-content {
+            width: 33.3333%;
             padding: 14px;
             max-width: 600px;
             margin: 0 auto;
@@ -124,19 +113,8 @@
             min-height: calc(100vh - 120px);
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Struttura a Blocchi Verticali Più Compatti */
-        .block-group {
-            margin-bottom: 16px;
-        }
-
+        /* Blocchi Squircle */
+        .block-group { margin-bottom: 16px; }
         .block-header-squircle {
             background-color: var(--accent-light);
             border: 1px solid var(--border-color);
@@ -144,159 +122,84 @@
             padding: 10px 16px;
             font-size: 13px;
             font-weight: 800;
-            letter-spacing: 0.8px;
             color: var(--accent-color);
             margin-bottom: 6px;
         }
-
         .block-body-squircle {
             background-color: var(--card-color);
             border: 1px solid var(--border-color);
             border-radius: var(--squircle-radius);
             padding: 12px 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.01);
         }
 
-        /* SUGGERIMENTI AI COMPATTI CON BORDO COLORATO ACCENTO */
-        .ai-suggestions-container {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding: 2px 4px 8px 4px;
-            margin-top: -2px;
-            -webkit-overflow-scrolling: touch;
-        }
-        .ai-suggestions-container::-webkit-scrollbar {
-            display: none;
-        }
-
+        /* Suggerimenti AI */
+        .ai-suggestions-container { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-top: -2px; }
+        .ai-suggestions-container::-webkit-scrollbar { display: none; }
         .ai-chip {
             padding: 4px 10px;
             background-color: var(--surface-color);
             border: 1px solid var(--accent-color); 
             border-radius: 10px;
             font-size: 11px;
-            font-weight: 400;
             color: var(--text-color);
-            opacity: 0.5; 
-            cursor: pointer;
+            opacity: 0.6; 
             white-space: nowrap;
-            transition: opacity 0.2s ease, transform 0.1s ease;
-        }
-        .ai-chip:active { transform: scale(0.95); }
-        @media (hover: hover) {
-            .ai-chip:hover { opacity: 0.9; }
-        }
-
-        /* Elementi Lista ad Alta Densità */
-        .list-container {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 4px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .list-item:last-child {
-            border-bottom: none;
-        }
-
-        .list-item-text {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #ff4d4d;
             cursor: pointer;
-            font-size: 15px;
-            padding: 4px;
-            opacity: 0.5;
             transition: opacity 0.2s;
         }
+        .ai-chip:hover { opacity: 1; }
 
-        .delete-btn:hover { opacity: 1; }
+        /* Lista Elementi */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--border-color); }
+        .list-item-text { font-size: 15px; font-weight: 600; }
+        .delete-btn { background: none; border: none; color: #ff4d4d; font-size: 15px; opacity: 0.5; cursor: pointer; }
 
-        .empty-text {
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-style: italic;
-            padding: 4px 4px;
-            opacity: 0.5;
-        }
-
-        /* FAB */
-        .fab {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background-color: var(--accent-color);
-            border: none;
-            border-radius: var(--squircle-radius);
-            width: 50px;
-            height: 50px;
-            font-size: 22px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 99;
-        }
+        /* FAB e Bottom Sheet */
+        .fab { position: fixed; bottom: 24px; right: 24px; background-color: var(--accent-color); border-radius: var(--squircle-radius); width: 50px; height: 50px; font-size: 22px; z-index: 99; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; }
+        .bottom-sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; opacity: 0; transition: opacity 0.3s; }
         
-        [data-theme="dark"] .fab { color: #121612; }
-        body:not([data-theme="dark"]) .fab { color: #ffffff; }
-
-        /* Sfondo oscurato */
-        .bottom-sheet-backdrop {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0,0,0,0.4);
-            z-index: 100;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .bottom-sheet { 
+            position: fixed; 
+            bottom: 0; 
+            left: 50%; 
+            transform: translate(-50%, 100%); 
+            width: 100%; 
+            max-width: 600px; 
+            background: var(--bg-color); 
+            padding: 24px; 
+            border-radius: 20px 20px 0 0; 
+            z-index: 101; 
+            transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94); 
         }
-
-        /* Pannello inserimento */
-        .bottom-sheet {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background-color: var(--bg-color);
-            border-top-left-radius: var(--squircle-radius);
-            border-top-right-radius: var(--squircle-radius);
-            padding: 24px;
-            z-index: 101;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94);
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .bottom-sheet.open { transform: translateY(0); }
+        .bottom-sheet.open { transform: translate(-50%, 0); }
         .bottom-sheet-backdrop.open { display: block; opacity: 1; }
 
-        .bottom-sheet h3 { margin-top: 0; margin-bottom: 15px; font-size: 18px; font-weight: 700; }
-
-        .input-field {
-            width: 100%;
-            padding: 16px;
-            border-radius: var(--squircle-radius);
-            border: 2px solid var(--border-color);
-            background-color: var(--surface-color);
-            color: var(--text-color);
-            font-size: 16px;
-            outline: none;
-            margin-bottom: 20px;
+        /* Utility */
+        .input-field { width: 100%; padding: 16px; border-radius: 20px; border: 2px solid var(--border-color); background: var(--surface-color); color: var(--text-color); margin-bottom: 20px; outline: none; }
+        .theme-switch { width: 44px; height: 22px; background: var(--surface-color); border-radius: 11px; position: relative; border: 1px solid var(--border-color); cursor: pointer; }
+        .theme-switch-handle { width: 16px; height: 16px; background: var(--accent-color); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s; }
+        [data-theme="dark"] .theme-switch-handle { transform: translateX(22px); }
+        
+        /* GRIGLIA COMPATTA COMPLETA PER SUPERMERCATI */
+        .market-selector { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            padding-bottom: 20px; 
         }
-        .input-field:focus { border-color: var(--accent-color); }
-
+        .select-chip { 
+            padding: 12px; 
+            background: var(--surface-color); 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color); 
+            cursor: pointer; 
+            font-size: 13px; 
+            font-weight: 700; 
+            text-align: center;
+            transition: 0.2s; 
+        }
+        .select-chip.selected { background: var(--accent-color) !important; color: #121612 !important; }
+        
         .selector-label {
             font-size: 12px;
             font-weight: 700;
@@ -305,67 +208,12 @@
             display: block;
             letter-spacing: 0.5px;
         }
-
-        .market-selector {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .select-chip {
-            padding: 10px 18px;
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
+        .empty-text {
+            color: var(--text-secondary);
             font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-        }
-
-        body:not([data-theme="dark"]) .select-chip { color: #57606a; }
-        [data-theme="dark"] .select-chip { color: #a0aaa0; }
-
-        .select-chip.selected {
-            background-color: var(--accent-color) !important;
-            border-color: var(--accent-color) !important;
-        }
-        
-        [data-theme="dark"] .select-chip.selected { color: #000000 !important; }
-        body:not([data-theme="dark"]) .select-chip.selected { color: #ffffff !important; }
-
-        .sheet-buttons { text-align: right; margin-top: 10px; }
-        .btn { padding: 14px 28px; border-radius: var(--squircle-radius); font-weight: 700; font-size: 14px; cursor: pointer; border: none; }
-        .btn-cancel { background: transparent; color: var(--text-secondary); margin-right: 8px; }
-        .btn-confirm { background-color: var(--accent-color); }
-        [data-theme="dark"] .btn-confirm { color: #121612; }
-        body:not([data-theme="dark"]) .btn-confirm { color: #ffffff; }
-
-        /* REGOLE SMARTPHONE FULL SCREEN */
-        @media (max-width: 600px) {
-            .bottom-sheet {
-                top: 0;
-                bottom: 0;
-                border-radius: 0;
-                padding: 20px;
-                transform: translateY(100%);
-                display: flex;
-                flex-direction: column;
-            }
-            .bottom-sheet.open { transform: translateY(0); }
-            .bottom-sheet-backdrop { display: none !important; }
-            .sheet-buttons {
-                margin-top: auto;
-                padding-bottom: 10px;
-                display: flex;
-                gap: 10px;
-            }
-            .btn { flex: 1; text-align: center; }
-            .btn-cancel { background-color: var(--surface-color); }
+            font-style: italic;
+            padding: 4px 4px;
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -373,335 +221,199 @@
 
     <header>
         <h1>Home Hub</h1>
-        <div class="theme-switch" onclick="toggleTheme()">
-            <div class="theme-switch-handle"></div>
-        </div>
+        <div class="theme-switch" onclick="toggleTheme()"><div class="theme-switch-handle"></div></div>
     </header>
 
     <div class="nav-tabs">
-        <div id="btn-spesa" class="tab-btn active" onclick="switchTab('spesa', this)">SPESA</div>
-        <div id="btn-film" class="tab-btn" onclick="switchTab('film', this)">FILM</div>
-        <div id="btn-famiglia" class="tab-btn" onclick="switchTab('famiglia', this)">FAMIGLIA</div>
+        <div id="btn-spesa" class="tab-btn active" onclick="switchTab('spesa', 0)">SPESA</div>
+        <div id="btn-film" class="tab-btn" onclick="switchTab('film', 1)">FILM</div>
+        <div id="btn-famiglia" class="tab-btn" onclick="switchTab('famiglia', 2)">FAMIGLIA</div>
     </div>
 
     <div class="main-container" id="swipe-area">
-        
-        <div id="tab-spesa" class="tab-content active">
+        <div class="tabs-slider" id="tabs-slider">
             
-            <div class="block-group">
-                <div class="block-header-squircle">LIDL</div>
-                <div id="ai-LIDL" class="ai-suggestions-container"></div>
-                <div class="block-body-squircle">
-                    <div id="list-LIDL" class="list-container"></div>
+            <div id="tab-spesa" class="tab-content">
+                <div class="block-group">
+                    <div class="block-header-squircle">LIDL</div>
+                    <div id="ai-LIDL" class="ai-suggestions-container"></div>
+                    <div class="block-body-squircle"><div id="list-LIDL" class="list-container"></div></div>
+                </div>
+                <div class="block-group">
+                    <div class="block-header-squircle">EUROSPIN</div>
+                    <div id="ai-EUROSPIN" class="ai-suggestions-container"></div>
+                    <div class="block-body-squircle"><div id="list-EUROSPIN" class="list-container"></div></div>
+                </div>
+                <div class="block-group">
+                    <div class="block-header-squircle">SOLE365</div>
+                    <div id="ai-SOLE365" class="ai-suggestions-container"></div>
+                    <div class="block-body-squircle"><div id="list-SOLE365" class="list-container"></div></div>
+                </div>
+                <div class="block-group">
+                    <div class="block-header-squircle">ACTION</div>
+                    <div id="ai-ACTION" class="ai-suggestions-container"></div>
+                    <div class="block-body-squircle"><div id="list-ACTION" class="list-container"></div></div>
                 </div>
             </div>
 
-            <div class="block-group">
-                <div class="block-header-squircle">EUROSPIN</div>
-                <div id="ai-EUROSPIN" class="ai-suggestions-container"></div>
-                <div class="block-body-squircle">
-                    <div id="list-EUROSPIN" class="list-container"></div>
+            <div id="tab-film" class="tab-content">
+                <div class="block-group">
+                    <div class="block-header-squircle">DA VEDERE</div>
+                    <div class="block-body-squircle"><div id="list-film" class="list-container"></div></div>
                 </div>
             </div>
 
-            <div class="block-group">
-                <div class="block-header-squircle">SOLE365</div>
-                <div id="ai-SOLE365" class="ai-suggestions-container"></div>
-                <div class="block-body-squircle">
-                    <div id="list-SOLE365" class="list-container"></div>
-                </div>
-            </div>
-
-            <div class="block-group">
-                <div class="block-header-squircle">ACTION</div>
-                <div id="ai-ACTION" class="ai-suggestions-container"></div>
-                <div class="block-body-squircle">
-                    <div id="list-ACTION" class="list-container"></div>
+            <div id="tab-famiglia" class="tab-content">
+                <div class="block-group">
+                    <div class="block-header-squircle">NOTE DI FAMIGLIA</div>
+                    <div id="ai-famiglia" class="ai-suggestions-container"></div>
+                    <div class="block-body-squircle"><div id="list-famiglia" class="list-container"></div></div>
                 </div>
             </div>
 
         </div>
-
-        <div id="tab-film" class="tab-content">
-            <div class="block-group">
-                <div class="block-header-squircle">DA VEDERE</div>
-                <div class="block-body-squircle">
-                    <div id="list-film" class="list-container"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-famiglia" class="tab-content">
-            <div class="block-group">
-                <div class="block-header-squircle">NOTE DI FAMIGLIA</div>
-                <div id="ai-famiglia" class="ai-suggestions-container"></div>
-                <div class="block-body-squircle">
-                    <div id="list-famiglia" class="list-container"></div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <button class="fab" onclick="openBottomSheet()">+</button>
+    <button class="fab" style="color:white" onclick="openBottomSheet()">+</button>
 
     <div class="bottom-sheet-backdrop" id="backdrop" onclick="closeBottomSheet()"></div>
     <div class="bottom-sheet" id="bottomSheet">
         <h3 id="sheet-title">Aggiungi Elemento</h3>
         <input type="text" id="item-input" class="input-field" placeholder="Cosa vuoi aggiungere?" onkeyup="handleKeyUp(event)">
-        
         <div id="target-selector-container">
             <span class="selector-label">SCEGLI SUPERMERCATO:</span>
-            <div class="market-selector" id="market-chips">
+            <div class="market-selector">
                 <div class="select-chip selected" onclick="selectChip('LIDL', this)">LIDL</div>
                 <div class="select-chip" onclick="selectChip('EUROSPIN', this)">EUROSPIN</div>
                 <div class="select-chip" onclick="selectChip('SOLE365', this)">SOLE365</div>
                 <div class="select-chip" onclick="selectChip('ACTION', this)">ACTION</div>
             </div>
         </div>
-
-        <div class="sheet-buttons">
-            <button class="btn btn-cancel" onclick="closeBottomSheet()">Annulla</button>
-            <button class="btn btn-confirm" onclick="addItem()">Aggiungi</button>
-        </div>
+        <button class="btn btn-confirm" style="width:100%; background:var(--accent-color); border:none; padding:15px; border-radius:20px; font-weight:700; color:#121612" onclick="addItem()">Aggiungi</button>
     </div>
 
     <script>
-        let state = JSON.parse(localStorage.getItem('homeHubState')) || {
-            spesa: { LIDL: [], EUROSPIN: [], SOLE365: [], ACTION: [] },
-            film: [],
-            famiglia: []
-        };
-
-        let aiHistory = JSON.parse(localStorage.getItem('homeHubAIHistory')) || {
-            spesa: { LIDL: {}, EUROSPIN: {}, SOLE365: {}, ACTION: {} },
-            famiglia: {}
-        };
-
+        let state = JSON.parse(localStorage.getItem('homeHubState')) || { spesa: { LIDL: [], EUROSPIN: [], SOLE365: [], ACTION: [] }, film: [], famiglia: [] };
+        let aiHistory = JSON.parse(localStorage.getItem('homeHubAIHistory')) || { spesa: { LIDL: {}, EUROSPIN: {}, SOLE365: {}, ACTION: {} }, famiglia: {} };
         let currentTab = 'spesa';
         let selectedTarget = 'LIDL';
         const tabOrder = ['spesa', 'film', 'famiglia'];
 
-        // VARIABILI GESTIONE SWIPE
-        let touchStartX = 0;
-        let touchEndX = 0;
-        let touchStartY = 0;
-        let touchEndY = 0;
+        let tStart = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             renderAll();
-            initSwipeDetection();
+            initSwipe();
         });
 
-        function saveState() {
-            localStorage.setItem('homeHubState', JSON.stringify(state));
-            localStorage.setItem('homeHubAIHistory', JSON.stringify(aiHistory));
-        }
-
-        function switchTab(tabId, btnElement) {
+        function switchTab(tabId, index) {
             currentTab = tabId;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            const slider = document.getElementById('tabs-slider');
+            slider.style.transform = `translateX(-${(index * 100) / 3}%)`;
             
-            if(!btnElement) {
-                btnElement = document.getElementById(`btn-${tabId}`);
-            }
-            
-            btnElement.classList.add('active');
-            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${tabId}`).classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            renderAll();
         }
 
-        function selectChip(target, chipElement) {
-            selectedTarget = target;
-            document.querySelectorAll('.select-chip').forEach(chip => chip.classList.remove('selected'));
-            chipElement.classList.add('selected');
+        function initSwipe() {
+            const area = document.getElementById('swipe-area');
+            area.addEventListener('touchstart', e => { tStart = e.touches[0].clientX; }, {passive: true});
+            area.addEventListener('touchend', e => {
+                let tEnd = e.changedTouches[0].clientX;
+                let diff = tStart - tEnd;
+                let idx = tabOrder.indexOf(currentTab);
+                if (Math.abs(diff) > 70) {
+                    if (diff > 0 && idx < 2) switchTab(tabOrder[idx+1], idx+1);
+                    else if (diff < 0 && idx > 0) switchTab(tabOrder[idx-1], idx-1);
+                }
+            }, {passive: true});
         }
 
         function renderAll() {
-            if (currentTab === 'spesa') {
-                const markets = ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'];
-                markets.forEach(m => {
-                    renderSingleList(`list-${m}`, state.spesa[m], 'spesa', m);
-                    renderAISuggestions(`ai-${m}`, aiHistory.spesa[m], state.spesa[m], 'spesa', m);
-                });
-            } else if (currentTab === 'film') {
-                renderSingleList('list-film', state.film, 'film');
-            } else {
-                renderSingleList('list-famiglia', state.famiglia, 'famiglia');
-                renderAISuggestions('ai-famiglia', aiHistory.famiglia, state.famiglia, 'famiglia');
-            }
+            const markets = ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'];
+            markets.forEach(m => {
+                renderSingleList(`list-${m}`, state.spesa[m], 'spesa', m);
+                renderAISuggestions(`ai-${m}`, aiHistory.spesa[m], state.spesa[m], 'spesa', m);
+            });
+            renderSingleList('list-film', state.film, 'film');
+            renderSingleList('list-famiglia', state.famiglia, 'famiglia');
+            renderAISuggestions('ai-famiglia', aiHistory.famiglia, state.famiglia, 'famiglia');
         }
 
-        function renderSingleList(containerId, arrayData, type, marketKey = null) {
-            const container = document.getElementById(containerId);
+        function renderSingleList(cId, data, type, mKey = null) {
+            const container = document.getElementById(cId);
             if (!container) return;
-            container.innerHTML = '';
-
-            if (arrayData.length === 0) {
-                container.innerHTML = `<div class="empty-text">Nessun elemento inserito</div>`;
-                return;
-            }
-
-            arrayData.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className = 'list-item';
-                row.innerHTML = `
-                    <div class="list-item-text">${escapeHTML(item)}</div>
-                    <button class="delete-btn" onclick="deleteItem('${type}', ${index}, '${marketKey}')">✕</button>
-                `;
-                container.appendChild(row);
+            container.innerHTML = data.length ? '' : '<div class="empty-text">Nessun elemento</div>';
+            data.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `<div class="list-item-text">${item}</div><button class="delete-btn" onclick="deleteItem('${type}', ${i}, '${mKey}')">✕</button>`;
+                container.appendChild(div);
             });
         }
 
-        function renderAISuggestions(containerId, historyData, activeList, type, marketKey = null) {
-            const container = document.getElementById(containerId);
+        function renderAISuggestions(cId, hData, activeList, type, mKey = null) {
+            const container = document.getElementById(cId);
             if (!container) return;
+            
+            // Ordina gli elementi per frequenza (dal più alto al più basso)
+            let sorted = Object.keys(hData).sort((a,b) => hData[b] - hData[a]);
+            
+            // Filtra: mantieni solo gli elementi aggiunti ALMENO 3 VOLTE e NON presenti nella lista attuale
+            let filtered = sorted.filter(it => hData[it] >= 3 && !activeList.includes(it));
+            
+            // Prendi solo i 3 migliori
+            let itemsToDisplay = filtered.slice(0, 3);
+            
             container.innerHTML = '';
-
-            let sortedItems = Object.keys(historyData).sort((a, b) => historyData[b] - historyData[a]);
-            let filteredItems = sortedItems.filter(item => !activeList.includes(item));
-            let itemsToDisplay = filteredItems.slice(0, 4);
-
-            if (itemsToDisplay.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
-            container.style.display = 'flex';
-
-            itemsToDisplay.forEach(item => {
+            itemsToDisplay.forEach(it => {
                 const chip = document.createElement('div');
                 chip.className = 'ai-chip';
-                chip.innerText = `+ ${item}`;
-                chip.onclick = () => addAISuggestion(item, type, marketKey);
+                chip.innerText = `+ ${it}`;
+                chip.onclick = () => {
+                    if(type === 'spesa') { state.spesa[mKey].push(it); hData[it] = (hData[it] || 0) + 1; }
+                    else { state.famiglia.push(it); hData[it] = (hData[it] || 0) + 1; }
+                    saveState(); renderAll();
+                };
                 container.appendChild(chip);
             });
         }
 
-        function addAISuggestion(value, type, marketKey) {
-            if (type === 'spesa') {
-                state.spesa[marketKey].push(value);
-                aiHistory.spesa[marketKey][value] = (aiHistory.spesa[marketKey][value] || 0) + 1;
-            } else {
-                state.famiglia.push(value);
-                aiHistory.famiglia[value] = (aiHistory.famiglia[value] || 0) + 1;
-            }
-            saveState();
-            renderAll();
+        function saveState() { localStorage.setItem('homeHubState', JSON.stringify(state)); localStorage.setItem('homeHubAIHistory', JSON.stringify(aiHistory)); }
+        function deleteItem(type, i, mKey) { if(type === 'spesa') state.spesa[mKey].splice(i,1); else state[type].splice(i,1); saveState(); renderAll(); }
+        function toggleTheme() {
+            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('theme', t);
         }
-
+        
         function openBottomSheet() {
             document.getElementById('item-input').value = '';
-            const selector = document.getElementById('target-selector-container');
-            
-            if (currentTab === 'spesa') {
-                selector.style.display = 'block';
-                document.getElementById('sheet-title').innerText = "Aggiungi alla Spesa";
-            } else {
-                selector.style.display = 'none';
-                document.getElementById('sheet-title').innerText = "Aggiungi a " + currentTab.toUpperCase();
-            }
-
             document.getElementById('backdrop').classList.add('open');
             document.getElementById('bottomSheet').classList.add('open');
-            
-            setTimeout(() => document.getElementById('item-input').focus(), 200);
+            document.getElementById('target-selector-container').style.display = currentTab === 'spesa' ? 'block' : 'none';
         }
-
-        function closeBottomSheet() {
-            document.getElementById('backdrop').classList.remove('open');
-            document.getElementById('bottomSheet').classList.remove('open');
+        
+        function closeBottomSheet() { 
+            document.getElementById('backdrop').classList.remove('open'); 
+            document.getElementById('bottomSheet').classList.remove('open'); 
             document.getElementById('item-input').blur();
         }
-
+        
+        function selectChip(t, el) { selectedTarget = t; document.querySelectorAll('.select-chip').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
+        
         function addItem() {
-            const input = document.getElementById('item-input');
-            const val = input.value.trim();
-            if (!val) return;
-
-            if (currentTab === 'spesa') {
-                state.spesa[selectedTarget].push(val);
-                aiHistory.spesa[selectedTarget][val] = (aiHistory.spesa[selectedTarget][val] || 0) + 1;
-            } else if (currentTab === 'famiglia') {
-                state.famiglia.push(val);
-                aiHistory.famiglia[val] = (aiHistory.famiglia[val] || 0) + 1;
-            } else {
-                state.film.push(val);
-            }
-
-            saveState();
-            renderAll();
-            closeBottomSheet();
+            let v = document.getElementById('item-input').value.trim();
+            if(!v) return;
+            if(currentTab === 'spesa') { state.spesa[selectedTarget].push(v); aiHistory.spesa[selectedTarget][v] = (aiHistory.spesa[selectedTarget][v] || 0) + 1; }
+            else if(currentTab === 'famiglia') { state.famiglia.push(v); aiHistory.famiglia[v] = (aiHistory.famiglia[v] || 0) + 1; }
+            else state.film.push(v);
+            saveState(); renderAll(); closeBottomSheet();
         }
-
-        function handleKeyUp(e) {
-            if (e.key === 'Enter') addItem();
-        }
-
-        function deleteItem(type, index, marketKey) {
-            if (type === 'spesa') {
-                state.spesa[marketKey].splice(index, 1);
-            } else {
-                state[type].splice(index, 1);
-            }
-            saveState();
-            renderAll();
-        }
-
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-        }
-
-        // MOTORE DI RILEVAMENTO DELLO SWIPE Orizzontale
-        function initSwipeDetection() {
-            const area = document.getElementById('swipe-area');
-            
-            area.addEventListener('touchstart', (e) => {
-                touchStartX = e.changedTouches[0].screenX;
-                touchStartY = e.changedTouches[0].screenY;
-            }, { passive: true });
-
-            area.addEventListener('touchend', (e) => {
-                touchEndX = e.changedTouches[0].screenX;
-                touchEndY = e.changedTouches[0].screenY;
-                handleSwipe();
-            }, { passive: true });
-        }
-
-        function handleSwipe() {
-            const diffX = touchEndX - touchStartX;
-            const diffY = touchEndY - touchStartY;
-            
-            // Controlla che il movimento sia prevalentemente orizzontale e non uno scroll verticale
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-                // Soglia minima di 70px per evitare cambi involontari toccando lo schermo
-                if (Math.abs(diffX) > 70) {
-                    let currentIndex = tabOrder.indexOf(currentTab);
-                    
-                    if (diffX < 0) {
-                        // Swipe verso SINISTRA -> Vai al tab successivo
-                        if (currentIndex < tabOrder.length - 1) {
-                            switchTab(tabOrder[currentIndex + 1], null);
-                        }
-                    } else {
-                        // Swipe verso DESTRA -> Vai al tab precedente
-                        if (currentIndex > 0) {
-                            switchTab(tabOrder[currentIndex - 1], null);
-                        }
-                    }
-                }
-            }
-        }
+        function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
     </script>
 </body>
 </html>
