@@ -166,6 +166,11 @@
         /* Forza l'input dei tab in stampatello */
         .uppercase-input { text-transform: uppercase; }
 
+        /* 📉 MODIFICA FONT SOTTO-BLOCCHI (DIFFERENZA VISIVA) 📉 */
+        .manage-item-block input { font-size: 12px !important; padding: 6px 10px !important; }
+        .manage-item-block .delete-btn { font-size: 12px !important; }
+        .btn-small { padding: 8px !important; font-size: 12px !important; border-radius: 12px !important; }
+
         /* Toggle Switch Struttura Unificata */
         .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
         .switch-label { font-size: 14px; font-weight: 700; }
@@ -241,7 +246,7 @@
             <label class="selector-label">Seleziona il tab da modificare:</label>
             <select id="settings-tab-select" class="input-field" style="padding:10px; margin-bottom:10px;" onchange="renderSettingsBlocks()"></select>
             <div id="manage-blocks-list"></div>
-            <button class="btn btn-secondary" style="padding: 10px;" onclick="addNewBlockStructure()">+ Aggiungi Sotto-Blocco / Negozio</button>
+            <button class="btn btn-secondary btn-small" onclick="addNewBlockStructure()">+ Aggiungi Sotto-Blocco / Negozio</button>
         </div>
         
         <button class="btn btn-confirm" onclick="closeAllSheets()" style="margin-top:10px;">Salva e Chiudi</button>
@@ -554,10 +559,10 @@
             
             blocksList.forEach((block, index) => {
                 const row = document.createElement('div');
-                row.className = 'manage-item';
+                row.className = 'manage-item manage-item-block'; // aggiunge la classe ridotta per i sotto-blocchi
                 row.innerHTML = `
                     <input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)">
-                    <button class="delete-btn" style="padding: 6px 10px;" onclick="removeBlock('${activeTab}', ${index})">✕</button>
+                    <button class="delete-btn" onclick="removeBlock('${activeTab}', ${index})">✕</button>
                 `;
                 cont.appendChild(row);
             });
@@ -680,7 +685,7 @@
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', t);
             localStorage.setItem('theme', t);
-            updateAISwitchUI(); // Forza il rinfresco visivo del colore del toggle in base al tema
+            updateAISwitchUI(); 
         }
 
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
