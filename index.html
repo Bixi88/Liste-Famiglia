@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Hub</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -28,8 +28,9 @@
             --accent-light: rgba(0, 97, 255, 0.08);
             --border-color: #e1e4e6;
             --squircle-radius: 20px;
-            --transition-speed: 0.22s;
-            --bounce-curve: cubic-bezier(0.25, 1, 0.5, 1);
+            /* Animazione via di mezzo: 0.35s con curva fluida */
+            --transition-speed: 0.35s;
+            --bounce-curve: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         html[data-theme="dark"] {
@@ -43,23 +44,15 @@
             --border-color: #252e25;
         }
 
-        /* BLOCO DELLO SCROLL PRINCIPALE */
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden; /* Impedisce alla pagina principale di scorrere */
-            position: fixed;  /* Forza l'ancoraggio per evitare rimbalzi del browser */
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            display: flex;
-            flex-direction: column; /* Organizza header, tab e contenuto in verticale */
+            margin: 0;
+            padding: 0;
             transition: background-color var(--transition-speed);
+            overscroll-behavior-y: contain;
+            overflow-x: hidden;
         }
 
         header {
@@ -68,11 +61,12 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border-color);
-            width: 100%;
             max-width: 600px;
             margin: 0 auto;
             background: var(--bg-color);
-            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .header-left { display: flex; align-items: center; gap: 12px; }
@@ -85,7 +79,7 @@
         }
         .settings-btn:hover { transform: rotate(45deg); opacity: 1; }
 
-        /* TAB BAR fissa in alto sotto l'header */
+        /* TAB BAR di navigazione */
         .nav-tabs {
             display: flex;
             width: 100%;
@@ -93,8 +87,10 @@
             margin: 0 auto;
             background-color: var(--surface-color);
             border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 55px;
+            z-index: 10;
             overflow-x: auto;
-            flex-shrink: 0;
         }
         .nav-tabs::-webkit-scrollbar { display: none; }
 
@@ -118,34 +114,15 @@
             border-bottom-color: var(--accent-color);
         }
 
-        /* CONTENITORE SLIDER CHE OCCUPA LO SPAZIO RESTANTE */
-        .main-container { 
-            width: 100%; 
-            flex: 1; 
-            overflow: hidden; 
-            position: relative;
-        }
-        
+        /* CONTENITORE SLIDER */
+        .main-container { width: 100%; overflow: hidden; }
         .tabs-slider { 
             display: flex; 
             width: 100%; 
-            height: 100%;
             transition: transform var(--transition-speed) var(--bounce-curve); 
             will-change: transform; 
         }
-
-        /* SCROLL INDIPENDENTE DENTRO OGNI TAB */
-        .tab-content { 
-            width: 100%; 
-            height: 100%;
-            flex-shrink: 0; 
-            padding: 14px; 
-            max-width: 600px; 
-            margin: 0 auto; 
-            overflow-y: auto; /* Solo il contenuto interno scorre! */
-            -webkit-overflow-scrolling: touch; /* Rende lo scroll fluido su iOS */
-            padding-bottom: 90px; 
-        }
+        .tab-content { width: 100%; flex-shrink: 0; padding: 14px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; min-height: calc(100vh - 120px); }
 
         /* Blocchi */
         .block-group { margin-bottom: 16px; }
@@ -426,6 +403,7 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             const activeBtn = document.getElementById(`btn-tab-${index}`);
             if(activeBtn) activeBtn.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function initSwipe() {
@@ -447,9 +425,6 @@
             structure.tabs.forEach(tab => {
                 const container = document.getElementById(`content-tab-${tab}`);
                 if (!container) return;
-                
-                // Salviamo la posizione dello scroll corrente prima di svuotare
-                const currentScroll = container.scrollTop;
                 container.innerHTML = '';
 
                 const blocksList = structure.blocks[tab] || [];
@@ -489,9 +464,6 @@
                     const blockHistory = (aiHistory[tab] && aiHistory[tab][block]) ? aiHistory[tab][block] : {};
                     renderAISuggestionsItems(`ai-${tab}-${block}`, blockHistory, blockItems, tab, block);
                 });
-
-                // Ripristiniamo lo scroll per evitare saltellamenti visivi durante il sync real-time
-                container.scrollTop = currentScroll;
             });
         }
 
@@ -682,6 +654,7 @@
             }
             if(state[oldName]) { state[val] = state[oldName]; delete state[oldName]; db.ref('homeHub/state').set(state); }
             if(aiHistory[oldName]) { aiHistory[val] = aiHistory[oldName]; delete aiHistory[oldName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+            
             db.ref('homeHub/structure').set(structure);
         }
 
@@ -721,7 +694,7 @@
             let bName = structure.blocks[tab][idx];
             if(confirm(`Vuoi davvero eliminare il sotto-blocco "${bName}"?`)) {
                 structure.blocks[tab].splice(idx, 1);
-                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
+                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/bName'); db.ref('homeHub/state').set(state); }
                 if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
                 db.ref('homeHub/structure').set(structure);
                 renderSettingsBlocks();
@@ -784,6 +757,22 @@
         }
 
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
+
+        window.addEventListener('focus', () => {
+            window.scrollTo(window.scrollX, window.scrollY + 1);
+            window.scrollTo(window.scrollX, window.scrollY - 1);
+        });
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const fab = document.querySelector('.fab');
+                if (fab) {
+                    fab.style.display = 'none';
+                    fab.offsetHeight; 
+                    fab.style.display = 'block';
+                }
+            });
+        }
     </script>
 </body>
 </html>
