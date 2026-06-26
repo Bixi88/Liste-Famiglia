@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Hub - Spesa & Animazioni</title>
+    <title>Home Hub - Condiviso</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -207,36 +211,36 @@
             transition: background 0.2s;
         }
 
-        /* ☀️ STILI LIGHT MODE (html senza data-theme="dark") ☀️ */
+        /* ☀️ STILI LIGHT MODE ☀️ */
         html:not([data-theme="dark"]) .select-chip {
             background: #f6f8fa !important;
             color: #000000 !important;
             border: 1px solid #e1e4e6 !important;
         }
         html:not([data-theme="dark"]) .select-chip.selected { 
-            background: #0061FF !important; /* Sfondo Blu */
-            color: #ffffff !important;      /* Font Bianco */
+            background: #0061FF !important; 
+            color: #ffffff !important;      
             border-color: #0061FF !important;
         }
         html:not([data-theme="dark"]) .btn-confirm {
-            background: #0061FF !important; /* Sfondo Blu */
-            color: #ffffff !important;      /* Font Bianco */
+            background: #0061FF !important; 
+            color: #ffffff !important;      
         }
 
-        /* 🌙 STILI DARK MODE (html con data-theme="dark") 🌙 */
+        /* 🌙 STILI DARK MODE 🌙 */
         html[data-theme="dark"] .select-chip {
             background: #161b16 !important;
             color: #ffffff !important;
             border: 1px solid #252e25 !important;
         }
         html[data-theme="dark"] .select-chip.selected { 
-            background: #10B981 !important; /* Sfondo Verde Smeraldo */
-            color: #121612 !important;      /* Font Nero */
+            background: #10B981 !important; 
+            color: #121612 !important;      
             border-color: #10B981 !important;
         }
         html[data-theme="dark"] .btn-confirm {
-            background: #10B981 !important; /* Sfondo Verde Smeraldo */
-            color: #121612 !important;      /* Font Nero */
+            background: #10B981 !important; 
+            color: #121612 !important;      
         }
         
         .selector-label {
@@ -332,26 +336,70 @@
     </div>
 
     <script>
-        let state = JSON.parse(localStorage.getItem('homeHubState')) || { spesa: { LIDL: [], EUROSPIN: [], SOLE365: [], ACTION: [] }, film: [], famiglia: [] };
-        let aiHistory = JSON.parse(localStorage.getItem('homeHubAIHistory')) || { spesa: { LIDL: {}, EUROSPIN: {}, SOLE365: {}, ACTION: {} }, famiglia: {} };
+        // CONFIGURAZIONE REALE CONFIGURATA CON I TUOI DATI DI CLOUD FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyAM0QE9NR7V_xwQ8UjfEc9M5y_HiCnV1fo",
+            authDomain: "homehub-96c18.firebaseapp.com",
+            databaseURL: "https://homehub-96c18-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "homehub-96c18",
+            storageBucket: "homehub-96c18.firebasestorage.app",
+            messagingSenderId: "31651198901",
+            appId: "1:31651198901:web:f62c8a6e3621c951da8bfc"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let state = { spesa: { LIDL: [], EUROSPIN: [], SOLE365: [], ACTION: [] }, film: [], famiglia: [] };
+        let aiHistory = { spesa: { LIDL: {}, EUROSPIN: {}, SOLE365: {}, ACTION: {} }, famiglia: {} };
+        
         let currentTab = 'spesa';
         let selectedTarget = 'LIDL';
         const tabOrder = ['spesa', 'film', 'famiglia'];
-
         let tStart = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Modalità Dark/Light salvata solo sul dispositivo locale per non influenzare gli altri utenti
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            renderAll();
+            
             initSwipe();
+            initFirebaseSync();
         });
+
+        // Sincronizzazione Realtime online
+        function initFirebaseSync() {
+            db.ref('homeHub/state').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    state = data;
+                    if(!state.spesa) state.spesa = { LIDL: [], EUROSPIN: [], SOLE365: [], ACTION: [] };
+                    ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'].forEach(m => { if(!state.spesa[m]) state.spesa[m] = []; });
+                    if(!state.film) state.film = [];
+                    if(!state.famiglia) state.famiglia = [];
+                }
+                renderAll();
+            });
+
+            db.ref('homeHub/aiHistory').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    aiHistory = data;
+                    if(!aiHistory.spesa) aiHistory.spesa = { LIDL: {}, EUROSPIN: {}, SOLE365: {}, ACTION: {} };
+                    ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'].forEach(m => { if(!aiHistory.spesa[m]) aiHistory.spesa[m] = {}; });
+                    if(!aiHistory.famiglia) aiHistory.famiglia = {};
+                }
+                renderAll();
+            });
+        }
+
+        function saveStateToFirebase() { db.ref('homeHub/state').set(state); }
+        function saveAIHistoryToFirebase() { db.ref('homeHub/aiHistory').set(aiHistory); }
 
         function switchTab(tabId, index) {
             currentTab = tabId;
             const slider = document.getElementById('tabs-slider');
             slider.style.transform = `translateX(-${(index * 100) / 3}%)`;
-            
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`btn-${tabId}`).classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -374,12 +422,12 @@
         function renderAll() {
             const markets = ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'];
             markets.forEach(m => {
-                renderSingleList(`list-${m}`, state.spesa[m], 'spesa', m);
-                renderAISuggestions(`ai-${m}`, aiHistory.spesa[m], state.spesa[m], 'spesa', m);
+                renderSingleList(`list-${m}`, state.spesa[m] || [], 'spesa', m);
+                renderAISuggestions(`ai-${m}`, aiHistory.spesa[m] || {}, state.spesa[m] || [], 'spesa', m);
             });
-            renderSingleList('list-film', state.film, 'film');
-            renderSingleList('list-famiglia', state.famiglia, 'famiglia');
-            renderAISuggestions('ai-famiglia', aiHistory.famiglia, state.famiglia, 'famiglia');
+            renderSingleList('list-film', state.film || [], 'film');
+            renderSingleList('list-famiglia', state.famiglia || [], 'famiglia');
+            renderAISuggestions('ai-famiglia', aiHistory.famiglia || {}, state.famiglia || [], 'famiglia');
         }
 
         function renderSingleList(cId, data, type, mKey = null) {
@@ -394,6 +442,7 @@
             });
         }
 
+        // Predittivo Globale Condiviso (Mostra le prime 3 riproposte totali)
         function renderAISuggestions(cId, hData, activeList, type, mKey = null) {
             const container = document.getElementById(cId);
             if (!container) return;
@@ -408,16 +457,27 @@
                 chip.className = 'ai-chip';
                 chip.innerText = `+ ${it}`;
                 chip.onclick = () => {
-                    if(type === 'spesa') { state.spesa[mKey].push(it); hData[it] = (hData[it] || 0) + 1; }
-                    else { state.famiglia.push(it); hData[it] = (hData[it] || 0) + 1; }
-                    saveState(); renderAll();
+                    if(type === 'spesa') { 
+                        if(!state.spesa[mKey]) state.spesa[mKey] = [];
+                        state.spesa[mKey].push(it); 
+                        hData[it] = (hData[it] || 0) + 1; 
+                    } else { 
+                        if(!state.famiglia) state.famiglia = [];
+                        state.famiglia.push(it); 
+                        hData[it] = (hData[it] || 0) + 1; 
+                    }
+                    saveStateToFirebase(); 
+                    saveAIHistoryToFirebase();
                 };
                 container.appendChild(chip);
             });
         }
 
-        function saveState() { localStorage.setItem('homeHubState', JSON.stringify(state)); localStorage.setItem('homeHubAIHistory', JSON.stringify(aiHistory)); }
-        function deleteItem(type, i, mKey) { if(type === 'spesa') state.spesa[mKey].splice(i,1); else state[type].splice(i,1); saveState(); renderAll(); }
+        function deleteItem(type, i, mKey) { 
+            if(type === 'spesa') state.spesa[mKey].splice(i,1); 
+            else state[type].splice(i,1); 
+            saveStateToFirebase(); 
+        }
         
         function toggleTheme() {
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -443,10 +503,25 @@
         function addItem() {
             let v = document.getElementById('item-input').value.trim();
             if(!v) return;
-            if(currentTab === 'spesa') { state.spesa[selectedTarget].push(v); aiHistory.spesa[selectedTarget][v] = (aiHistory.spesa[selectedTarget][v] || 0) + 1; }
-            else if(currentTab === 'famiglia') { state.famiglia.push(v); aiHistory.famiglia[v] = (aiHistory.famiglia[v] || 0) + 1; }
-            else state.film.push(v);
-            saveState(); renderAll(); closeBottomSheet();
+            if(currentTab === 'spesa') { 
+                if(!state.spesa[selectedTarget]) state.spesa[selectedTarget] = [];
+                state.spesa[selectedTarget].push(v); 
+                if(!aiHistory.spesa[selectedTarget]) aiHistory.spesa[selectedTarget] = {};
+                aiHistory.spesa[selectedTarget][v] = (aiHistory.spesa[selectedTarget][v] || 0) + 1; 
+            }
+            else if(currentTab === 'famiglia') { 
+                if(!state.famiglia) state.famiglia = [];
+                state.famiglia.push(v); 
+                if(!aiHistory.famiglia) aiHistory.famiglia = {};
+                aiHistory.famiglia[v] = (aiHistory.famiglia[v] || 0) + 1; 
+            }
+            else {
+                if(!state.film) state.film = [];
+                state.film.push(v);
+            }
+            saveStateToFirebase(); 
+            saveAIHistoryToFirebase(); 
+            closeBottomSheet();
         }
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
     </script>
