@@ -6,6 +6,7 @@
     <title>Home Hub</title>
     
     <link rel="manifest" href="/Liste-Famiglia/manifest.json">
+    <meta name="theme-color" content="#121612">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -425,30 +426,13 @@
                 }
 
                 blocksList.forEach(block => {
-                    const group = document.createElement('div');
-                    group.className = 'block-group';
-
-                    const header = document.createElement('div');
-                    header.className = 'block-header-squircle';
-                    header.innerText = block;
-                    group.appendChild(header);
-
-                    const aiCont = document.createElement('div');
-                    aiCont.id = `ai-${tab}-${block}`;
-                    aiCont.className = 'ai-suggestions-container';
-                    if(!showAI) aiCont.style.display = 'none';
-                    group.appendChild(aiCont);
-
-                    const body = document.createElement('div');
-                    body.className = 'block-body-squircle';
+                    const group = document.createElement('div'); group.className = 'block-group';
+                    const header = document.createElement('div'); header.className = 'block-header-squircle'; header.innerText = block; group.appendChild(header);
+                    const aiCont = document.createElement('div'); aiCont.id = `ai-${tab}-${block}`; aiCont.className = 'ai-suggestions-container'; if(!showAI) aiCont.style.display = 'none'; group.appendChild(aiCont);
+                    const body = document.createElement('div'); body.className = 'block-body-squircle';
+                    const listDiv = document.createElement('div'); listDiv.id = `list-${tab}-${block}`; listDiv.className = `list-container ${tab.toLowerCase() === 'film' ? 'film-list' : ''}`;
                     
-                    const listDiv = document.createElement('div');
-                    listDiv.id = `list-${tab}-${block}`;
-                    listDiv.className = `list-container ${tab.toLowerCase() === 'film' ? 'film-list' : ''}`;
-                    
-                    body.appendChild(listDiv);
-                    group.appendChild(body);
-                    container.appendChild(group);
+                    body.appendChild(listDiv); group.appendChild(body); container.appendChild(group);
 
                     const blockItems = (state[tab] && state[tab][block]) ? state[tab][block] : [];
                     renderSingleListItems(`list-${tab}-${block}`, blockItems, tab, block);
@@ -463,39 +447,25 @@
             const container = document.getElementById(cId);
             if (!container) return;
             container.innerHTML = data.length ? '' : '<div class="empty-text">Nessun elemento</div>';
-            
             const isFilmTab = (tab.toLowerCase() === 'film');
 
             data.forEach((item, i) => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.setAttribute('data-item-value', item);
-                
-                let leftAction = '';
-                if (isFilmTab) {
-                    leftAction = `<div class="drag-handle">☰</div>`;
-                }
-
+                const div = document.createElement('div'); div.className = 'list-item'; div.setAttribute('data-item-value', item);
+                let leftAction = isFilmTab ? `<div class="drag-handle">☰</div>` : '';
                 div.innerHTML = `
                     ${leftAction}
                     <div class="list-item-text">${item}</div>
-                    <div class="list-item-actions">
-                        <button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button>
-                    </div>
+                    <div class="list-item-actions"><button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button></div>
                 `;
                 container.appendChild(div);
             });
 
             if (isFilmTab && data.length > 1) {
                 Sortable.create(container, {
-                    handle: '.drag-handle',
-                    animation: 180,
-                    ghostClass: 'sortable-ghost',
+                    handle: '.drag-handle', animation: 180, ghostClass: 'sortable-ghost',
                     onEnd: function () {
                         let updatedArray = [];
-                        container.querySelectorAll('.list-item').forEach(el => {
-                            updatedArray.push(el.getAttribute('data-item-value'));
-                        });
+                        container.querySelectorAll('.list-item').forEach(el => { updatedArray.push(el.getAttribute('data-item-value')); });
                         if (!state[tab]) state[tab] = {};
                         state[tab][block] = updatedArray;
                         db.ref('homeHub/state').set(state);
@@ -507,69 +477,44 @@
         function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
             const container = document.getElementById(cId);
             if (!container) return;
-            
             let sorted = Object.keys(hData).sort((a,b) => hData[b] - hData[a]);
             let filtered = sorted.filter(it => hData[it] >= 3 && !activeList.includes(it));
             let itemsToDisplay = filtered.slice(0, 3);
-            
             container.innerHTML = '';
             itemsToDisplay.forEach(it => {
-                const chip = document.createElement('div');
-                chip.className = 'ai-chip';
-                chip.innerText = `+ ${it}`;
+                const chip = document.createElement('div'); chip.className = 'ai-chip'; chip.innerText = `+ ${it}`;
                 chip.onclick = () => {
-                    if(!state[tab]) state[tab] = {};
-                    if(!state[tab][block]) state[tab][block] = [];
-                    state[tab][block].push(it);
-                    
-                    if(!aiHistory[tab]) aiHistory[tab] = {};
-                    if(!aiHistory[tab][block]) aiHistory[tab][block] = {};
+                    if(!state[tab]) state[tab] = {}; if(!state[tab][block]) state[tab][block] = []; state[tab][block].push(it);
+                    if(!aiHistory[tab]) aiHistory[tab] = {}; if(!aiHistory[tab][block]) aiHistory[tab][block] = {};
                     aiHistory[tab][block][it] = (aiHistory[tab][block][it] || 0) + 1;
-                    
-                    db.ref('homeHub/state').set(state);
-                    db.ref('homeHub/aiHistory').set(aiHistory);
+                    db.ref('homeHub/state').set(state); db.ref('homeHub/aiHistory').set(aiHistory);
                 };
                 container.appendChild(chip);
             });
         }
 
         function deleteItem(tab, block, idx) {
-            if(state[tab] && state[tab][block]) {
-                state[tab][block].splice(idx, 1);
-                db.ref('homeHub/state').set(state);
-            }
+            if(state[tab] && state[tab][block]) { state[tab][block].splice(idx, 1); db.ref('homeHub/state').set(state); }
         }
 
         function openAddSheet() {
             const activeTab = structure.tabs[currentTabIdx];
             if(!activeTab) return;
-
             document.getElementById('item-input').value = '';
             document.getElementById('backdrop').classList.add('open');
             document.getElementById('addSheet').classList.add('open');
-
             const blocksList = structure.blocks[activeTab] || [];
             const selectorContainer = document.getElementById('target-selector-container');
-            
             if (blocksList.length <= 1) {
-                selectorContainer.style.display = 'none';
-                selectedTarget = blocksList[0] || '';
+                selectorContainer.style.display = 'none'; selectedTarget = blocksList[0] || '';
             } else {
                 selectorContainer.style.display = 'block';
                 document.getElementById('selector-label-text').innerText = `SCEGLI SEZIONE / NEGOZIO DI ${activeTab.toUpperCase()}:`;
-                const chipsCont = document.getElementById('market-selector-chips');
-                chipsCont.innerHTML = '';
-                
+                const chipsCont = document.getElementById('market-selector-chips'); chipsCont.innerHTML = '';
                 selectedTarget = blocksList[0];
                 blocksList.forEach((block, idx) => {
-                    const chip = document.createElement('div');
-                    chip.className = `select-chip ${idx === 0 ? 'selected' : ''}`;
-                    chip.innerText = block;
-                    chip.onclick = function() {
-                        selectedTarget = block;
-                        document.querySelectorAll('.select-chip').forEach(c => c.classList.remove('selected'));
-                        chip.classList.add('selected');
-                    };
+                    const chip = document.createElement('div'); chip.className = `select-chip ${idx === 0 ? 'selected' : ''}`; chip.innerText = block;
+                    chip.onclick = function() { selectedTarget = block; document.querySelectorAll('.select-chip').forEach(c => c.classList.remove('selected')); chip.classList.add('selected'); };
                     chipsCont.appendChild(chip);
                 });
             }
@@ -579,82 +524,52 @@
             const activeTab = structure.tabs[currentTabIdx];
             let v = document.getElementById('item-input').value.trim();
             if(!v || !activeTab || !selectedTarget) return;
-
-            if(!state[activeTab]) state[activeTab] = {};
-            if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = [];
-            state[activeTab][selectedTarget].push(v);
-
-            if(!aiHistory[activeTab]) aiHistory[activeTab] = {};
-            if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
+            if(!state[activeTab]) state[activeTab] = {}; if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = []; state[activeTab][selectedTarget].push(v);
+            if(!aiHistory[activeTab]) aiHistory[activeTab] = {}; if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
             aiHistory[activeTab][selectedTarget][v] = (aiHistory[activeTab][selectedTarget][v] || 0) + 1;
-
-            db.ref('homeHub/state').set(state);
-            db.ref('homeHub/aiHistory').set(aiHistory);
+            db.ref('homeHub/state').set(state); db.ref('homeHub/aiHistory').set(aiHistory);
             closeAllSheets();
         }
 
         function openSettingsSheet() {
-            document.getElementById('backdrop').classList.add('open');
-            document.getElementById('settingsSheet').classList.add('open');
-            renderSettingsTabs();
-            renderSettingsBlocks();
+            document.getElementById('backdrop').classList.add('open'); document.getElementById('settingsSheet').classList.add('open');
+            renderSettingsTabs(); renderSettingsBlocks();
         }
 
         function renderSettingsTabs() {
-            const cont = document.getElementById('manage-tabs-list');
-            cont.innerHTML = '';
+            const cont = document.getElementById('manage-tabs-list'); cont.innerHTML = '';
             structure.tabs.forEach((tab, index) => {
-                const row = document.createElement('div');
-                row.className = 'manage-item';
-                row.innerHTML = `
-                    <input type="text" class="uppercase-input" value="${tab.toUpperCase()}" onchange="renameTab(${index}, this.value)">
-                    <button class="delete-btn" style="padding: 6px 10px;" onclick="removeTab(${index})">✕</button>
-                `;
+                const row = document.createElement('div'); row.className = 'manage-item';
+                row.innerHTML = `<input type="text" class="uppercase-input" value="${tab.toUpperCase()}" onchange="renameTab(${index}, this.value)"><button class="delete-btn" style="padding: 6px 10px;" onclick="removeTab(${index})">✕</button>`;
                 cont.appendChild(row);
             });
         }
 
         function renderSettingsBlocks() {
-            const dropdown = document.getElementById('settings-tab-select');
-            const activeTab = dropdown.value || structure.tabs[0];
-            const cont = document.getElementById('manage-blocks-list');
-            cont.innerHTML = '';
-            
+            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value || structure.tabs[0];
+            const cont = document.getElementById('manage-blocks-list'); cont.innerHTML = '';
             if(!activeTab) return;
             const blocksList = structure.blocks[activeTab] || [];
-            
             blocksList.forEach((block, index) => {
-                const row = document.createElement('div');
-                row.className = 'manage-item manage-item-block'; 
-                row.innerHTML = `
-                    <input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)">
-                    <button class="delete-btn" onclick="removeBlock('${activeTab}', ${index})">✕</button>
-                `;
+                const row = document.createElement('div'); row.className = 'manage-item manage-item-block';
+                row.innerHTML = `<input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)"><button class="delete-btn" onclick="removeBlock('${activeTab}', ${index})">✕</button>`;
                 cont.appendChild(row);
             });
         }
 
         function renameTab(idx, newVal) {
-            let val = newVal.trim().toLowerCase();
-            if(!val) return;
-            let oldName = structure.tabs[idx];
-            structure.tabs[idx] = val;
-            
-            if(structure.blocks[oldName]) {
-                structure.blocks[val] = structure.blocks[oldName];
-                delete structure.blocks[oldName];
-            }
+            let val = newVal.trim().toLowerCase(); if(!val) return;
+            let oldName = structure.tabs[idx]; structure.tabs[idx] = val;
+            if(structure.blocks[oldName]) { structure.blocks[val] = structure.blocks[oldName]; delete structure.blocks[oldName]; }
             if(state[oldName]) { state[val] = state[oldName]; delete state[oldName]; db.ref('homeHub/state').set(state); }
             if(aiHistory[oldName]) { aiHistory[val] = aiHistory[oldName]; delete aiHistory[oldName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-            
             db.ref('homeHub/structure').set(structure);
         }
 
         function removeTab(idx) {
             let tabName = structure.tabs[idx];
             if(confirm(`Vuoi davvero eliminare la sezione "${tabName.toUpperCase()}"?`)) {
-                structure.tabs.splice(idx, 1);
-                if(structure.blocks[tabName]) delete structure.blocks[tabName];
+                structure.tabs.splice(idx, 1); if(structure.blocks[tabName]) delete structure.blocks[tabName];
                 if(state[tabName]) { delete state[tabName]; db.ref('homeHub/state').set(state); }
                 if(aiHistory[tabName]) { delete aiHistory[tabName]; db.ref('homeHub/aiHistory').set(aiHistory); }
                 db.ref('homeHub/structure').set(structure);
@@ -662,21 +577,15 @@
         }
 
         function addNewTabStructure() {
-            let n = prompt("Inserisci il nome del nuovo Tab:");
-            if(!n) return;
-            let val = n.trim().toLowerCase();
-            if(structure.tabs.includes(val)) return alert("Tab già esistente!");
-            structure.tabs.push(val);
-            structure.blocks[val] = ['GENERALE']; 
-            db.ref('homeHub/structure').set(structure);
-            renderSettingsTabs();
+            let n = prompt("Inserisci il nome del nuovo Tab:"); if(!n) return;
+            let val = n.trim().toLowerCase(); if(structure.tabs.includes(val)) return alert("Tab già esistente!");
+            structure.tabs.push(val); structure.blocks[val] = ['GENERALE'];
+            db.ref('homeHub/structure').set(structure); renderSettingsTabs();
         }
 
         function renameBlock(tab, idx, newVal) {
-            let val = newVal.trim().toUpperCase();
-            if(!val) return;
-            let oldBlockName = structure.blocks[tab][idx];
-            structure.blocks[tab][idx] = val;
+            let val = newVal.trim().toUpperCase(); if(!val) return;
+            let oldBlockName = structure.blocks[tab][idx]; structure.blocks[tab][idx] = val;
             if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; db.ref('homeHub/state').set(state); }
             if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/aiHistory').set(aiHistory); }
             db.ref('homeHub/structure').set(structure);
@@ -688,89 +597,40 @@
                 structure.blocks[tab].splice(idx, 1);
                 if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
                 if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-                db.ref('homeHub/structure').set(structure);
-                renderSettingsBlocks();
+                db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
             }
         }
 
         function addNewBlockStructure() {
-            const dropdown = document.getElementById('settings-tab-select');
-            const activeTab = dropdown.value;
-            if(!activeTab) return;
-            let n = prompt(`Aggiungi sotto-blocco a ${activeTab.toUpperCase()}:`);
-            if(!n) return;
-            let val = n.trim().toUpperCase();
-            if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
+            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value; if(!activeTab) return;
+            let n = prompt(`Aggiungi sotto-blocco a ${activeTab.toUpperCase()}:`); if(!n) return;
+            let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
             if(structure.blocks[activeTab].includes(val)) return alert("Sotto-blocco già esistente!");
-            structure.blocks[activeTab].push(val);
-            db.ref('homeHub/structure').set(structure);
-            renderSettingsBlocks();
+            structure.blocks[activeTab].push(val); db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
         }
 
-        function resetAllAIClicks() {
-            if(confirm("Vuoi azzerare la cronologia dei suggerimenti?")) {
-                aiHistory = {};
-                db.ref('homeHub/aiHistory').set(aiHistory);
-            }
-        }
-
-        function toggleAISuggestions() {
-            showAI = !showAI;
-            localStorage.setItem('showAI', showAI);
-            updateAISwitchUI();
-            renderAll();
-        }
+        function resetAllAIClicks() { if(confirm("Vuoi azzerare la cronologia dei suggerimenti?")) { aiHistory = {}; db.ref('homeHub/aiHistory').set(aiHistory); } }
+        function toggleAISuggestions() { showAI = !showAI; localStorage.setItem('showAI', showAI); updateAISwitchUI(); renderAll(); }
 
         function updateAISwitchUI() {
-            const sw = document.getElementById('ai-toggle-switch');
-            const handle = document.getElementById('ai-toggle-handle');
+            const sw = document.getElementById('ai-toggle-switch'); const handle = document.getElementById('ai-toggle-handle');
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            if(showAI) {
-                sw.style.backgroundColor = isDark ? "#10B981" : "#0061FF";
-                handle.style.transform = "translateX(22px)";
-                handle.style.backgroundColor = isDark ? "#121612" : "#ffffff";
-            } else {
-                sw.style.backgroundColor = "var(--surface-color)";
-                handle.style.transform = "translateX(0px)";
-                handle.style.backgroundColor = "var(--text-secondary)";
-            }
+            if(showAI) { sw.style.backgroundColor = isDark ? "#10B981" : "#0061FF"; handle.style.transform = "translateX(22px)"; handle.style.backgroundColor = isDark ? "#121612" : "#ffffff"; }
+            else { sw.style.backgroundColor = "var(--surface-color)"; handle.style.transform = "translateX(0px)"; handle.style.backgroundColor = "var(--text-secondary)"; }
         }
 
-        function closeAllSheets() {
-            document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open'));
-            document.getElementById('item-input').blur();
-        }
-
-        function toggleTheme() {
-            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', t);
-            localStorage.setItem('theme', t);
-            updateAISwitchUI(); 
-        }
-
+        function closeAllSheets() { document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); document.getElementById('item-input').blur(); }
+        function toggleTheme() { const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); updateAISwitchUI(); }
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
 
-        window.addEventListener('focus', () => {
-            window.scrollTo(window.scrollX, window.scrollY + 1);
-            window.scrollTo(window.scrollX, window.scrollY - 1);
-        });
+        window.addEventListener('focus', () => { window.scrollTo(window.scrollX, window.scrollY + 1); window.scrollTo(window.scrollX, window.scrollY - 1); });
+        if (window.visualViewport) { window.visualViewport.addEventListener('resize', () => { const fab = document.querySelector('.fab'); if (fab) { fab.style.display = 'none'; fab.offsetHeight; fab.style.display = 'block'; } }); }
 
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', () => {
-                const fab = document.querySelector('.fab');
-                if (fab) {
-                    fab.style.display = 'none';
-                    fab.offsetHeight; 
-                    fab.style.display = 'block';
-                }
-            });
-        }
-
-        // --- ATTIVAZIONE SERVICE WORKER PER SBLOCCARE LO SCHERMO INTERO ---
+        // --- ATTIVAZIONE SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('/Liste-Famiglia/sw.js')
-            .then(() => console.log('Service Worker Registrato con Successo!'))
-            .catch(err => console.log('Errore nella registrazione del Service Worker:', err));
+            .then(() => console.log('Service Worker Registrato!'))
+            .catch(err => console.log('Errore SW:', err));
         }
     </script>
 </body>
