@@ -6,7 +6,7 @@
     <title>Home Hub</title>
     
     <link rel="manifest" href="/Liste-Famiglia/manifest.json">
-    <meta name="theme-color" content="#121612">
+    <meta id="meta-theme-color" name="theme-color" content="#121612">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -316,6 +316,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
+            updateAndroidBarColor(savedTheme);
             updateAISwitchUI();
             initSwipe();
             initFirebaseSync();
@@ -620,7 +621,22 @@
         }
 
         function closeAllSheets() { document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); document.getElementById('item-input').blur(); }
-        function toggleTheme() { const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); updateAISwitchUI(); }
+        
+        function toggleTheme() { 
+            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
+            document.documentElement.setAttribute('data-theme', t); 
+            localStorage.setItem('theme', t); 
+            updateAndroidBarColor(t);
+            updateAISwitchUI(); 
+        }
+
+        function updateAndroidBarColor(theme) {
+            const meta = document.getElementById('meta-theme-color');
+            if(meta) {
+                meta.setAttribute('content', theme === 'dark' ? '#121612' : '#ffffff');
+            }
+        }
+
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
 
         window.addEventListener('focus', () => { window.scrollTo(window.scrollX, window.scrollY + 1); window.scrollTo(window.scrollX, window.scrollY - 1); });
