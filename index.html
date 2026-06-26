@@ -765,6 +765,13 @@
                 }
             });
         }
+
+        // --- ATTIVAZIONE SERVICE WORKER PER SBLOCCARE LO SCHERMO INTERO ---
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/Liste-Famiglia/sw.js')
+            .then(() => console.log('Service Worker Registrato con Successo!'))
+            .catch(err => console.log('Errore nella registrazione del Service Worker:', err));
+        }
     </script>
 </body>
 </html>
