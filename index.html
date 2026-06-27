@@ -654,4 +654,65 @@
             let oldBlockName = structure.blocks[tab][idx]; structure.blocks[tab][idx] = val;
             if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; db.ref('homeHub/state').set(state); }
             if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-            db
+            db.ref('homeHub/structure').set(structure);
+        }
+
+        function removeBlock(tab, idx) {
+            let bName = structure.blocks[tab][idx];
+            if(confirm(`Vuoi davvero eliminare il sotto-blocco "${bName}"?`)) {
+                structure.blocks[tab].splice(idx, 1);
+                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
+                if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+                db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
+            }
+        }
+
+        function addNewBlockStructure() {
+            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value; if(!activeTab) return;
+            let n = prompt(`Aggiungi sotto-blocco a ${activeTab.toUpperCase()}:`); if(!n) return;
+            let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
+            if(structure.blocks[activeTab].includes(val)) return alert("Sotto-blocco già esistente!");
+            structure.blocks[activeTab].push(val); db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
+        }
+
+        function resetAllAIClicks() { if(confirm("Vuoi azzerare la cronologia dei suggerimenti?")) { aiHistory = {}; db.ref('homeHub/aiHistory').set(aiHistory); } }
+        function toggleAISuggestions() { showAI = !showAI; localStorage.setItem('showAI', showAI); updateAISwitchUI(); renderAll(); }
+
+        function updateAISwitchUI() {
+            const sw = document.getElementById('ai-toggle-switch'); const handle = document.getElementById('ai-toggle-handle');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if(showAI) { sw.style.backgroundColor = isDark ? "#10B981" : "#0061FF"; handle.style.transform = "translateX(22px)"; handle.style.backgroundColor = isDark ? "#121612" : "#ffffff"; }
+            else { sw.style.backgroundColor = "var(--surface-color)"; handle.style.transform = "translateX(0px)"; handle.style.backgroundColor = "var(--text-secondary)"; }
+        }
+
+        function closeAllSheets() { document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); document.getElementById('item-input').blur(); }
+        
+        function toggleTheme() { 
+            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
+            document.documentElement.setAttribute('data-theme', t); 
+            localStorage.setItem('theme', t); 
+            updateAndroidBarColor(t);
+            updateAISwitchUI(); 
+        }
+
+        function updateAndroidBarColor(theme) {
+            const meta = document.getElementById('meta-theme-color');
+            if(meta) {
+                meta.setAttribute('content', theme === 'dark' ? '#121612' : '#ffffff');
+            }
+        }
+
+        function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
+
+        window.addEventListener('focus', () => { window.scrollTo(window.scrollX, window.scrollY + 1); window.scrollTo(window.scrollX, window.scrollY - 1); });
+        if (window.visualViewport) { window.visualViewport.addEventListener('resize', () => { const fab = document.querySelector('.fab'); if (fab) { fab.style.display = 'none'; fab.offsetHeight; fab.style.display = 'block'; } }); }
+
+        // --- ATTIVAZIONE SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/Liste-Famiglia/sw.js')
+            .then(() => console.log('Service Worker Registrato!'))
+            .catch(err => console.log('Errore SW:', err));
+        }
+    </script>
+</body>
+</html>
