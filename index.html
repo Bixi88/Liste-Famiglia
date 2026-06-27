@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Hub</title>
+    <title>LiFa</title>
     
     <link rel="manifest" href="/Liste-Famiglia/manifest.json?v=2">
     
@@ -168,9 +168,10 @@
         .delete-btn { background: none; border: none; color: #ff4d4d; font-size: 15px; opacity: 0.5; cursor: pointer; padding: 4px; }
         .delete-btn:hover { opacity: 1; }
 
-        .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; opacity: 0; transition: opacity var(--transition-speed); }
+        .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: none; opacity: 0; transition: opacity var(--transition-speed); }
         .backdrop.open { display: block; opacity: 1; }
 
+        /* TRASFORMATO DA BOTTOM SHEET A POPUP CENTRATO E SCARNO */
         .sheet { 
             position: fixed; top: 0; left: 50%; transform: translate(-50%, -100%); width: 100%; max-width: 600px; 
             background: var(--bg-color); padding: 24px; border-radius: 0 0 20px 20px; z-index: 101; 
@@ -179,12 +180,37 @@
         }
         .sheet.open { transform: translate(-50%, 0); }
 
+        /* STILE POPUP MODAL ULTRA SCARNO */
+        #addSheet.sheet {
+            top: 35%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 88%;
+            max-width: 400px;
+            border-radius: 24px;
+            opacity: 0;
+            visibility: hidden;
+            transition: transform var(--transition-speed) var(--bounce-curve), opacity var(--transition-speed);
+        }
+        #addSheet.sheet.open {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+        #addSheet h3 {
+            margin: 0 0 16px 0;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--accent-color);
+            letter-spacing: 0.5px;
+        }
+
         .input-field { width: 100%; padding: 14px; border-radius: 16px; border: 2px solid var(--border-color); background: var(--surface-color); color: var(--text-color); margin-bottom: 14px; outline: none; font-weight: 600; }
         .btn { width: 100%; border: none; padding: 14px; border-radius: 16px; font-weight: 700; cursor: pointer; margin-bottom: 8px; font-size: 14px; }
         .btn-danger { background-color: #ff4d4d !important; color: white !important; }
         .btn-secondary { background-color: var(--surface-color) !important; color: var(--text-color) !important; border: 1px solid var(--border-color); }
         
-        .market-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 20px; }
+        .market-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 10px; }
         .select-chip { padding: 12px; border-radius: 16px; cursor: pointer; font-size: 13px; font-weight: 700; text-align: center; text-transform: uppercase; }
 
         .settings-section { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
@@ -233,7 +259,7 @@
     <header>
         <div class="header-left">
             <button class="settings-btn" onclick="openSettingsSheet()">⚙️</button>
-            <h1>Home Hub</h1>
+            <h1>LiFa</h1>
         </div>
         <div class="theme-switch" onclick="toggleTheme()"><div class="theme-switch-handle"></div></div>
     </header>
@@ -250,12 +276,20 @@
 
     <div class="sheet" id="addSheet">
         <h3>Aggiungi Elemento</h3>
-        <input type="text" id="item-input" class="input-field" placeholder="Cosa vuoi aggiungere?" onkeyup="handleKeyUp(event)">
+        <input type="text" 
+               id="item-input" 
+               class="input-field" 
+               placeholder="Cosa vuoi aggiungere?" 
+               onkeyup="handleKeyUp(event)"
+               autocomplete="off" 
+               autocorrect="off" 
+               autocapitalize="off" 
+               spellcheck="false">
+               
         <div id="target-selector-container">
             <span class="selector-label" id="selector-label-text">SCEGLI DOVE INSERIRE:</span>
             <div class="market-selector" id="market-selector-chips"></div>
         </div>
-        <button class="btn btn-confirm" onclick="addItem()">Aggiungi</button>
     </div>
 
     <div class="sheet" id="settingsSheet">
@@ -514,7 +548,7 @@
                 selectorContainer.style.display = 'none'; selectedTarget = blocksList[0] || '';
             } else {
                 selectorContainer.style.display = 'block';
-                document.getElementById('selector-label-text').innerText = `SCEGLI SEZIONE / NEGOZIO DI ${activeTab.toUpperCase()}:`;
+                document.getElementById('selector-label-text').innerText = `SCEGLI SEZIONE DI ${activeTab.toUpperCase()}:`;
                 const chipsCont = document.getElementById('market-selector-chips'); chipsCont.innerHTML = '';
                 selectedTarget = blocksList[0];
                 blocksList.forEach((block, idx) => {
@@ -523,6 +557,7 @@
                     chipsCont.appendChild(chip);
                 });
             }
+            setTimeout(() => document.getElementById('item-input').focus(), 60);
         }
 
         function addItem() {
@@ -620,6 +655,7 @@
         function updateAISwitchUI() {
             const sw = document.getElementById('ai-toggle-switch'); const handle = document.getElementById('ai-toggle-handle');
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if(!sw || !handle) return;
             if(showAI) { sw.style.backgroundColor = isDark ? "#10B981" : "#0061FF"; handle.style.transform = "translateX(22px)"; handle.style.backgroundColor = isDark ? "#121612" : "#ffffff"; }
             else { sw.style.backgroundColor = "var(--surface-color)"; handle.style.transform = "translateX(0px)"; handle.style.backgroundColor = "var(--text-secondary)"; }
         }
