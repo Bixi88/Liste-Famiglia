@@ -212,7 +212,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Rimosse anche le lenti di ingrandimento grafiche dei campi search nei browser Webkit */
         .input-field { width: 100%; padding: 14px; border-radius: 16px; border: 2px solid var(--border-color); background: var(--surface-color); color: var(--text-color); margin-bottom: 14px; outline: none; font-weight: 600; -webkit-appearance: none; }
         .input-field::-webkit-search-decoration,
         .input-field::-webkit-search-cancel-button,
@@ -243,7 +242,6 @@
         }
         .manage-item-block input:focus { color: var(--text-color) !important; }
         .manage-item-block .delete-btn { font-size: 12px !important; opacity: 0.4; padding: 4px 8px; }
-        .btn-small { padding: 8px 12px !important; font-size: 12px !important; border-radius: 10px !important; width: auto !important; margin-left: 8px; }
 
         .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
         .switch-label { font-size: 14px; font-weight: 700; }
@@ -321,11 +319,11 @@
         </div>
 
         <div class="settings-section">
-            <div class="settings-title">Gestisci Sotto-Blocchi</div>
+            <div class="settings-title">Gestisci Supermercati</div>
             <label class="selector-label">Seleziona il tab da modificare:</label>
             <select id="settings-tab-select" class="input-field" style="padding:10px; margin-bottom:12px;" onchange="renderSettingsBlocks()"></select>
             <div id="manage-blocks-list"></div>
-            <button class="btn btn-secondary btn-small" onclick="addNewBlockStructure()">+ Aggiungi Sotto-Blocco / Negozio</button>
+            <button class="btn btn-secondary" style="padding: 10px;" onclick="addNewBlockStructure()">+ Aggiungi Supermercato</button>
         </div>
         
         <button class="btn btn-confirm" onclick="closeAllSheets()" style="margin-top:10px;">Salva e Chiudi</button>
@@ -350,7 +348,7 @@
             blocks: {
                 spesa: ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'],
                 film: ['DA VEDERE'],
-                famiglia: ['NOTE DI FAMIGLIA']
+                famiglia: ['LISTA']
             }
         };
 
@@ -635,7 +633,7 @@
 
         function removeBlock(tab, idx) {
             let bName = structure.blocks[tab][idx];
-            if(confirm(`Vuoi davvero eliminare il sotto-blocco "${bName}"?`)) {
+            if(confirm(`Vuoi davvero eliminare questo elemento "${bName}"?`)) {
                 structure.blocks[tab].splice(idx, 1);
                 if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
                 if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
@@ -645,9 +643,9 @@
 
         function addNewBlockStructure() {
             const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value; if(!activeTab) return;
-            let n = prompt(`Aggiungi sotto-blocco a ${activeTab.toUpperCase()}:`); if(!n) return;
+            let n = prompt(`Aggiungi elemento a ${activeTab.toUpperCase()}:`); if(!n) return;
             let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
-            if(structure.blocks[activeTab].includes(val)) return alert("Sotto-blocco già esistente!");
+            if(structure.blocks[activeTab].includes(val)) return alert("Elemento già esistente!");
             structure.blocks[activeTab].push(val); db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
         }
 
