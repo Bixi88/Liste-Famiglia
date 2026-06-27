@@ -311,3 +311,383 @@
                 <span class="switch-label">Mostra suggerimenti AI predittivi</span>
                 <div class="theme-switch" id="ai-toggle-switch" onclick="toggleAISuggestions()"><div class="theme-switch-handle" id="ai-toggle-handle"></div></div>
             </div>
+            <button class="btn btn-danger" style="padding: 10px;" onclick="resetAllAIClicks()">Reset Totale Cache Suggerimenti</button>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-title">Gestisci Tab Principali</div>
+            <div id="manage-tabs-list"></div>
+            <button class="btn btn-secondary" style="padding: 10px;" onclick="addNewTabStructure()">+ Aggiungi Nuovo Tab</button>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-title">Gestisci Sotto-Blocchi</div>
+            <label class="selector-label">Seleziona il tab da modificare:</label>
+            <select id="settings-tab-select" class="input-field" style="padding:10px; margin-bottom:12px;" onchange="renderSettingsBlocks()"></select>
+            <div id="manage-blocks-list"></div>
+            <button class="btn btn-secondary btn-small" onclick="addNewBlockStructure()">+ Aggiungi Sotto-Blocco / Negozio</button>
+        </div>
+        
+        <button class="btn btn-confirm" onclick="closeAllSheets()" style="margin-top:10px;">Salva e Chiudi</button>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAM0QE9NR7V_xwQ8UjfEc9M5y_HiCnV1fo",
+            authDomain: "homehub-96c18.firebaseapp.com",
+            databaseURL: "https://homehub-96c18-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "homehub-96c18",
+            storageBucket: "homehub-96c18.firebasestorage.app",
+            messagingSenderId: "31651198901",
+            appId: "1:31651198901:web:f62c8a6e3621c951da8bfc"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let structure = {
+            tabs: ['spesa', 'film', 'famiglia'],
+            blocks: {
+                spesa: ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'],
+                film: ['DA VEDERE'],
+                famiglia: ['NOTE DI FAMIGLIA']
+            }
+        };
+
+        let state = {};
+        let aiHistory = {};
+        
+        let currentTabIdx = parseInt(localStorage.getItem('activeTabIdx')) || 0;
+        let selectedTarget = '';
+        let tStart = 0;
+        let showAI = localStorage.getItem('showAI') !== 'false'; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateAndroidBarColor(savedTheme);
+            updateAISwitchUI();
+            initSwipe();
+            initFirebaseSync();
+        });
+
+        function initFirebaseSync() {
+            db.ref('homeHub/structure').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    structure = data;
+                    if(!structure.tabs) structure.tabs = [];
+                    if(!structure.blocks) structure.blocks = {};
+                } else {
+                    db.ref('homeHub/structure').set(structure);
+                }
+                buildTabsUI();
+                renderAll();
+            });
+
+            db.ref('homeHub/state').on('value', (snapshot) => {
+                state = snapshot.val() || {};
+                renderAll();
+            });
+
+            db.ref('homeHub/aiHistory').on('value', (snapshot) => {
+                aiHistory = snapshot.val() || {};
+                renderAll();
+            });
+        }
+
+        function buildTabsUI() {
+            const tabsContainer = document.getElementById('nav-tabs-container');
+            const slider = document.getElementById('tabs-slider');
+            const selectDropdown = document.getElementById('settings-tab-select');
+            
+            if (currentTabIdx >= structure.tabs.length || currentTabIdx < 0) {
+                currentTabIdx = 0;
+            }
+
+            tabsContainer.innerHTML = '';
+            slider.innerHTML = '';
+            selectDropdown.innerHTML = '';
+
+            slider.style.width = `${structure.tabs.length * 100}%`;
+
+            structure.tabs.forEach((tab, index) => {
+                const btn = document.createElement('div');
+                btn.id = `btn-tab-${index}`;
+                btn.className = `tab-btn ${index === currentTabIdx ? 'active' : ''}`;
+                btn.innerText = tab;
+                btn.onclick = () => switchTab(index);
+                tabsContainer.appendChild(btn);
+
+                const content = document.createElement('div');
+                content.id = `content-tab-${tab}`;
+                content.className = 'tab-content';
+                content.style.width = `${100 / structure.tabs.length}%`;
+                slider.appendChild(content);
+
+                const opt = document.createElement('option');
+                opt.value = tab;
+                opt.innerText = tab.toUpperCase();
+                selectDropdown.appendChild(opt);
+            });
+
+            slider.style.transform = `translateX(-${(currentTabIdx * 100) / structure.tabs.length}%)`;
+        }
+
+        function switchTab(index) {
+            if (index < 0 || index >= structure.tabs.length) return;
+            currentTabIdx = index;
+            
+            localStorage.setItem('activeTabIdx', currentTabIdx);
+
+            const slider = document.getElementById('tabs-slider');
+            slider.style.transform = `translateX(-${(currentTabIdx * 100) / structure.tabs.length}%)`;
+            
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-tab-${index}`);
+            if(activeBtn) activeBtn.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function initSwipe() {
+            const area = document.getElementById('swipe-area');
+            area.addEventListener('touchstart', e => { tStart = e.touches[0].clientX; }, {passive: true});
+            area.addEventListener('touchend', e => {
+                let tEnd = e.changedTouches[0].clientX;
+                let diff = tStart - tEnd;
+                if (Math.abs(diff) > 50 && structure.tabs.length > 0) {
+                    if (diff > 0 && currentTabIdx < structure.tabs.length - 1) switchTab(currentTabIdx + 1);
+                    else if (diff < 0 && currentTabIdx > 0) switchTab(currentTabIdx - 1);
+                }
+            }, {passive: true});
+        }
+
+        function renderAll() {
+            if (!structure.tabs.length) return;
+            
+            structure.tabs.forEach(tab => {
+                const container = document.getElementById(`content-tab-${tab}`);
+                if (!container) return;
+                container.innerHTML = '';
+
+                const blocksList = structure.blocks[tab] || [];
+                if(blocksList.length === 0) {
+                    container.innerHTML = '<div class="empty-text">Nessun sotto-blocco configurato in questa sezione.</div>';
+                }
+
+                blocksList.forEach(block => {
+                    const group = document.createElement('div'); group.className = 'block-group';
+                    
+                    const header = document.createElement('div'); 
+                    header.className = 'block-header-squircle'; 
+                    header.innerHTML = `<span>${block}</span><button class="block-add-btn" onclick="openAddSheetForBlock('${block}')">+</button>`;
+                    group.appendChild(header);
+                    
+                    const aiCont = document.createElement('div'); aiCont.id = `ai-${tab}-${block}`; aiCont.className = 'ai-suggestions-container'; if(!showAI) aiCont.style.display = 'none'; group.appendChild(aiCont);
+                    const body = document.createElement('div'); body.className = 'block-body-squircle';
+                    const listDiv = document.createElement('div'); listDiv.id = `list-${tab}-${block}`; listDiv.className = `list-container ${tab.toLowerCase() === 'film' ? 'film-list' : ''}`;
+                    
+                    body.appendChild(listDiv); group.appendChild(body); container.appendChild(group);
+
+                    const blockItems = (state[tab] && state[tab][block]) ? state[tab][block] : [];
+                    renderSingleListItems(`list-${tab}-${block}`, blockItems, tab, block);
+                    
+                    const blockHistory = (aiHistory[tab] && aiHistory[tab][block]) ? aiHistory[tab][block] : {};
+                    renderAISuggestionsItems(`ai-${tab}-${block}`, blockHistory, blockItems, tab, block);
+                });
+            });
+        }
+
+        function renderSingleListItems(cId, data, tab, block) {
+            const container = document.getElementById(cId);
+            if (!container) return;
+            container.innerHTML = data.length ? '' : '<div class="empty-text">Nessun elemento</div>';
+            const isFilmTab = (tab.toLowerCase() === 'film');
+
+            data.forEach((item, i) => {
+                const div = document.createElement('div'); div.className = 'list-item'; div.setAttribute('data-item-value', item);
+                let leftAction = isFilmTab ? `<div class="drag-handle">☰</div>` : '';
+                div.innerHTML = `
+                    ${leftAction}
+                    <div class="list-item-text">${item}</div>
+                    <div class="list-item-actions"><button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button></div>
+                `;
+                container.appendChild(div);
+            });
+
+            if (isFilmTab && data.length > 1) {
+                Sortable.create(container, {
+                    handle: '.drag-handle', animation: 180, ghostClass: 'sortable-ghost',
+                    onEnd: function () {
+                        let updatedArray = [];
+                        container.querySelectorAll('.list-item').forEach(el => { updatedArray.push(el.getAttribute('data-item-value')); });
+                        if (!state[tab]) state[tab] = {};
+                        state[tab][block] = updatedArray;
+                        db.ref('homeHub/state').set(state);
+                    }
+                });
+            }
+        }
+
+        function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
+            const container = document.getElementById(cId);
+            if (!container) return;
+            let sorted = Object.keys(hData).sort((a,b) => hData[b] - hData[a]);
+            let filtered = sorted.filter(it => hData[it] >= 3 && !activeList.includes(it));
+            let itemsToDisplay = filtered.slice(0, 3);
+            container.innerHTML = '';
+            itemsToDisplay.forEach(it => {
+                const chip = document.createElement('div'); chip.className = 'ai-chip'; chip.innerText = `+ ${it}`;
+                chip.onclick = () => {
+                    if(!state[tab]) state[tab] = {}; if(!state[tab][block]) state[tab][block] = []; state[tab][block].push(it);
+                    if(!aiHistory[tab]) aiHistory[tab] = {}; if(!aiHistory[tab][block]) aiHistory[tab][block] = {};
+                    aiHistory[tab][block][it] = (aiHistory[tab][block][it] || 0) + 1;
+                    db.ref('homeHub/state').set(state); db.ref('homeHub/aiHistory').set(aiHistory);
+                };
+                container.appendChild(chip);
+            });
+        }
+
+        function deleteItem(tab, block, idx) {
+            if(state[tab] && state[tab][block]) { state[tab][block].splice(idx, 1); db.ref('homeHub/state').set(state); }
+        }
+
+        function openAddSheetForBlock(blockName) {
+            selectedTarget = blockName;
+            document.getElementById('add-popup-title').innerText = `Aggiungi a ${blockName}`;
+            document.getElementById('item-input').value = '';
+            document.getElementById('backdrop').classList.add('open');
+            document.getElementById('addSheet').classList.add('open');
+            document.getElementById('target-selector-container').style.display = 'none';
+            setTimeout(() => document.getElementById('item-input').focus(), 60);
+        }
+
+        function addItem() {
+            const activeTab = structure.tabs[currentTabIdx];
+            let v = document.getElementById('item-input').value.trim();
+            if(!v || !activeTab || !selectedTarget) return;
+            if(!state[activeTab]) state[activeTab] = {}; if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = []; state[activeTab][selectedTarget].push(v);
+            if(!aiHistory[activeTab]) aiHistory[activeTab] = {}; if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
+            aiHistory[activeTab][selectedTarget][v] = (aiHistory[activeTab][selectedTarget][v] || 0) + 1;
+            db.ref('homeHub/state').set(state); db.ref('homeHub/aiHistory').set(aiHistory);
+            closeAllSheets();
+        }
+
+        function openSettingsSheet() {
+            document.getElementById('backdrop').classList.add('open'); document.getElementById('settingsSheet').classList.add('open');
+            renderSettingsTabs(); renderSettingsBlocks();
+        }
+
+        function renderSettingsTabs() {
+            const cont = document.getElementById('manage-tabs-list'); cont.innerHTML = '';
+            structure.tabs.forEach((tab, index) => {
+                const row = document.createElement('div'); row.className = 'manage-item';
+                row.innerHTML = `<input type="text" class="uppercase-input" value="${tab.toUpperCase()}" onchange="renameTab(${index}, this.value)"><button class="delete-btn" style="padding: 6px 10px;" onclick="removeTab(${index})">✕</button>`;
+                cont.appendChild(row);
+            });
+        }
+
+        function renderSettingsBlocks() {
+            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value || structure.tabs[0];
+            const cont = document.getElementById('manage-blocks-list'); cont.innerHTML = '';
+            if(!activeTab) return;
+            const blocksList = structure.blocks[activeTab] || [];
+            blocksList.forEach((block, index) => {
+                const row = document.createElement('div'); row.className = 'manage-item manage-item-block';
+                row.innerHTML = `<input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)"><button class="delete-btn" onclick="removeBlock('${activeTab}', ${index})">✕</button>`;
+                cont.appendChild(row);
+            });
+        }
+
+        function renameTab(idx, newVal) {
+            let val = newVal.trim().toLowerCase(); if(!val) return;
+            let oldName = structure.tabs[idx]; structure.tabs[idx] = val;
+            if(structure.blocks[oldName]) { structure.blocks[val] = structure.blocks[oldName]; delete structure.blocks[oldName]; }
+            if(state[oldName]) { state[val] = state[oldName]; delete state[oldName]; db.ref('homeHub/state').set(state); }
+            if(aiHistory[oldName]) { aiHistory[val] = aiHistory[oldName]; delete aiHistory[oldName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+            db.ref('homeHub/structure').set(structure);
+        }
+
+        function removeTab(idx) {
+            let tabName = structure.tabs[idx];
+            if(confirm(`Vuoi davvero eliminare la sezione "${tabName.toUpperCase()}"?`)) {
+                structure.tabs.splice(idx, 1); if(structure.blocks[tabName]) delete structure.blocks[tabName];
+                if(state[tabName]) { delete state[tabName]; db.ref('homeHub/state').set(state); }
+                if(aiHistory[tabName]) { delete aiHistory[tabName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+                db.ref('homeHub/structure').set(structure);
+            }
+        }
+
+        function addNewTabStructure() {
+            let n = prompt("Inserisci il nome del nuovo Tab:"); if(!n) return;
+            let val = n.trim().toLowerCase(); if(structure.tabs.includes(val)) return alert("Tab già esistente!");
+            structure.tabs.push(val); structure.blocks[val] = ['GENERALE'];
+            db.ref('homeHub/structure').set(structure); renderSettingsTabs();
+        }
+
+        function renameBlock(tab, idx, newVal) {
+            let val = newVal.trim().toUpperCase(); if(!val) return;
+            let oldBlockName = structure.blocks[tab][idx]; structure.blocks[tab][idx] = val;
+            if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; db.ref('homeHub/state').set(state); }
+            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+            db.ref('homeHub/structure').set(structure);
+        }
+
+        function removeBlock(tab, idx) {
+            let bName = structure.blocks[tab][idx];
+            if(confirm(`Vuoi davvero eliminare il sotto-blocco "${bName}"?`)) {
+                structure.blocks[tab].splice(idx, 1);
+                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
+                if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+                db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
+            }
+        }
+
+        function addNewBlockStructure() {
+            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value; if(!activeTab) return;
+            let n = prompt(`Aggiungi sotto-blocco a ${activeTab.toUpperCase()}:`); if(!n) return;
+            let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
+            if(structure.blocks[activeTab].includes(val)) return alert("Sotto-blocco già esistente!");
+            structure.blocks[activeTab].push(val); db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
+        }
+
+        function resetAllAIClicks() { if(confirm("Vuoi azzerare la cronologia dei suggerimenti?")) { aiHistory = {}; db.ref('homeHub/aiHistory').set(aiHistory); } }
+        function toggleAISuggestions() { showAI = !showAI; localStorage.setItem('showAI', showAI); updateAISwitchUI(); renderAll(); }
+
+        function updateAISwitchUI() {
+            const sw = document.getElementById('ai-toggle-switch'); const handle = document.getElementById('ai-toggle-handle');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if(showAI) { sw.style.backgroundColor = isDark ? "#10B981" : "#0061FF"; handle.style.transform = "translateX(22px)"; handle.style.backgroundColor = isDark ? "#121612" : "#ffffff"; }
+            else { sw.style.backgroundColor = "var(--surface-color)"; handle.style.transform = "translateX(0px)"; handle.style.backgroundColor = "var(--text-secondary)"; }
+        }
+
+        function closeAllSheets() { document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); document.getElementById('item-input').blur(); }
+        
+        function toggleTheme() { 
+            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
+            document.documentElement.setAttribute('data-theme', t); 
+            localStorage.setItem('theme', t); 
+            updateAndroidBarColor(t);
+            updateAISwitchUI(); 
+        }
+
+        function updateAndroidBarColor(theme) {
+            const meta = document.getElementById('meta-theme-color');
+            if(meta) {
+                meta.setAttribute('content', theme === 'dark' ? '#121612' : '#ffffff');
+            }
+        }
+
+        function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
+
+        window.addEventListener('focus', () => { window.scrollTo(window.scrollX, window.scrollY + 1); window.scrollTo(window.scrollX, window.scrollY - 1); });
+
+        // --- ATTIVAZIONE SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/Liste-Famiglia/sw.js')
+            .then(() => console.log('Service Worker Registrato!'))
+            .catch(err => console.log('Errore SW:', err));
+        }
+    </script>
+</body>
+</html>
