@@ -8,9 +8,9 @@
     <link rel="manifest" href="/Liste-Famiglia/manifest.json?v=2">
     
     <meta id="meta-theme-color" name="theme-color" content="#0B0D0B">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B0D0B">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f1f5f9">
-    <meta name="msapplication-navbutton-color" content="#0B0D0B">
+    <meta name="msapplication-navbutton-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -28,7 +28,7 @@
         :root {
             --bg-color: #f1f5f9;          
             --surface-color: #ffffff;     
-            --item-bg: #f8fafc;           
+            --item-bg: #f0f4f8;           /* Modificato solo questo colore come richiesto */
             --text-color: #0f172a;        
             --text-secondary: #64748b;
             --accent-color: #2563eb;       
@@ -44,17 +44,17 @@
         }
 
         html[data-theme="dark"] {
-            --bg-color: #0b0d0b;          
-            --surface-color: #131914;     
-            --item-bg: #1c241e;           
+            --bg-color: #000000;          /* Nero assoluto di sfondo */
+            --surface-color: #121314;     /* Grigio scuro/lavagna per le schede (stacco netto) */
+            --item-bg: #1a1c1e;           /* Tile interni leggermente più chiari */
             --text-color: #ffffff;        
             --text-secondary: #94a3b8;
             --accent-color: #10b981;       
             --accent-light: rgba(16, 185, 129, 0.15);
-            --border-color: #263329;       
-            --item-border: #2d3d31;       
+            --border-color: #232527;       /* Bordi discreti ma visibili */
+            --item-border: #2c2e31;       
             
-            --delete-bg: #2d3d31;
+            --delete-bg: #2c2e31;
             --delete-color: #cbd5e1;
         }
 
@@ -185,7 +185,6 @@
         .ai-suggestions-container { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 10px 0; }
         .ai-suggestions-container::-webkit-scrollbar { display: none; }
         
-        /* Modifica 4: Chips AI minimali e meno colorate */
         .ai-chip {
             padding: 5px 10px; 
             background-color: var(--item-bg); 
@@ -218,7 +217,42 @@
         .list-item-text { font-size: 14px; font-weight: 700; flex: 1; color: var(--text-color); } 
         .list-item-actions { display: flex; align-items: center; gap: 10px; }
         
-        .film-list .list-item { padding: 9px 12px; }
+        /* --- OPTIMIZATION TAB FILM: FUSED INTEGRATED CARD STRUCTURE --- */
+        #content-tab-film .block-group {
+            padding: 14px 14px 6px 14px; 
+        }
+        #content-tab-film .block-header-squircle {
+            margin-bottom: 12px; 
+        }
+        .film-list {
+            gap: 4px !important; 
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0px !important;
+            overflow: visible;
+        }
+        .film-list .list-item { 
+            background: transparent !important; 
+            border: none !important;            
+            border-radius: 0px !important;
+            padding: 6px 0px;                  
+            box-shadow: none !important;         
+        }
+        .film-list .list-item-text { 
+            font-size: 16px;   
+            font-weight: 700;  
+        }
+        .film-list .drag-handle { 
+            font-size: 14px;   
+            margin-right: 8px; 
+            opacity: 0.5;      
+        }
+        .film-list .delete-btn { 
+            width: 24px;       
+            height: 24px; 
+            font-size: 9px;
+        }
+        /* ------------------------------------------------------------------------ */
         
         .drag-handle { 
             color: var(--text-secondary); 
@@ -294,7 +328,6 @@
         .btn-danger { background-color: rgba(255, 77, 79, 0.1) !important; color: #ff4d4f !important; border: 1px solid rgba(255, 77, 79, 0.2); }
         .btn-secondary { background-color: var(--item-bg) !important; color: var(--text-color) !important; border: 2px solid var(--border-color); }
         
-        /* Modifica 1: Stile del pulsante Annulla con il colore accentato */
         .btn-accent { background: var(--accent-color) !important; color: #ffffff !important; box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
         
         .btn-confirm { background: var(--accent-color) !important; color: #ffffff !important; box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
@@ -428,7 +461,6 @@
         let tStart = 0;
         let showAI = localStorage.getItem('showAI') !== 'false'; 
 
-        // Funzione di utilità per formattare con la prima lettera maiuscola (Modifica 3)
         function capitalizeFirstLetter(string) {
             if (!string) return '';
             const trimmed = string.trim();
@@ -602,29 +634,24 @@
             }
         }
 
-        // Modifiche 3 e 4: Gestione case-insensitive per IA predittiva e render minimale
         function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
             const container = document.getElementById(cId);
             if (!container) return;
             
-            // Accorpa i conteggi trasformando tutto in minuscolo
             let lowerHistory = {};
             Object.keys(hData).forEach(key => {
                 let lowKey = key.toLowerCase();
                 lowerHistory[lowKey] = (lowerHistory[lowKey] || 0) + hData[key];
             });
 
-            // Converti la lista attiva in minuscolo per un confronto corretto
             let activeListLower = activeList.map(it => it.toLowerCase());
 
-            // Ordina i suggerimenti in base al conteggio complessivo
             let sorted = Object.keys(lowerHistory).sort((a,b) => lowerHistory[b] - lowerHistory[a]);
             let filtered = sorted.filter(it => lowerHistory[it] >= 3 && !activeListLower.includes(it));
             let itemsToDisplay = filtered.slice(0, 3);
             
             container.innerHTML = '';
             itemsToDisplay.forEach(it => {
-                // Genera la versione con la sola prima lettera maiuscola (Modifica 3)
                 let formattedItem = capitalizeFirstLetter(it);
                 
                 const chip = document.createElement('div'); 
@@ -634,7 +661,6 @@
                     if(!state[tab]) state[tab] = {}; 
                     if(!state[tab][block]) state[tab][block] = [];
                     
-                    // Modifica 2: Gestione inserimento in cima per il blocco "da vedere" (o tab film)
                     if (block.toLowerCase() === 'da vedere' || tab.toLowerCase() === 'film') {
                         state[tab][block].unshift(formattedItem);
                     } else {
@@ -644,7 +670,6 @@
                     if(!aiHistory[tab]) aiHistory[tab] = {}; 
                     if(!aiHistory[tab][block]) aiHistory[tab][block] = {};
                     
-                    // Incrementa la chiave normalizzata (salvata con la prima lettera maiuscola)
                     aiHistory[tab][block][formattedItem] = (aiHistory[tab][block][formattedItem] || 0) + 1;
                     
                     db.ref('homeHub/state').set(state); 
@@ -672,13 +697,11 @@
             let rawValue = document.getElementById('item-input').value.trim();
             if(!rawValue || !activeTab || !selectedTarget) return;
             
-            // Modifica 3: Salva l'elemento preferendo sempre l'iniziale maiuscola
             let v = capitalizeFirstLetter(rawValue);
 
             if(!state[activeTab]) state[activeTab] = {}; 
             if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = []; 
             
-            // Modifica 2: se la sezione è "DA VEDERE" (o fa parte del tab film), inserisci in cima (index 0)
             if (selectedTarget.toLowerCase() === 'da vedere' || activeTab.toLowerCase() === 'film') {
                 state[activeTab][selectedTarget].unshift(v);
             } else {
@@ -767,7 +790,7 @@
         function addNewBlockStructure() {
             const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value; if(!activeTab) return;
             let n = prompt(`Aggiungi elemento a ${activeTab.toUpperCase()}:`); if(!n) return;
-            let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
+            let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab] || !structure.blocks[activeTab]) structure.blocks[activeTab] = [];
             if(structure.blocks[activeTab].includes(val)) return alert("Elemento già esistente!");
             structure.blocks[activeTab].push(val); db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
         }
@@ -800,7 +823,7 @@
         function updateAndroidBarColor(theme) {
             const meta = document.getElementById('meta-theme-color');
             if(meta) {
-                meta.setAttribute('content', theme === 'dark' ? '#0b0d0b' : '#f1f5f9');
+                meta.setAttribute('content', theme === 'dark' ? '#000000' : '#f1f5f9');
             }
         }
 
