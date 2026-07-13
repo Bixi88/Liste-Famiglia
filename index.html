@@ -511,7 +511,9 @@
 
         let state = {};
         let aiHistory = {};
-        let serverSettings = { theme: 'light', selectedLightPalette: 'default', selectedDarkPalette: 'default' };
+        
+        // Impostazioni globali condivise (solo palette)
+        let serverSettings = { selectedLightPalette: 'default', selectedDarkPalette: 'default' };
         
         let currentTabIdx = parseInt(localStorage.getItem('activeTabIdx')) || 0;
         let selectedTarget = '';
@@ -525,15 +527,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Carica il tema locale del dispositivo specifico
             const initialTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', initialTheme);
             updateThemeSwitchUI(initialTheme);
             
-            const initialPaletteKey = initialTheme === 'light' 
-                ? (localStorage.getItem('selectedLightPalette') || 'default')
-                : (localStorage.getItem('selectedDarkPalette') || 'default');
-            applyPaletteStyle(initialTheme, initialPaletteKey, false);
-
             updateAISwitchUI();
             initSwipe();
             initFirebaseSync();
@@ -566,10 +564,8 @@
             root.style.setProperty('--tile-shadow-sm', p.shadowSm || '0 1px 3px rgba(0,0,0,0.01)');
 
             if (theme === 'light') {
-                localStorage.setItem('selectedLightPalette', key);
                 serverSettings.selectedLightPalette = key;
             } else {
-                localStorage.setItem('selectedDarkPalette', key);
                 serverSettings.selectedDarkPalette = key;
             }
             
@@ -633,16 +629,13 @@
                 const data = snapshot.val();
                 if (data) {
                     serverSettings = data;
-                    localStorage.setItem('theme', serverSettings.theme);
-                    document.documentElement.setAttribute('data-theme', serverSettings.theme);
-                    updateThemeSwitchUI(serverSettings.theme);
-                    
-                    const currentPaletteKey = serverSettings.theme === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
-                    applyPaletteStyle(serverSettings.theme, currentPaletteKey, false);
+                    // Applica la palette corretta in base al tema locale di questo specifico utente
+                    const currentLocalTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                    const currentPaletteKey = currentLocalTheme === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
+                    applyPaletteStyle(currentLocalTheme, currentPaletteKey, false);
                 } else {
-                    serverSettings.theme = localStorage.getItem('theme') || 'light';
-                    serverSettings.selectedLightPalette = localStorage.getItem('selectedLightPalette') || 'default';
-                    serverSettings.selectedDarkPalette = localStorage.getItem('selectedDarkPalette') || 'default';
+                    serverSettings.selectedLightPalette = 'default';
+                    serverSettings.selectedDarkPalette = 'default';
                     db.ref('homeHub/settings').set(serverSettings);
                 }
             });
@@ -981,16 +974,16 @@
             document.getElementById('item-input').blur(); 
         }
         
+        // INTERRUTTORE DI MODALITÀ LOCALE (Non sincronizza "theme" sul DB)
         function toggleTheme() { 
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
             document.documentElement.setAttribute('data-theme', t); 
             localStorage.setItem('theme', t); 
-            serverSettings.theme = t;
             
             updateThemeSwitchUI(t);
             
             const targetKey = t === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
-            applyPaletteStyle(t, targetKey, true);
+            applyPaletteStyle(t, targetKey, false); // false = Non sovrascrive globalmente
             updateAISwitchUI(); 
             renderPaletteSelectorUI();
         }
