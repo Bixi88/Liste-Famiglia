@@ -466,9 +466,9 @@
                 cream: 'Crema', lavender: 'Lavanda', rose: 'Rosa', ocean: 'Oceano', sage: 'Salvia', monochrome: 'Monocromo'
             },
             dark: {
-                default: 'Predefinito', amoled: 'Full AMOLED (Verde)', classicDark: 'Verde Scuro', synth: 'Synthwave',
+                default: 'Predefinito', amoled: 'Full AMOLED', classicDark: 'Verde Scuro', synth: 'Synthwave',
                 nordicNight: 'Notte Nordica', midnight: 'Mezzanotte', forest: 'Foresta', cyberpunk: 'Cyberpunk',
-                dracula: 'Dracula (Rosso)', obsidian: 'Ossidiana'
+                dracula: 'Dracula', obsidian: 'Ossidiana'
             }
         };
 
@@ -496,6 +496,7 @@
 
         let state = {};
         let aiHistory = {};
+        let serverSettings = { theme: 'light', selectedLightPalette: 'default', selectedDarkPalette: 'default' };
         
         let currentTabIdx = parseInt(localStorage.getItem('activeTabIdx')) || 0;
         let selectedTarget = '';
@@ -509,39 +510,30 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
+            // Primo rendering da dati locali temporanei prima del sync Firebase
+            const initialTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', initialTheme);
+            updateThemeSwitchUI(initialTheme);
             
-            // Inizializza graficamente lo switch del tema principale
-            const themeSwitch = document.getElementById('main-theme-switch');
-            if (savedTheme === 'dark') {
-                themeSwitch.classList.add('active');
-            } else {
-                themeSwitch.classList.remove('active');
-            }
-            
-            const savedPaletteKey = savedTheme === 'light' 
+            const initialPaletteKey = initialTheme === 'light' 
                 ? (localStorage.getItem('selectedLightPalette') || 'default')
                 : (localStorage.getItem('selectedDarkPalette') || 'default');
-            applyPaletteStyle(savedTheme, savedPaletteKey);
+            applyPaletteStyle(initialTheme, initialPaletteKey, false);
 
             updateAISwitchUI();
             initSwipe();
             initFirebaseSync();
 
-            // GESTIONE DEL TASTO INDIETRO PER DISPOSITIVI ANDROID
             window.addEventListener('popstate', (e) => {
-                // Se c'è un popup aperto, lo chiudiamo
                 const isAnySheetOpen = document.querySelector('.sheet.open');
                 if (isAnySheetOpen) {
-                    // Chiude tutto senza attivare ulteriori modifiche alla cronologia
                     document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open'));
                     document.getElementById('item-input').blur();
                 }
             });
         });
 
-        function applyPaletteStyle(theme, key) {
+        function applyPaletteStyle(theme, key, saveToServer = true) {
             const p = PALETTES[theme][key] || PALETTES[theme]['default'];
             const root = document.documentElement;
 
@@ -561,15 +553,21 @@
 
             if (theme === 'light') {
                 localStorage.setItem('selectedLightPalette', key);
+                serverSettings.selectedLightPalette = key;
             } else {
                 localStorage.setItem('selectedDarkPalette', key);
+                serverSettings.selectedDarkPalette = key;
+            }
+            
+            if (saveToServer) {
+                db.ref('homeHub/settings').set(serverSettings);
             }
             updateAndroidBarColor(theme);
         }
 
         function onPaletteSelectChange(key) {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            applyPaletteStyle(currentTheme, key);
+            applyPaletteStyle(currentTheme, key, true);
         }
 
         function renderPaletteSelectorUI() {
@@ -580,17 +578,14 @@
 
             title.innerText = currentTheme === 'light' ? 'Stile interfaccia (Palette Chiara)' : 'Stile interfaccia (Palette Scura)';
 
-            const activeKey = currentTheme === 'light'
-                ? (localStorage.getItem('selectedLightPalette') || 'default')
-                : (localStorage.getItem('selectedDarkPalette') || 'default');
+            const activeKey = currentTheme === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
 
             select.innerHTML = '';
             Object.keys(PALETTES[currentTheme]).forEach(key => {
-                const p = PALETTES[currentTheme][key];
                 const label = PALETTE_NAMES[currentTheme][key] || key;
                 const opt = document.createElement('option');
                 opt.value = key;
-                opt.innerText = `${label} (${p.bg}, ${p.acc})`;
+                opt.innerText = label; // Rimosso l'esadecimale brutto, ora mostra solo il Nome Pulito!
                 if(key === activeKey) opt.selected = true;
                 select.appendChild(opt);
             });
@@ -619,6 +614,36 @@
                 aiHistory = snapshot.val() || {};
                 renderAll();
             });
+
+            // SYNC DEL COLORE E TEMA SUL SERVER COMPLETO
+            db.ref('homeHub/settings').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    serverSettings = data;
+                    localStorage.setItem('theme', serverSettings.theme);
+                    document.documentElement.setAttribute('data-theme', serverSettings.theme);
+                    updateThemeSwitchUI(serverSettings.theme);
+                    
+                    const currentPaletteKey = serverSettings.theme === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
+                    applyPaletteStyle(serverSettings.theme, currentPaletteKey, false);
+                } else {
+                    // Se non esiste sul server, carichiamo i valori attuali
+                    serverSettings.theme = localStorage.getItem('theme') || 'light';
+                    serverSettings.selectedLightPalette = localStorage.getItem('selectedLightPalette') || 'default';
+                    serverSettings.selectedDarkPalette = localStorage.getItem('selectedDarkPalette') || 'default';
+                    db.ref('homeHub/settings').set(serverSettings);
+                }
+            });
+        }
+
+        function updateThemeSwitchUI(theme) {
+            const themeSwitch = document.getElementById('main-theme-switch');
+            if (!themeSwitch) return;
+            if (theme === 'dark') {
+                themeSwitch.classList.add('active');
+            } else {
+                themeSwitch.classList.remove('active');
+            }
         }
 
         function buildTabsUI() {
@@ -808,7 +833,6 @@
             document.getElementById('add-popup-title').innerText = `Aggiungi a ${blockName}`;
             document.getElementById('item-input').value = '';
             
-            // Gestione History Back di Android
             history.pushState({ modalOpen: true }, "");
 
             document.getElementById('backdrop').classList.add('open');
@@ -842,7 +866,6 @@
         }
 
         function openSettingsSheet() {
-            // Gestione History Back di Android
             history.pushState({ modalOpen: true }, "");
 
             document.getElementById('backdrop').classList.add('open'); 
@@ -939,7 +962,6 @@
         }
 
         function closeAllSheets() {
-            // Rimuove lo stato fittizio dalla cronologia se l'utente chiude manualmente con i tasti in-app
             if (window.history.state && window.history.state.modalOpen) {
                 window.history.back();
             }
@@ -948,29 +970,23 @@
         }
         
         function toggleTheme() { 
-            const themeSwitch = document.getElementById('main-theme-switch');
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
             document.documentElement.setAttribute('data-theme', t); 
             localStorage.setItem('theme', t); 
+            serverSettings.theme = t;
             
-            // Gestione animazione switch pallino bianco
-            if (t === 'dark') {
-                themeSwitch.classList.add('active');
-            } else {
-                themeSwitch.classList.remove('active');
-            }
+            updateThemeSwitchUI(t);
             
-            const targetKey = t === 'light' 
-                ? (localStorage.getItem('selectedLightPalette') || 'default')
-                : (localStorage.getItem('selectedDarkPalette') || 'default');
-            applyPaletteStyle(t, targetKey);
+            const targetKey = t === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
+            applyPaletteStyle(t, targetKey, true);
             updateAISwitchUI(); 
+            renderPaletteSelectorUI();
         }
 
         function updateAndroidBarColor(theme) {
             const meta = document.getElementById('meta-theme-color');
             if(meta) {
-                const currentPalette = PALETTES[theme][theme === 'light' ? (localStorage.getItem('selectedLightPalette') || 'default') : (localStorage.getItem('selectedDarkPalette') || 'default')];
+                const currentPalette = PALETTES[theme][theme === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette];
                 meta.setAttribute('content', currentPalette ? currentPalette.bg : (theme === 'dark' ? '#000000' : '#f1f5f9'));
             }
         }
