@@ -462,13 +462,28 @@
 
         const PALETTE_NAMES = {
             light: {
-                default: 'Predefinito', pureWhite: 'Full White', emerald: 'Smeraldo', nordic: 'Nordico',
-                cream: 'Crema', lavender: 'Lavanda', rose: 'Rosa', ocean: 'Oceano', sage: 'Salvia', monochrome: 'Monocromo'
+                default: 'Predefinito (Slate/Blue)', 
+                pureWhite: 'Full White (White/Blue)', 
+                emerald: 'Smeraldo (Mint/Green)', 
+                nordic: 'Nordico (Ice/Green)',
+                cream: 'Crema (Sand/Amber)', 
+                lavender: 'Lavanda (Plum/Purple)', 
+                rose: 'Rosa (Blush/Pink)', 
+                ocean: 'Oceano (Sky/Blue)', 
+                sage: 'Salvia (Moss/Green)', 
+                monochrome: 'Monocromo (Slate/Dark Slate)'
             },
             dark: {
-                default: 'Predefinito', amoled: 'Full AMOLED', classicDark: 'Verde Scuro', synth: 'Synthwave',
-                nordicNight: 'Notte Nordica', midnight: 'Mezzanotte', forest: 'Foresta', cyberpunk: 'Cyberpunk',
-                dracula: 'Dracula', obsidian: 'Ossidiana'
+                default: 'Predefinito (Black/Emerald)', 
+                amoled: 'Full AMOLED (Black/White)', 
+                classicDark: 'Verde Scuro (Deep Green/Emerald)', 
+                synth: 'Synthwave (Purple/Pink)',
+                nordicNight: 'Notte Nordica (Navy/Blue)', 
+                midnight: 'Mezzanotte (Dark Blue/Blue)', 
+                forest: 'Foresta (Dark Green/Green)', 
+                cyberpunk: 'Cyberpunk (Charcoal/Amber)',
+                dracula: 'Dracula (Grey/Red)', 
+                obsidian: 'Ossidiana (Dark Grey/Sky Blue)'
             }
         };
 
@@ -510,7 +525,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Primo rendering da dati locali temporanei prima del sync Firebase
             const initialTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', initialTheme);
             updateThemeSwitchUI(initialTheme);
@@ -585,7 +599,7 @@
                 const label = PALETTE_NAMES[currentTheme][key] || key;
                 const opt = document.createElement('option');
                 opt.value = key;
-                opt.innerText = label; // Rimosso l'esadecimale brutto, ora mostra solo il Nome Pulito!
+                opt.innerText = label;
                 if(key === activeKey) opt.selected = true;
                 select.appendChild(opt);
             });
@@ -615,7 +629,6 @@
                 renderAll();
             });
 
-            // SYNC DEL COLORE E TEMA SUL SERVER COMPLETO
             db.ref('homeHub/settings').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -627,7 +640,6 @@
                     const currentPaletteKey = serverSettings.theme === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
                     applyPaletteStyle(serverSettings.theme, currentPaletteKey, false);
                 } else {
-                    // Se non esiste sul server, carichiamo i valori attuali
                     serverSettings.theme = localStorage.getItem('theme') || 'light';
                     serverSettings.selectedLightPalette = localStorage.getItem('selectedLightPalette') || 'default';
                     serverSettings.selectedDarkPalette = localStorage.getItem('selectedDarkPalette') || 'default';
