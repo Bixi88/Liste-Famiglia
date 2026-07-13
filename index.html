@@ -48,7 +48,7 @@
         }
 
         html[data-theme="dark"] {
-            /* Palette Scura Dinamica */
+            /* Palette Scura Dinamica Default */
             --bg-color: #000000;          
             --surface-color: #121314;     
             --item-bg: #1a1c1e;           
@@ -432,7 +432,7 @@
     </div>
 
     <script>
-        // CONFIGURAZIONE COLORI
+        // CONFIGURAZIONE COLORI CON 10 LIGHT E 30 DARK
         const PALETTES = {
             light: {
                 default:     { bg: '#f1f5f9', surf: '#ffffff', item: '#f0f4f8', text: '#0f172a', sec: '#64748b', acc: '#2563eb', accL: '#eff6ff', border: '#cbd5e1', itemB: '#e2e8f0', delB: '#e2e8f0', delC: '#334155' },
@@ -447,28 +447,56 @@
                 monochrome:  { bg: '#f8fafc', surf: '#ffffff', item: '#f1f5f9', text: '#0f172a', sec: '#475569', acc: '#334155', accL: '#f8fafc', border: '#cbd5e1', itemB: '#e2e8f0', delB: '#cbd5e1', delC: '#0f172a' }
             },
             dark: {
-                default:     { bg: '#000000', surf: '#121314', item: '#1a1c1e', text: '#ffffff', sec: '#94a3b8', acc: '#10b981', accL: 'rgba(16, 185, 129, 0.15)', border: '#232527', itemB: '#2c2e31', delB: '#2c2e31', delC: '#cbd5e1' },
-                amoled:      { bg: '#000000', surf: '#000000', item: '#000000', text: '#ffffff', sec: '#9a9a9e', acc: '#10b981', accL: 'rgba(16, 185, 129, 0.15)', border: '#000000', itemB: '#000000', delB: '#000000', delC: '#10b981', shadow: '0 4px 14px rgba(255,255,255,0.05)', shadowSm: '0 2px 6px rgba(255,255,255,0.03)' },
-                classicDark: { bg: '#121612', surf: '#1c221c', item: '#252c25', text: '#e2e8f0', sec: '#8da28d', acc: '#10b981', accL: 'rgba(16,185,129,0.15)', border: '#273027', itemB: '#2f3b2f', delB: '#273027', delC: '#e2e8f0' },
-                synth:       { bg: '#0f051d', surf: '#1a0b2e', item: '#251242', text: '#f8f0ff', sec: '#a894c0', acc: '#ff007f', accL: 'rgba(255,0,127,0.15)', border: '#33145a', itemB: '#3f1b6d', delB: '#33145a', delC: '#f8f0ff' },
-                nordicNight: { bg: '#0b132b', surf: '#1c2541', item: '#233156', text: '#edf2f4', sec: '#8d99ae', acc: '#4ea8de', accL: 'rgba(78,168,222,0.15)', border: '#233156', itemB: '#2b3e6c', delB: '#233156', delC: '#edf2f4' },
-                midnight:    { bg: '#0a0f1d', surf: '#141b2d', item: '#1d273e', text: '#e2e8f0', sec: '#7c8ba1', acc: '#3b82f6', accL: 'rgba(59,130,246,0.15)', border: '#222d4a', itemB: '#2b395c', delB: '#222d4a', delC: '#e2e8f0' },
-                forest:      { bg: '#0d140d', surf: '#172217', item: '#203020', text: '#e6efe6', sec: '#8fa38f', acc: '#22c55e', accL: 'rgba(34,197,94,0.15)', border: '#243524', itemB: '#2d432d', delB: '#243524', delC: '#e6efe6' },
-                cyberpunk:   { bg: '#141414', surf: '#1f1f1f', item: '#2a2a2a', text: '#ffffff', sec: '#a0a0a0', acc: '#f59e0b', accL: 'rgba(245,158,11,0.15)', border: '#2d2d2d', itemB: '#383838', delB: '#2d2d2d', delC: '#ffffff' },
-                dracula:     { bg: '#282a36', surf: '#44475a', item: '#383a48', text: '#f8f8f2', sec: '#6272a4', acc: '#ff5555', accL: 'rgba(255, 85, 85, 0.15)', border: '#6272a4', itemB: '#4f5268', delB: '#6272a4', delC: '#f8f8f2' },
-                obsidian:    { bg: '#0c1013', surf: '#172026', item: '#202c35', text: '#e2eaf0', sec: '#788996', acc: '#0ea5e9', accL: 'rgba(14,165,233,0.15)', border: '#24323c', itemB: '#2e3f4b', delB: '#24323c', delC: '#e2eaf0' }
+                default:      { bg: '#0b0f19', surf: '#161f30', item: '#1e293b', text: '#ffffff', sec: '#94a3b8', acc: '#3b82f6', accL: 'rgba(59,130,246,0.15)', border: '#243242', itemB: '#2e3e52', delB: '#243242', delC: '#cbd5e1' },
+                amoledWhite:  { bg: '#000000', surf: '#000000', item: '#121212', text: '#ffffff', sec: '#a0a0a0', acc: '#ffffff', accL: 'rgba(255,255,255,0.1)',  border: '#222222', itemB: '#333333', delB: '#222222', delC: '#ffffff' },
+                amoledEmerald:{ bg: '#000000', surf: '#000000', item: '#0d130f', text: '#ffffff', sec: '#8fa397', acc: '#10b981', accL: 'rgba(16,185,129,0.15)', border: '#16241c', itemB: '#1d3025', delB: '#16241c', delC: '#10b981' },
+                cyberpunk:    { bg: '#140018', surf: '#250036', item: '#3a0054', text: '#00ffcc', sec: '#ff0055', acc: '#f59e0b', accL: 'rgba(245,158,11,0.15)', border: '#ff0055', itemB: '#3a0054', delB: '#250036', delC: '#00ffcc' },
+                lavaCrimson:  { bg: '#0b0101', surf: '#1a0505', item: '#2b0a0a', text: '#fca5a5', sec: '#b91c1c', acc: '#ef4444', accL: 'rgba(239,68,68,0.15)',  border: '#3d0f0f', itemB: '#521414', delB: '#3d0f0f', delC: '#fca5a5' },
+                synthwave:    { bg: '#0f051d', surf: '#1a0b2e', item: '#251242', text: '#f8f0ff', sec: '#a894c0', acc: '#ff007f', accL: 'rgba(255,0,127,0.15)', border: '#33145a', itemB: '#3f1b6d', delB: '#33145a', delC: '#f8f0ff' },
+                classicDark:  { bg: '#121612', surf: '#1c221c', item: '#252c25', text: '#e2e8f0', sec: '#8da28d', acc: '#10b981', accL: 'rgba(16,185,129,0.15)', border: '#273027', itemB: '#2f3b2f', delB: '#273027', delC: '#e2e8f0' },
+                nordicNight:  { bg: '#0b132b', surf: '#1c2541', item: '#233156', text: '#edf2f4', sec: '#8d99ae', acc: '#4ea8de', accL: 'rgba(78,168,222,0.15)', border: '#233156', itemB: '#2b3e6c', delB: '#233156', delC: '#edf2f4' },
+                midnight:     { bg: '#0a0f1d', surf: '#141b2d', item: '#1d273e', text: '#e2e8f0', sec: '#7c8ba1', acc: '#3b82f6', accL: 'rgba(59,130,246,0.15)', border: '#222d4a', itemB: '#2b395c', delB: '#222d4a', delC: '#e2e8f0' },
+                forest:       { bg: '#0d140d', surf: '#172217', item: '#203020', text: '#e6efe6', sec: '#8fa38f', acc: '#22c55e', accL: 'rgba(34,197,94,0.15)', border: '#243524', itemB: '#2d432d', delB: '#243524', delC: '#e6efe6' },
+                dracula:      { bg: '#282a36', surf: '#44475a', item: '#383a48', text: '#f8f8f2', sec: '#6272a4', acc: '#ff5555', accL: 'rgba(255,85,85,0.15)',  border: '#6272a4', itemB: '#4f5268', delB: '#6272a4', delC: '#f8f8f2' },
+                obsidian:     { bg: '#0c1013', surf: '#172026', item: '#202c35', text: '#e2eaf0', sec: '#788996', acc: '#0ea5e9', accL: 'rgba(14,165,233,0.15)', border: '#24323c', itemB: '#2e3f4b', delB: '#24323c', delC: '#e2eaf0' },
+                deepSpace:    { bg: '#05050a', surf: '#0f0f1a', item: '#18182c', text: '#e0e0ff', sec: '#7a7a9a', acc: '#6366f1', accL: 'rgba(99,102,241,0.15)', border: '#1f1f3a', itemB: '#2a2a4e', delB: '#1f1f3a', delC: '#e0e0ff' },
+                tokyoNight:   { bg: '#1a1b26', surf: '#24283b', item: '#2f3549', text: '#a9b1d6', sec: '#565f89', acc: '#7aa2f7', accL: 'rgba(122,162,247,0.15)', border: '#383e5a', itemB: '#414868', delB: '#383e5a', delC: '#a9b1d6' },
+                oneDark:      { bg: '#1e1e24', surf: '#282c34', item: '#31353f', text: '#abb2bf', sec: '#5c6370', acc: '#61afef', accL: 'rgba(97,175,239,0.15)', border: '#3e4451', itemB: '#4b5263', delB: '#3e4451', delC: '#abb2bf' },
+                matrix:       { bg: '#000000', surf: '#051405', item: '#0a240a', text: '#00ff00', sec: '#00aa00', acc: '#00ff00', accL: 'rgba(0,255,0,0.15)',   border: '#0d340d', itemB: '#144414', delB: '#0d340d', delC: '#00ff00' },
+                oceanic:      { bg: '#0f172a', surf: '#1e293b', item: '#334155', text: '#f8fafc', sec: '#64748b', acc: '#06b6d4', accL: 'rgba(6,182,212,0.15)',  border: '#334155', itemB: '#475569', delB: '#334155', delC: '#f8fafc' },
+                bordeaux:     { bg: '#100508', surf: '#240c13', item: '#38141e', text: '#fbcfe8', sec: '#9d174d', acc: '#f43f5e', accL: 'rgba(244,63,94,0.15)',  border: '#4c1523', itemB: '#631c2e', delB: '#4c1523', delC: '#fbcfe8' },
+                nordDark:     { bg: '#2e3440', surf: '#3b4252', item: '#434c5e', text: '#eceff4', sec: '#d8dee9', acc: '#88c0d0', accL: 'rgba(136,192,208,0.15)', border: '#4c566a', itemB: '#4c566a', delB: '#4c566a', delC: '#eceff4' },
+                gruvbox:      { bg: '#1d2021', surf: '#282828', item: '#3c3836', text: '#fbf1c7', sec: '#a89984', acc: '#fe8019', accL: 'rgba(254,128,25,0.15)',  border: '#504945', itemB: '#665c54', delB: '#504945', delC: '#fbf1c7' },
+                solarized:    { bg: '#002b36', surf: '#073642', item: '#586e75', text: '#fdf6e3', sec: '#93a1a1', acc: '#268bd2', accL: 'rgba(38,139,210,0.15)',  border: '#073642', itemB: '#586e75', delB: '#073642', delC: '#fdf6e3' },
+                violet:       { bg: '#13001f', surf: '#26003d', item: '#39005c', text: '#f3e8ff', sec: '#c084fc', acc: '#a855f7', accL: 'rgba(168,85,247,0.15)', border: '#4c007a', itemB: '#5f0099', delB: '#4c007a', delC: '#f3e8ff' },
+                coffeeDark:   { bg: '#140f0d', surf: '#231b17', item: '#322721', text: '#f5ebe6', sec: '#a07864', acc: '#855845', accL: 'rgba(133,88,69,0.15)',  border: '#3d2f29', itemB: '#4d3b33', delB: '#3d2f29', delC: '#f5ebe6' },
+                steel:        { bg: '#11171a', surf: '#1d272c', item: '#29373e', text: '#eaf1f5', sec: '#78909c', acc: '#607d8b', accL: 'rgba(96,125,139,0.15)', border: '#344750', itemB: '#405863', delB: '#344750', delC: '#eaf1f5' },
+                goldBlack:    { bg: '#050505', surf: '#141414', item: '#222222', text: '#fef08a', sec: '#ca8a04', acc: '#eab308', accL: 'rgba(234,179,8,0.15)',  border: '#2d2d2d', itemB: '#383838', delB: '#2d2d2d', delC: '#fef08a' },
+                iceberg:      { bg: '#0a0e14', surf: '#161f29', item: '#222f3e', text: '#e2e9f3', sec: '#8193a9', acc: '#00d2ff', accL: 'rgba(0,210,255,0.15)',  border: '#2c3d52', itemB: '#364b64', delB: '#2c3d52', delC: '#e2e9f3' },
+                rust:         { bg: '#140905', surf: '#26120b', item: '#381c12', text: '#ffedd5', sec: '#c2410c', acc: '#ea580c', accL: 'rgba(234,88,12,0.15)',  border: '#4a2518', itemB: '#5c2f1e', delB: '#4a2518', delC: '#ffedd5' },
+                plum:         { bg: '#120514', surf: '#240b29', item: '#36123e', text: '#fae8ff', sec: '#a21caf', acc: '#d946ef', accL: 'rgba(217,70,239,0.15)', border: '#491854', itemB: '#5c1f6a', delB: '#491854', delC: '#fae8ff' },
+                carbon:       { bg: '#161616', surf: '#262626', item: '#353535', text: '#f4f4f4', sec: '#8d8d8d', acc: '#525252', accL: 'rgba(255,255,255,0.05)',border: '#393939', itemB: '#474747', delB: '#393939', delC: '#f4f4f4' },
+                military:     { bg: '#0f110c', surf: '#1b1f16', item: '#282e21', text: '#f1f5e9', sec: '#4d5c3f', acc: '#65a30d', accL: 'rgba(101,163,13,0.15)', border: '#343c2b', itemB: '#414b36', delB: '#343c2b', delC: '#f1f5e9' }
             }
         };
 
         const PALETTE_NAMES = {
             light: {
-                default: 'Predefinito', pureWhite: 'Full White', emerald: 'Smeraldo', nordic: 'Nordico',
-                cream: 'Crema', lavender: 'Lavanda', rose: 'Rosa', ocean: 'Oceano', sage: 'Salvia', monochrome: 'Monocromo'
+                default: 'Predefinito (White/Blue)', pureWhite: 'Full White (White/White)', emerald: 'Smeraldo (LightGreen/Emerald)', 
+                nordic: 'Nordico (LightGray/NordicGreen)', cream: 'Crema (Cream/Amber)', lavender: 'Lavanda (Lavender/Purple)', 
+                rose: 'Rosa (Rose/Pink)', ocean: 'Oceano (LightBlue/OceanBlue)', sage: 'Salvia (Mint/Green)', monochrome: 'Monocromo (Slate/Gray)'
             },
             dark: {
-                default: 'Predefinito', amoled: 'Full AMOLED', classicDark: 'Verde Scuro', synth: 'Synthwave',
-                nordicNight: 'Notte Nordica', midnight: 'Mezzanotte', forest: 'Foresta', cyberpunk: 'Cyberpunk',
-                dracula: 'Dracula', obsidian: 'Ossidiana'
+                default: 'Predefinito (DarkBlue/Blue)', amoledWhite: 'Pure AMOLED (Black/White)', amoledEmerald: 'AMOLED Smeraldo (Black/Emerald)', 
+                cyberpunk: 'Cyberpunk (Purple/Yellow)', lavaCrimson: 'Lava Crimson (Black/Red)', synthwave: 'Synthwave (Purple/Pink)', 
+                classicDark: 'Verde Scuro (DarkGreen/Emerald)', nordicNight: 'Notte Nordica (Navy/LightBlue)', midnight: 'Mezzanotte (DarkBlue/Blue)', 
+                forest: 'Foresta (DarkGreen/Green)', dracula: 'Dracula (Grey/Purple)', obsidian: 'Ossidiana (DarkSlate/Cyan)', 
+                deepSpace: 'Deep Space (DarkPurple/Indigo)', tokyoNight: 'Tokyo Night (Navy/Indigo)', oneDark: 'One Dark (Grey/Blue)', 
+                matrix: 'Matrix (Black/Green)', oceanic: 'Oceanic (Slate/Cyan)', bordeaux: 'Bordeaux (DarkBurgundy/Rose)', 
+                nordDark: 'Nord Dark (Grey/Teal)', gruvbox: 'Gruvbox (Charcoal/Orange)', solarized: 'Solarized Dark (Cyan/Blue)', 
+                violet: 'Violet (DarkPurple/Purple)', coffeeDark: 'Espresso (DarkBrown/Brown)', steel: 'Steel (Slate/BlueGrey)', 
+                goldBlack: 'Gold Black (Black/Gold)', iceberg: 'Iceberg (DarkNavy/IceBlue)', rust: 'Rust (DarkOrange/Orange)', 
+                plum: 'Plum (DarkMagenta/Magenta)', carbon: 'Carbon (Charcoal/Grey)', military: 'Military (DarkOlive/Lime)'
             }
         };
 
@@ -510,7 +538,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Primo rendering da dati locali temporanei prima del sync Firebase
             const initialTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', initialTheme);
             updateThemeSwitchUI(initialTheme);
@@ -582,10 +609,11 @@
 
             select.innerHTML = '';
             Object.keys(PALETTES[currentTheme]).forEach(key => {
-                const label = PALETTE_NAMES[currentTheme][key] || key;
+                const fullLabel = PALETTE_NAMES[currentTheme][key] || key;
+                
                 const opt = document.createElement('option');
                 opt.value = key;
-                opt.innerText = label; // Rimosso l'esadecimale brutto, ora mostra solo il Nome Pulito!
+                opt.innerText = fullLabel;
                 if(key === activeKey) opt.selected = true;
                 select.appendChild(opt);
             });
@@ -615,7 +643,6 @@
                 renderAll();
             });
 
-            // SYNC DEL COLORE E TEMA SUL SERVER COMPLETO
             db.ref('homeHub/settings').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -627,7 +654,6 @@
                     const currentPaletteKey = serverSettings.theme === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
                     applyPaletteStyle(serverSettings.theme, currentPaletteKey, false);
                 } else {
-                    // Se non esiste sul server, carichiamo i valori attuali
                     serverSettings.theme = localStorage.getItem('theme') || 'light';
                     serverSettings.selectedLightPalette = localStorage.getItem('selectedLightPalette') || 'default';
                     serverSettings.selectedDarkPalette = localStorage.getItem('selectedDarkPalette') || 'default';
@@ -649,344 +675,432 @@
         function buildTabsUI() {
             const tabsContainer = document.getElementById('nav-tabs-container');
             const slider = document.getElementById('tabs-slider');
-            const selectDropdown = document.getElementById('settings-tab-select');
-            
-            if (currentTabIdx >= structure.tabs.length || currentTabIdx < 0) {
-                currentTabIdx = 0;
-            }
+            if (!tabsContainer || !slider) return;
 
             tabsContainer.innerHTML = '';
             slider.innerHTML = '';
-            selectDropdown.innerHTML = '';
 
-            slider.style.width = `${structure.tabs.length * 100}%`;
-
-            structure.tabs.forEach((tab, index) => {
-                const btn = document.createElement('div');
-                btn.id = `btn-tab-${index}`;
-                btn.className = `tab-btn ${index === currentTabIdx ? 'active' : ''}`;
+            structure.tabs.forEach((tab, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${idx === currentTabIdx ? 'active' : ''}`;
                 btn.innerText = tab;
-                btn.onclick = () => switchTab(index);
+                btn.onclick = () => switchTab(idx);
                 tabsContainer.appendChild(btn);
 
-                const content = document.createElement('div');
-                content.id = `content-tab-${tab}`;
-                content.className = 'tab-content';
-                content.style.width = `${100 / structure.tabs.length}%`;
-                slider.appendChild(content);
-
-                const opt = document.createElement('option');
-                opt.value = tab;
-                opt.innerText = tab.toUpperCase();
-                selectDropdown.appendChild(opt);
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'tab-content';
+                contentDiv.id = `content-tab-${tab}`;
+                slider.appendChild(contentDiv);
             });
 
-            slider.style.transform = `translateX(-${(currentTabIdx * 100) / structure.tabs.length}%)`;
+            slider.style.width = `${structure.tabs.length * 100}%`;
+            updateSliderPosition();
         }
 
-        function switchTab(index) {
-            if (index < 0 || index >= structure.tabs.length) return;
-            currentTabIdx = index;
-            
+        function switchTab(idx) {
+            if (idx < 0 || idx >= structure.tabs.length) return;
+            currentTabIdx = idx;
             localStorage.setItem('activeTabIdx', currentTabIdx);
 
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach((btn, i) => {
+                if (i === idx) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            updateSliderPosition();
+        }
+
+        function updateSliderPosition() {
             const slider = document.getElementById('tabs-slider');
-            slider.style.transform = `translateX(-${(currentTabIdx * 100) / structure.tabs.length}%)`;
-            
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            const activeBtn = document.getElementById(`btn-tab-${index}`);
-            if(activeBtn) activeBtn.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (!slider) return;
+            const offset = -currentTabIdx * (100 / structure.tabs.length);
+            slider.style.transform = `translateX(${offset}%)`;
         }
 
         function initSwipe() {
             const area = document.getElementById('swipe-area');
-            area.addEventListener('touchstart', e => { tStart = e.touches[0].clientX; }, {passive: true});
-            area.addEventListener('touchend', e => {
-                let tEnd = e.changedTouches[0].clientX;
-                let diff = tStart - tEnd;
-                if (Math.abs(diff) > 50 && structure.tabs.length > 0) {
-                    if (diff > 0 && currentTabIdx < structure.tabs.length - 1) switchTab(currentTabIdx + 1);
-                    else if (diff < 0 && currentTabIdx > 0) switchTab(currentTabIdx - 1);
+            let xStart = 0; let yStart = 0;
+            let isSwiping = false;
+
+            area.addEventListener('touchstart', (e) => {
+                xStart = e.touches[0].clientX;
+                yStart = e.touches[0].clientY;
+                isSwiping = true;
+            }, { passive: true });
+
+            area.addEventListener('touchend', (e) => {
+                if (!isSwiping) return;
+                const xDiff = xStart - e.changedTouches[0].clientX;
+                const yDiff = yStart - e.changedTouches[0].clientY;
+
+                if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > 60) {
+                    if (xDiff > 0) switchTab(currentTabIdx + 1);
+                    else switchTab(currentTabIdx - 1);
                 }
-            }, {passive: true});
+                isSwiping = false;
+            }, { passive: true });
         }
 
         function renderAll() {
-            if (!structure.tabs.length) return;
-            
             structure.tabs.forEach(tab => {
                 const container = document.getElementById(`content-tab-${tab}`);
                 if (!container) return;
                 container.innerHTML = '';
 
-                const blocksList = structure.blocks[tab] || [];
-                if(blocksList.length === 0) {
-                    container.innerHTML = '<div class="empty-text">Nessun sotto-blocco configurato in questa sezione.</div>';
+                const blocks = structure.blocks[tab] || [];
+                if (blocks.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.className = 'empty-text';
+                    empty.innerText = 'Nessuna sotto-sezione presente in questo tab.';
+                    container.appendChild(empty);
                 }
 
-                blocksList.forEach(block => {
-                    const group = document.createElement('div'); group.className = 'block-group';
-                    
-                    const header = document.createElement('div'); 
-                    header.className = 'block-header-squircle'; 
-                    header.innerHTML = `<span>${block}</span><button class="block-add-btn" onclick="openAddSheetForBlock('${block}')">+</button>`;
+                blocks.forEach(block => {
+                    const group = document.createElement('div');
+                    group.className = 'block-group';
+
+                    const header = document.createElement('div');
+                    header.className = 'block-header-squircle';
+                    header.innerHTML = `<span>${block}</span>`;
+
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'block-add-btn';
+                    addBtn.innerText = '+';
+                    addBtn.onclick = () => openAddSheet(`${tab}:${block}`);
+                    header.appendChild(addBtn);
                     group.appendChild(header);
-                    
-                    const aiCont = document.createElement('div'); aiCont.id = `ai-${tab}-${block}`; aiCont.className = 'ai-suggestions-container'; if(!showAI) aiCont.style.display = 'none'; group.appendChild(aiCont);
-                    const body = document.createElement('div'); body.className = 'block-body-squircle';
-                    const listDiv = document.createElement('div'); listDiv.id = `list-${tab}-${block}`; listDiv.className = `list-container ${tab.toLowerCase() === 'film' ? 'film-list' : ''}`;
-                    
-                    body.appendChild(listDiv); group.appendChild(body); container.appendChild(group);
 
-                    const blockItems = (state[tab] && state[tab][block]) ? state[tab][block] : [];
-                    renderSingleListItems(`list-${tab}-${block}`, blockItems, tab, block);
-                    
-                    const blockHistory = (aiHistory[tab] && aiHistory[tab][block]) ? aiHistory[tab][block] : {};
-                    renderAISuggestionsItems(`ai-${tab}-${block}`, blockHistory, blockItems, tab, block);
-                });
-            });
-        }
-
-        function renderSingleListItems(cId, data, tab, block) {
-            const container = document.getElementById(cId);
-            if (!container) return;
-            container.innerHTML = data.length ? '' : '<div class="empty-text">Nessun elemento</div>';
-            const isFilmTab = (tab.toLowerCase() === 'film');
-
-            data.forEach((item, i) => {
-                const div = document.createElement('div'); div.className = 'list-item'; div.setAttribute('data-item-value', item);
-                let leftAction = isFilmTab ? `<div class="drag-handle">☰</div>` : '';
-                div.innerHTML = `
-                    ${leftAction}
-                    <div class="list-item-text">${item}</div>
-                    <div class="list-item-actions"><button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button></div>
-                `;
-                container.appendChild(div);
-            });
-
-            if (isFilmTab && data.length > 1) {
-                Sortable.create(container, {
-                    handle: '.drag-handle', animation: 180, ghostClass: 'sortable-ghost',
-                    onEnd: function () {
-                        let updatedArray = [];
-                        container.querySelectorAll('.list-item').forEach(el => { updatedArray.push(el.getAttribute('data-item-value')); });
-                        if (!state[tab]) state[tab] = {};
-                        state[tab][block] = updatedArray;
-                        db.ref('homeHub/state').set(state);
+                    if (showAI && tab === 'spesa') {
+                        const sugContainer = document.createElement('div');
+                        sugContainer.className = 'ai-suggestions-container';
+                        const listSug = getAISuggestions(block);
+                        if (listSug.length > 0) {
+                            listSug.forEach(item => {
+                                const chip = document.createElement('div');
+                                chip.className = 'ai-chip';
+                                chip.innerText = `+ ${item}`;
+                                chip.onclick = () => addAIItemDirectly(tab, block, item);
+                                sugContainer.appendChild(chip);
+                            });
+                            group.appendChild(sugContainer);
+                        }
                     }
-                });
-            }
-        }
 
-        function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
-            const container = document.getElementById(cId);
-            if (!container) return;
-            
-            let lowerHistory = {};
-            Object.keys(hData).forEach(key => {
-                let lowKey = key.toLowerCase();
-                lowerHistory[lowKey] = (lowerHistory[lowKey] || 0) + hData[key];
-            });
+                    const listContainer = document.createElement('div');
+                    listContainer.className = 'list-container';
+                    if (tab === 'film') listContainer.classList.add('film-list');
+                    listContainer.id = `list-${tab}-${block}`;
 
-            let activeListLower = activeList.map(it => it.toLowerCase());
-
-            let sorted = Object.keys(lowerHistory).sort((a,b) => lowerHistory[b] - lowerHistory[a]);
-            let filtered = sorted.filter(it => lowerHistory[it] >= 3 && !activeListLower.includes(it));
-            let itemsToDisplay = filtered.slice(0, 3);
-            
-            container.innerHTML = '';
-            itemsToDisplay.forEach(it => {
-                let formattedItem = capitalizeFirstLetter(it);
-                
-                const chip = document.createElement('div'); 
-                chip.className = 'ai-chip'; 
-                chip.innerText = `+ ${formattedItem}`;
-                chip.onclick = () => {
-                    if(!state[tab]) state[tab] = {}; 
-                    if(!state[tab][block]) state[tab][block] = [];
-                    
-                    if (block.toLowerCase() === 'da vedere' || tab.toLowerCase() === 'film') {
-                        state[tab][block].unshift(formattedItem);
+                    const items = state[`${tab}:${block}`] || [];
+                    if (items.length === 0) {
+                        const emptyTxt = document.createElement('div');
+                        emptyTxt.className = 'empty-text';
+                        emptyTxt.innerText = 'Lista vuota';
+                        listContainer.appendChild(emptyTxt);
                     } else {
-                        state[tab][block].push(formattedItem);
+                        items.forEach((item, index) => {
+                            const row = document.createElement('div');
+                            row.className = 'list-item';
+                            row.setAttribute('data-id', index);
+
+                            let handleHtml = (tab === 'film') ? `<div class="drag-handle">☰</div>` : '';
+                            row.innerHTML = `
+                                ${handleHtml}
+                                <div class="list-item-text">${item}</div>
+                                <div class="list-item-actions">
+                                    <button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${index}, '${item}')">X</button>
+                                </div>
+                            `;
+                            listContainer.appendChild(row);
+                        });
                     }
-                    
-                    if(!aiHistory[tab]) aiHistory[tab] = {}; 
-                    if(!aiHistory[tab][block]) aiHistory[tab][block] = {};
-                    
-                    aiHistory[tab][block][formattedItem] = (aiHistory[tab][block][formattedItem] || 0) + 1;
-                    
-                    db.ref('homeHub/state').set(state); 
-                    db.ref('homeHub/aiHistory').set(aiHistory);
-                };
-                container.appendChild(chip);
+
+                    group.appendChild(listContainer);
+                    container.appendChild(group);
+
+                    if (tab === 'film' && items.length > 0) {
+                        Sortable.create(listContainer, {
+                            handle: '.drag-handle',
+                            animation: 150,
+                            ghostClass: 'sortable-ghost',
+                            onEnd: (evt) => {
+                                const targetKey = `${tab}:${block}`;
+                                let currentList = [...(state[targetKey] || [])];
+                                const [movedItem] = currentList.splice(evt.oldIndex, 1);
+                                currentList.splice(evt.newIndex, 0, movedItem);
+                                state[targetKey] = currentList;
+                                db.ref('homeHub/state/' + targetKey).set(currentList);
+                            }
+                        });
+                    }
+                });
             });
         }
 
-        function deleteItem(tab, block, idx) {
-            if(state[tab] && state[tab][block]) { state[tab][block].splice(idx, 1); db.ref('homeHub/state').set(state); }
+        function openAddSheet(target) {
+            selectedTarget = target;
+            const blockName = target.split(':')[1];
+            document.getElementById('add-popup-title').innerText = `Aggiungi a ${blockName}`;
+            
+            window.history.pushState({ sheet: 'add' }, '');
+            document.getElementById('backdrop').classList.add('open');
+            const sheet = document.getElementById('addSheet');
+            sheet.classList.add('open');
+            
+            setTimeout(() => {
+                const input = document.getElementById('item-input');
+                input.value = '';
+                input.focus();
+            }, 80);
         }
 
-        function openAddSheetForBlock(blockName) {
-            selectedTarget = blockName;
-            document.getElementById('add-popup-title').innerText = `Aggiungi a ${blockName}`;
-            document.getElementById('item-input').value = '';
-            
-            history.pushState({ modalOpen: true }, "");
-
-            document.getElementById('backdrop').classList.add('open');
-            document.getElementById('addSheet').classList.add('open');
-            setTimeout(() => document.getElementById('item-input').focus(), 60);
+        function closeAllSheets() {
+            document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open'));
+            document.getElementById('item-input').blur();
+            if (window.history.state?.sheet) {
+                window.history.back();
+            }
         }
 
         function addItem() {
-            const activeTab = structure.tabs[currentTabIdx];
-            let rawValue = document.getElementById('item-input').value.trim();
-            if(!rawValue || !activeTab || !selectedTarget) return;
-            
-            let v = capitalizeFirstLetter(rawValue);
+            const input = document.getElementById('item-input');
+            let value = capitalizeFirstLetter(input.value);
+            if (!value) return;
 
-            if(!state[activeTab]) state[activeTab] = {}; 
-            if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = []; 
-            
-            if (selectedTarget.toLowerCase() === 'da vedere' || activeTab.toLowerCase() === 'film') {
-                state[activeTab][selectedTarget].unshift(v);
-            } else {
-                state[activeTab][selectedTarget].push(v);
+            if (!state[selectedTarget]) state[selectedTarget] = [];
+            state[selectedTarget].push(value);
+
+            const parts = selectedTarget.split(':');
+            if (parts[0] === 'spesa') {
+                registerAIClick(parts[1], value);
             }
-            
-            if(!aiHistory[activeTab]) aiHistory[activeTab] = {}; 
-            if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
-            aiHistory[activeTab][selectedTarget][v] = (aiHistory[activeTab][selectedTarget][v] || 0) + 1;
-            
-            db.ref('homeHub/state').set(state); 
-            db.ref('homeHub/aiHistory').set(aiHistory);
+
+            db.ref('homeHub/state/' + selectedTarget).set(state[selectedTarget]);
+            input.value = '';
             closeAllSheets();
         }
 
-        function openSettingsSheet() {
-            history.pushState({ modalOpen: true }, "");
-
-            document.getElementById('backdrop').classList.add('open'); 
-            document.getElementById('settingsSheet').classList.add('open');
-            renderPaletteSelectorUI(); renderSettingsTabs(); renderSettingsBlocks();
+        function addAIItemDirectly(tab, block, item) {
+            const targetKey = `${tab}:${block}`;
+            if (!state[targetKey]) state[targetKey] = [];
+            state[targetKey].push(item);
+            registerAIClick(block, item);
+            db.ref('homeHub/state/' + targetKey).set(state[targetKey]);
         }
 
-        function renderSettingsTabs() {
-            const cont = document.getElementById('manage-tabs-list'); cont.innerHTML = '';
-            structure.tabs.forEach((tab, index) => {
-                const row = document.createElement('div'); row.className = 'manage-item';
-                row.innerHTML = `<input type="text" class="uppercase-input" value="${tab.toUpperCase()}" onchange="renameTab(${index}, this.value)"><button class="delete-btn" style="width:24px; height:24px;" onclick="removeTab(${index})">✕</button>`;
-                cont.appendChild(row);
-            });
+        function deleteItem(tab, block, index, itemName) {
+            const targetKey = `${tab}:${block}`;
+            if (!state[targetKey]) return;
+            state[targetKey].splice(index, 1);
+            db.ref('homeHub/state/' + targetKey).set(state[targetKey]);
         }
 
-        function renderSettingsBlocks() {
-            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value || structure.tabs[0];
-            const cont = document.getElementById('manage-blocks-list'); cont.innerHTML = '';
-            if(!activeTab) return;
-            const blocksList = structure.blocks[activeTab] || [];
-            blocksList.forEach((block, index) => {
-                const row = document.createElement('div'); row.className = 'manage-item manage-item-block';
-                row.innerHTML = `<input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)"><button class="delete-btn" onclick="removeBlock('${activeTab}', ${index})">✕</button>`;
-                cont.appendChild(row);
-            });
+        function registerAIClick(block, item) {
+            if (!aiHistory[block]) aiHistory[block] = {};
+            aiHistory[block][item] = (aiHistory[block][item] || 0) + 1;
+            db.ref('homeHub/aiHistory/' + block).set(aiHistory[block]);
         }
 
-        function renameTab(idx, newVal) {
-            let val = newVal.trim().toLowerCase(); if(!val) return;
-            let oldName = structure.tabs[idx]; structure.tabs[idx] = val;
-            if(structure.blocks[oldName]) { structure.blocks[val] = structure.blocks[oldName]; delete structure.blocks[oldName]; }
-            if(state[oldName]) { state[val] = state[oldName]; delete state[oldName]; db.ref('homeHub/state').set(state); }
-            if(aiHistory[oldName]) { aiHistory[val] = aiHistory[oldName]; delete aiHistory[oldName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-            db.ref('homeHub/structure').set(structure);
+        function getAISuggestions(block) {
+            const currentItems = state[`spesa:${block}`] || [];
+            const blockHistory = aiHistory[block] || {};
+            
+            return Object.keys(blockHistory)
+                .filter(item => !currentItems.includes(item))
+                .sort((a, b) => blockHistory[b] - blockHistory[a])
+                .slice(0, 4);
         }
 
-        function removeTab(idx) {
-            let tabName = structure.tabs[idx];
-            if(confirm(`Vuoi davvero eliminare la sezione "${tabName.toUpperCase()}"?`)) {
-                structure.tabs.splice(idx, 1); if(structure.blocks[tabName]) delete structure.blocks[tabName];
-                if(state[tabName]) { delete state[tabName]; db.ref('homeHub/state').set(state); }
-                if(aiHistory[tabName]) { delete aiHistory[tabName]; delete aiHistory[tabName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-                db.ref('homeHub/structure').set(structure);
-            }
-        }
-
-        function addNewTabStructure() {
-            let n = prompt("Inserisci il nome del nuovo Tab:"); if(!n) return;
-            let val = n.trim().toLowerCase(); if(structure.tabs.includes(val)) return alert("Tab già esistente!");
-            structure.tabs.push(val); structure.blocks[val] = ['GENERALE'];
-            db.ref('homeHub/structure').set(structure); renderSettingsTabs();
-        }
-
-        function renameBlock(tab, idx, newVal) {
-            let val = newVal.trim().toUpperCase(); if(!val) return;
-            let oldBlockName = structure.blocks[tab][idx]; structure.blocks[tab][idx] = val;
-            if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; db.ref('homeHub/state').set(state); }
-            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-            db.ref('homeHub/structure').set(structure);
-        }
-
-        function removeBlock(tab, idx) {
-            let bName = structure.blocks[tab][idx];
-            if(confirm(`Vuoi davvero eliminare questo elemento "${bName}"?`)) {
-                structure.blocks[tab].splice(idx, 1);
-                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
-                if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-                db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
-            }
-        }
-
-        function addNewBlockStructure() {
-            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value; if(!activeTab) return;
-            let n = prompt(`Aggiungi elemento a ${activeTab.toUpperCase()}:`); if(!n) return;
-            let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab] || !structure.blocks[activeTab]) structure.blocks[activeTab] = [];
-            if(structure.blocks[activeTab].includes(val)) return alert("Elemento già esistente!");
-            structure.blocks[activeTab].push(val); db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
-        }
-
-        function resetAllAIClicks() { if(confirm("Vuoi azzerare la cronologia dei suggerimenti?")) { aiHistory = {}; db.ref('homeHub/aiHistory').set(aiHistory); } }
-        
-        function toggleAISuggestions() { 
-            showAI = !showAI; 
-            localStorage.setItem('showAI', showAI); 
-            updateAISwitchUI(); 
-            renderAll(); 
+        function toggleAISuggestions() {
+            showAI = !showAI;
+            localStorage.setItem('showAI', showAI);
+            updateAISwitchUI();
+            renderAll();
         }
 
         function updateAISwitchUI() {
             const sw = document.getElementById('ai-toggle-switch');
-            if(showAI) { sw.classList.add('active'); }
-            else { sw.classList.remove('active'); }
+            if(!sw) return;
+            if(showAI) sw.classList.add('active');
+            else sw.classList.remove('active');
         }
 
-        function closeAllSheets() {
-            if (window.history.state && window.history.state.modalOpen) {
-                window.history.back();
+        function resetAllAIClicks() {
+            if(confirm("Sei sicuro di voler resettare tutta la cronologia e i suggerimenti predittivi?")) {
+                aiHistory = {};
+                db.ref('homeHub/aiHistory').set({});
             }
-            document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); 
-            document.getElementById('item-input').blur(); 
         }
-        
-        function toggleTheme() { 
-            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
+
+        function openSettingsSheet() {
+            window.history.pushState({ sheet: 'settings' }, '');
+            document.getElementById('backdrop').classList.add('open');
+            document.getElementById('settingsSheet').classList.add('open');
+            
+            renderPaletteSelectorUI();
+            renderSettingsTabs();
+            
+            const selectTab = document.getElementById('settings-tab-select');
+            if(selectTab) {
+                selectTab.innerHTML = '';
+                structure.tabs.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t; opt.innerText = t.toUpperCase();
+                    selectTab.appendChild(opt);
+                });
+                renderSettingsBlocks();
+            }
+        }
+
+        function renderSettingsTabs() {
+            const container = document.getElementById('manage-tabs-list');
+            if(!container) return;
+            container.innerHTML = '';
+
+            if(structure.tabs.length === 0) {
+                container.innerHTML = '<div class="empty-text">Nessun tab impostato.</div>';
+                return;
+            }
+
+            structure.tabs.forEach((tab, index) => {
+                const div = document.createElement('div');
+                div.className = 'manage-item';
+                div.innerHTML = `
+                    <input type="text" class="uppercase-input" value="${tab}" onchange="renameTabStructure(${index}, this.value)">
+                    <button class="delete-btn manage-item-block" style="width:36px; height:36px; font-size:12px;" onclick="deleteTabStructure(${index})">X</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renameTabStructure(index, newVal) {
+            const oldName = structure.tabs[index];
+            let cleanVal = newVal.trim().toLowerCase();
+            if(!cleanVal || structure.tabs.includes(cleanVal)) { renderSettingsTabs(); return; }
+
+            structure.tabs[index] = cleanVal;
+            structure.blocks[cleanVal] = structure.blocks[oldName] || [];
+            delete structure.blocks[oldName];
+
+            db.ref('homeHub/structure').set(structure);
+        }
+
+        function deleteTabStructure(index) {
+            if(!confirm("Cancellando il tab eliminerai permanentemente tutte le sue sottosezioni e liste. Procedere?")) return;
+            const tabName = structure.tabs[index];
+            
+            structure.tabs.splice(index, 1);
+            delete structure.blocks[tabName];
+            db.ref('homeHub/structure').set(structure);
+
+            if(currentTabIdx >= structure.tabs.length) {
+                currentTabIdx = Math.max(0, structure.tabs.length - 1);
+                localStorage.setItem('activeTabIdx', currentTabIdx);
+            }
+            openSettingsSheet(); 
+        }
+
+        function addNewTabStructure() {
+            let name = prompt("Inserisci il nome del nuovo Tab Principale:");
+            if(!name) return;
+            let clean = name.trim().toLowerCase();
+            if(!clean || structure.tabs.includes(clean)) return;
+
+            structure.tabs.push(clean);
+            structure.blocks[clean] = [];
+            db.ref('homeHub/structure').set(structure);
+            openSettingsSheet();
+        }
+
+        function renderSettingsBlocks() {
+            const currentTab = document.getElementById('settings-tab-select').value;
+            const container = document.getElementById('manage-blocks-list');
+            if(!container || !currentTab) return;
+            container.innerHTML = '';
+
+            const blocks = structure.blocks[currentTab] || [];
+            if(blocks.length === 0) {
+                container.innerHTML = '<div class="empty-text">Nessuna sotto-sezione in questo tab.</div>';
+                return;
+            }
+
+            blocks.forEach((block, index) => {
+                const div = document.createElement('div');
+                div.className = 'manage-item';
+                div.innerHTML = `
+                    <input type="text" value="${block}" onchange="renameBlockStructure('${currentTab}', ${index}, this.value)">
+                    <button class="delete-btn manage-item-block" style="width:36px; height:36px; font-size:12px;" onclick="deleteBlockStructure('${currentTab}', ${index})">X</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renameBlockStructure(tab, index, newVal) {
+            let cleanVal = newVal.trim().toUpperCase();
+            const oldBlockName = structure.blocks[tab][index];
+            if(!cleanVal || structure.blocks[tab].includes(cleanVal)) { renderSettingsBlocks(); return; }
+
+            structure.blocks[tab][index] = cleanVal;
+            
+            const oldKey = `${tab}:${oldBlockName}`;
+            const newKey = `${tab}:${cleanVal}`;
+            if(state[oldKey]) {
+                state[newKey] = state[oldKey];
+                db.ref('homeHub/state/' + newKey).set(state[oldKey]);
+                db.ref('homeHub/state/' + oldKey).remove();
+            }
+            db.ref('homeHub/structure').set(structure);
+        }
+
+        function deleteBlockStructure(tab, index) {
+            if(!confirm("Vuoi rimuovere questa sotto-sezione e svuotare la sua lista?")) return;
+            const blockName = structure.blocks[tab][index];
+            structure.blocks[tab].splice(index, 1);
+
+            db.ref('homeHub/state/' + `${tab}:${blockName}`).remove();
+            db.ref('homeHub/structure').set(structure);
+            renderSettingsBlocks();
+        }
+
+        function addNewBlockStructure() {
+            const currentTab = document.getElementById('settings-tab-select').value;
+            if(!currentTab) return;
+            let name = prompt(`Aggiungi sotto-sezione a ${currentTab.toUpperCase()}:`);
+            if(!name) return;
+            let clean = name.trim().toUpperCase();
+            if(!clean || structure.blocks[currentTab].includes(clean)) return;
+
+            structure.blocks[currentTab].push(clean);
+            db.ref('homeHub/structure').set(structure);
+            renderSettingsBlocks();
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const t = currentTheme === 'dark' ? 'light' : 'dark'; 
             document.documentElement.setAttribute('data-theme', t); 
             localStorage.setItem('theme', t); 
+            
             serverSettings.theme = t;
-            
-            updateThemeSwitchUI(t);
-            
-            const targetKey = t === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
+
+            const targetKey = t === 'light' 
+                ? (localStorage.getItem('selectedLightPalette') || 'default')
+                : (localStorage.getItem('selectedDarkPalette') || 'default');
             applyPaletteStyle(t, targetKey, true);
-            updateAISwitchUI(); 
-            renderPaletteSelectorUI();
+            updateThemeSwitchUI(t); 
+            
+            const isSettingsOpen = document.getElementById('settingsSheet').classList.contains('open');
+            if(isSettingsOpen) {
+                renderPaletteSelectorUI();
+            }
         }
 
         function updateAndroidBarColor(theme) {
             const meta = document.getElementById('meta-theme-color');
             if(meta) {
-                const currentPalette = PALETTES[theme][theme === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette];
+                const activeKey = theme === 'light' ? (localStorage.getItem('selectedLightPalette') || 'default') : (localStorage.getItem('selectedDarkPalette') || 'default');
+                const currentPalette = PALETTES[theme][activeKey];
                 meta.setAttribute('content', currentPalette ? currentPalette.bg : (theme === 'dark' ? '#000000' : '#f1f5f9'));
             }
         }
