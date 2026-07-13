@@ -7,495 +7,937 @@
     
     <link rel="manifest" href="/Liste-Famiglia/manifest.json?v=2">
     
-    <meta id="meta-theme-color" name="theme-color" content="#121612">
+    <meta id="meta-theme-color" name="theme-color" content="#0B0D0B">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f1f5f9">
+    <meta name="msapplication-navbutton-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
     <style>
-        :root {
-            /* Variabili dinamiche gestite dalle palette */
-            --bg-color: #f8fafc;
-            --tile-color: #ffffff;
-            --tile-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            --tile-border: 1px solid #e2e8f0;
-            --text-color: #0f172a;
-            --accent-color: #10b981;
-            --btn-secondary-bg: #e2e8f0;
-            --btn-primary-text: #ffffff;
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s ease, color 0.3s ease; padding-bottom: 80px; }
+        :root {
+            /* Palette Chiara Dinamica */
+            --bg-color: #f1f5f9;          
+            --surface-color: #ffffff;     
+            --item-bg: #f0f4f8;           
+            --text-color: #0f172a;        
+            --text-secondary: #64748b;
+            --accent-color: #2563eb;       
+            --accent-light: #eff6ff;
+            --border-color: #cbd5e1;       
+            --item-border: #e2e8f0;
+            --squircle-radius: 14px;
+            --item-radius: 8px;      
+            --transition-speed: 0.2s;
+            
+            --delete-bg: #e2e8f0;
+            --delete-color: #334155;
+        }
+
+        html[data-theme="dark"] {
+            /* Palette Scura Dinamica */
+            --bg-color: #000000;          
+            --surface-color: #121314;     
+            --item-bg: #1a1c1e;           
+            --text-color: #ffffff;        
+            --text-secondary: #94a3b8;
+            --accent-color: #10b981;       
+            --accent-light: rgba(16, 185, 129, 0.15);
+            --border-color: #232527;       
+            --item-border: #2c2e31;       
+            
+            --delete-bg: #2c2e31;
+            --delete-color: #cbd5e1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+            overscroll-behavior-y: contain;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            padding: 12px 14px; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 10px; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px; position: sticky; top: 0; background: var(--bg-color); z-index: 10; transition: background-color 0.3s; }
-        .header h1 { font-size: 24px; font-weight: 700; }
-        .header-actions { display: flex; gap: 15px; }
-        .icon-btn { background: none; border: none; color: var(--text-color); font-size: 22px; cursor: pointer; opacity: 0.8; }
+        .header-titles {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h1 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.1; } 
+        
+        .header-subtitle {
+            margin: 1px 0 0 0;
+            font-size: 11px; 
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: -0.1px;
+        }
+        
+        .settings-btn {
+            background: var(--surface-color); border: 2px solid var(--border-color); color: var(--text-color);
+            font-size: 15px; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.04); transition: transform 0.2s;
+        }
+        .settings-btn:active { transform: scale(0.9); }
 
-        .tabs-container { display: flex; gap: 10px; padding: 0 20px 15px 20px; overflow-x: auto; scrollbar-width: none; }
-        .tabs-container::-webkit-scrollbar { display: none; }
-        .tab-btn { padding: 8px 16px; border-radius: 20px; border: none; background: var(--btn-secondary-bg); color: var(--text-color); font-weight: 600; font-size: 14px; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
-        .tab-btn.active { background: var(--accent-color); color: var(--btn-primary-text); }
+        .nav-tabs {
+            display: flex;
+            gap: 6px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 6px 14px;
+            background-color: var(--bg-color);
+            position: sticky;
+            top: 60px; 
+            z-index: 10;
+        }
 
-        .list-container { padding: 0 20px; }
-        .block-card { background: var(--tile-color); border: var(--tile-border); box-shadow: var(--tile-shadow); border-radius: 18px; padding: 16px; margin-bottom: 20px; transition: all 0.3s ease; }
-        .block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: grab; }
-        .block-title { font-weight: 700; font-size: 16px; }
+        .tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 8px 6px; 
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 11px; 
+            letter-spacing: 0.3px;
+            color: var(--text-secondary);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background: var(--surface-color);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.01);
+            transition: all var(--transition-speed) ease;
+            text-transform: uppercase;
+        }
+        .tab-btn.active {
+            color: #ffffff;
+            background: var(--accent-color);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+        }
 
-        .items-list { display: flex; flex-direction: column; gap: 8px; min-height: 20px; }
-        .item-tile { display: flex; align-items: center; justify-content: space-between; background: var(--tile-color); border: var(--tile-border); box-shadow: var(--tile-shadow); padding: 12px 16px; border-radius: 14px; transition: all 0.2s; }
-        .item-left { display: flex; align-items: center; gap: 12px; flex: 1; }
-        .checkbox { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--accent-color); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .checkbox.checked { background: var(--accent-color); }
-        .checkbox.checked::after { content: "✓"; color: var(--btn-primary-text); font-size: 14px; font-weight: bold; }
-        .item-text { font-size: 15px; font-weight: 500; }
-        .item-text.checked { text-decoration: line-through; opacity: 0.5; }
+        .main-container { width: 100%; overflow: hidden; }
+        .tabs-slider { 
+            display: flex; 
+            width: 100%; 
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+            will-change: transform; 
+        }
+        .tab-content { width: 100%; flex-shrink: 0; padding: 10px 14px; max-width: 600px; margin: 0 auto; padding-bottom: 70px; min-height: calc(100vh - 130px); }
 
-        .fab { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; border-radius: 28px; background: var(--accent-color); color: var(--btn-primary-text); display: flex; align-items: center; justify-content: center; font-size: 28px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; z-index: 99; }
+        .block-group { 
+            background-color: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: var(--squircle-radius);
+            padding: 12px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+        }
+        
+        .block-header-squircle {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 10px; 
+        }
+        .block-header-squircle span {
+            font-size: 15px; 
+            font-weight: 900;
+            color: var(--text-color);
+            letter-spacing: -0.3px;
+        }
 
-        .backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 100; opacity: 0; transition: opacity 0.3s; }
+        .block-add-btn {
+            background: var(--accent-color); border: none; color: #ffffff;
+            width: 30px; height: 30px; border-radius: 50%; font-size: 18px; font-weight: 700; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            transition: transform 0.1s;
+        }
+        .block-add-btn:active { transform: scale(0.85); }
+
+        .ai-suggestions-container { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 10px 0; }
+        .ai-suggestions-container::-webkit-scrollbar { display: none; }
+        
+        .ai-chip {
+            padding: 5px 10px; 
+            background-color: var(--item-bg); 
+            border: 1px solid var(--accent-color); 
+            border-radius: 8px; 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: var(--text-secondary); 
+            white-space: nowrap; 
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: background-color var(--transition-speed);
+        }
+        .ai-chip:active {
+            background-color: var(--accent-light);
+        }
+
+        .list-container { display: flex; flex-direction: column; gap: 6px; } 
+
+        .list-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 12px; 
+            background: var(--item-bg);
+            border-radius: var(--item-radius);
+            border: 1px solid var(--item-border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.01);
+        }
+        .list-item-text { font-size: 14px; font-weight: 700; flex: 1; color: var(--text-color); } 
+        .list-item-actions { display: flex; align-items: center; gap: 10px; }
+        
+        /* --- OPTIMIZATION TAB FILM --- */
+        #content-tab-film .block-group { padding: 14px 14px 6px 14px; }
+        #content-tab-film .block-header-squircle { margin-bottom: 12px; }
+        .film-list { gap: 4px !important; background: transparent !important; border: none !important; border-radius: 0px !important; overflow: visible; }
+        .film-list .list-item { background: transparent !important; border: none !important; border-radius: 0px !important; padding: 6px 0px; box-shadow: none !important; }
+        .film-list .list-item-text { font-size: 16px; font-weight: 700; }
+        .film-list .drag-handle { font-size: 14px; margin-right: 8px; opacity: 0.5; }
+        .film-list .delete-btn { width: 24px; height: 24px; font-size: 9px; }
+        
+        .drag-handle { 
+            color: var(--text-secondary); 
+            font-size: 14px; 
+            cursor: grab; 
+            margin-right: 8px;
+            display: flex; 
+            align-items: center; 
+            user-select: none;
+        }
+        
+        .sortable-ghost { opacity: 0.4; background: var(--border-color); }
+
+        .delete-btn { 
+            background: var(--delete-bg); 
+            border: none; 
+            color: var(--delete-color); 
+            width: 26px; 
+            height: 26px; 
+            border-radius: 50%; 
+            font-size: 10px; 
+            font-weight: 900;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            cursor: pointer; 
+            transition: transform 0.1s, opacity 0.2s; 
+        }
+        .delete-btn:active { transform: scale(0.85); }
+
+        .backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 100; display: none; opacity: 0; transition: opacity var(--transition-speed); }
         .backdrop.open { display: block; opacity: 1; }
-        .sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--tile-color); border-radius: 24px 24px 0 0; padding: 24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 101; transition: bottom 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94); max-height: 85vh; overflow-y: auto; color: var(--text-color); }
-        .sheet.open { bottom: 0; }
-        .sheet h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
 
-        .input-field { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--btn-secondary-bg); background: var(--bg-color); color: var(--text-color); font-size: 16px; margin-bottom: 16px; outline: none; }
+        .sheet { 
+            position: fixed; left: 50%; transform: translate(-50%, 100%); width: 100%; max-width: 600px; 
+            background: var(--surface-color); padding: 18px; border-radius: var(--squircle-radius) var(--squircle-radius) 0 0; z-index: 101; 
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: 0 -6px 24px rgba(0,0,0,0.12);
+            bottom: 0; max-height: 85vh; overflow-y: auto;
+            border-top: 2px solid var(--border-color);
+        }
+        .sheet.open { transform: translate(-50%, 0); }
 
-        /* Nuova gestione pulsanti affiancati */
-        .sheet-actions { display: flex; gap: 12px; margin-top: 8px; width: 100%; }
-        .sheet-actions .btn { flex: 1; margin-bottom: 0; padding: 14px; font-weight: 600; font-size: 15px; border-radius: 14px; border: none; cursor: pointer; transition: transform 0.1s ease, opacity 0.2s ease; text-align: center; }
-        .btn-secondary { background-color: var(--btn-secondary-bg); color: var(--text-color); opacity: 0.9; }
-        .btn-primary { background-color: var(--accent-color); color: var(--btn-primary-text); }
-        .sheet-actions .btn:active { transform: scale(0.97); }
-
-        /* Sezione Palette ed Impostazioni Grafiche */
-        .settings-section { margin-top: 24px; border-top: 1px solid var(--btn-secondary-bg); padding-top: 16px; }
-        .settings-section h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; opacity: 0.7; font-weight: 700; }
-        .section-subtitle { font-size: 13px; margin-bottom: 10px; opacity: 0.6; font-weight: 500; }
-        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
-        .palette-circle { width: 44px; height: 44px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: transform 0.2s, border-color 0.2s; justify-self: center; display: flex; align-items: center; justify-content: center; }
-        .palette-circle.active { border-color: var(--text-color); transform: scale(1.08); }
+        /* MODIFICA POPUP AGGIUNGI: PULSANTI AFFIANCATI */
+        #addSheet.sheet {
+            bottom: auto;
+            top: 25%;
+            transform: translate(-50%, -20%) scale(0.9);
+            width: 90%;
+            max-width: 360px;
+            border-radius: var(--squircle-radius);
+            border: 2px solid var(--border-color);
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s, visibility 0.2s;
+            padding: 18px;
+        }
+        #addSheet.sheet.open {
+            transform: translate(-50%, -20%) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
         
-        /* Puntino dell'accento dentro il selettore */
-        .palette-accent-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .sheet-actions-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+        .sheet-actions-row .btn {
+            flex: 1;
+            margin-bottom: 0;
+        }
 
-        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .switch { width: 46px; height: 26px; background: var(--btn-secondary-bg); border-radius: 13px; position: relative; cursor: pointer; transition: background 0.3s; }
-        .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: left 0.3s; }
-        .switch.active { background: var(--accent-color); }
-        .switch.active::after { left: 23px; }
+        h3 { margin: 0 0 14px 0; font-size: 17px; font-weight: 900; letter-spacing: -0.3px; }
+
+        .input-field { 
+            width: 100%; padding: 12px; border-radius: 10px; 
+            border: 2px solid var(--border-color); background: var(--item-bg); 
+            color: var(--text-color); margin-bottom: 14px; outline: none; 
+            font-size: 15px; font-weight: 700; -webkit-appearance: none;
+        }
+        .input-field:focus { border-color: var(--accent-color); }
+
+        .btn { width: 100%; border: none; padding: 12px; border-radius: 10px; font-weight: 800; cursor: pointer; margin-bottom: 8px; font-size: 14px; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.96); }
+        .btn-danger { background-color: rgba(255, 77, 79, 0.1) !important; color: #ff4d4f !important; border: 1px solid rgba(255, 77, 79, 0.2); }
+        .btn-secondary { background-color: var(--item-bg) !important; color: var(--text-color) !important; border: 2px solid var(--border-color); }
+        .btn-confirm { background: var(--accent-color) !important; color: #ffffff !important; box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
+
+        /* GRIGLIA SELEZIONE COLORI PALETTE */
+        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 10px 0 15px 0; }
+        .palette-dot { width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: transform 0.2s; justify-self: center; }
+        .palette-dot.active { border-color: var(--text-color); transform: scale(1.1); }
+        .palette-accent-core { width: 10px; height: 10px; border-radius: 50%; }
+
+        .settings-section { margin-bottom: 18px; border-bottom: 2px solid var(--border-color); padding-bottom: 14px; }
+        .settings-title { font-size: 12px; font-weight: 900; margin-bottom: 10px; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; }
+        .manage-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .manage-item input { flex: 1; padding: 10px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--item-bg); color: var(--text-color); font-weight: 700; font-size: 14px; }
+        
+        .uppercase-input { text-transform: uppercase; }
+        .manage-item-block .delete-btn { width: 30px; height: 30px; }
+
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .switch-label { font-size: 14px; font-weight: 700; }
+
+        .theme-switch { 
+            width: 46px; height: 26px; background: var(--border-color); 
+            border-radius: 26px; position: relative; cursor: pointer; 
+            border: 1px solid transparent;
+        }
+        .theme-switch-handle { 
+            width: 20px; height: 20px; background: #ffffff; 
+            border-radius: 50%; position: absolute; top: 2px; left: 2px; 
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); 
+        }
+        
+        #ai-toggle-switch { background: var(--border-color); }
+        #ai-toggle-switch.active { background: var(--accent-color); }
+
+        .selector-label { font-size: 11px; font-weight: 800; color: var(--text-secondary); margin-bottom: 8px; display: block; letter-spacing: 0.3px; }
+        .empty-text { color: var(--text-secondary); font-size: 13px; font-weight: 600; opacity: 0.5; padding: 2px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1 onclick="renderAll()">LiFa</h1>
-        <div class="header-actions">
-            <button class="icon-btn" onclick="toggleTheme()">🌓</button>
-            <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    <header>
+        <div class="header-left">
+            <button class="settings-btn" onclick="openSettingsSheet()">⚙️</button>
+            <div class="header-titles">
+                <h1>LiFa</h1>
+                <div class="header-subtitle">La tua lista della spesa</div>
+            </div>
         </div>
+        <div class="theme-switch" onclick="toggleTheme()"><div class="theme-switch-handle"></div></div>
+    </header>
+
+    <div class="nav-tabs" id="nav-tabs-container"></div>
+
+    <div class="main-container" id="swipe-area">
+        <div class="tabs-slider" id="tabs-slider"></div>
     </div>
-
-    <div class="tabs-container" id="tabs-bar"></div>
-    <div class="list-container" id="blocks-list"></div>
-
-    <button class="fab" onclick="openAddPopup('item')">+</button>
 
     <div class="backdrop" id="backdrop" onclick="closeAllSheets()"></div>
 
     <div class="sheet" id="addSheet">
         <h3 id="add-popup-title">Aggiungi Elemento</h3>
-        <input type="search" inputmode="text" id="item-input" class="input-field" placeholder="Cosa vuoi aggiungere?" onkeyup="handleKeyUp(event)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <div class="sheet-actions">
+        <input type="search" 
+               inputmode="text"
+               id="item-input" 
+               class="input-field" 
+               placeholder="Cosa vuoi aggiungere?" 
+               onkeyup="handleKeyUp(event)"
+               autocomplete="off" 
+               autocorrect="off" 
+               autocapitalize="off" 
+               spellcheck="false">
+               
+        <div class="sheet-actions-row">
             <button class="btn btn-secondary" onclick="closeAllSheets()">Annulla</button>
-            <button class="btn btn-primary" onclick="addItem()">Aggiungi</button>
+            <button class="btn btn-confirm" onclick="addItem()">Aggiungi</button>
         </div>
     </div>
 
     <div class="sheet" id="settingsSheet">
-        <h3>Impostazioni</h3>
-        <div class="toggle-row">
-            <span>Suggerimenti Smart AI</span>
-            <div class="switch" id="ai-toggle-switch" onclick="toggleAI()"></div>
-        </div>
+        <h3>Impostazioni Struttura</h3>
         
         <div class="settings-section">
-            <h4>Tavolozza Colori</h4>
-            
-            <div class="palette-group theme-light-only">
-                <p class="section-subtitle">Scegli la palette Chiara:</p>
-                <div class="palette-grid" id="light-palettes-grid"></div>
+            <div class="toggle-row">
+                <span class="switch-label">Mostra suggerimenti AI predittivi</span>
+                <div class="theme-switch" id="ai-toggle-switch" onclick="toggleAISuggestions()"><div class="theme-switch-handle" id="ai-toggle-handle"></div></div>
             </div>
-
-            <div class="palette-group theme-dark-only">
-                <p class="section-subtitle">Scegli la palette Scura:</p>
-                <div class="palette-grid" id="dark-palettes-grid"></div>
-            </div>
+            <button class="btn btn-danger" style="padding: 10px; font-size: 12px; margin-top: 6px;" onclick="resetAllAIClicks()">Reset Totale Cache Suggerimenti</button>
         </div>
 
-        <div class="sheet-actions" style="margin-top: 20px;">
-            <button class="btn btn-secondary" onclick="closeAllSheets()" style="flex: none; width: 100%;">Chiudi</button>
+        <div class="settings-section">
+            <div class="settings-title" id="palette-section-title">Tavolozza Colori</div>
+            <div class="palette-grid" id="palette-options-grid"></div>
         </div>
+
+        <div class="settings-section">
+            <div class="settings-title">Gestisci Tab Principali</div>
+            <div id="manage-tabs-list"></div>
+            <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="addNewTabStructure()">+ Aggiungi Nuovo Tab</button>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-title">Gestisci Sotto-Sezioni</div>
+            <label class="selector-label">Seleziona il tab da modificare:</label>
+            <select id="settings-tab-select" class="input-field" style="padding:10px; margin-bottom:10px; border-radius: 8px; font-size: 14px;" onchange="renderSettingsBlocks()"></select>
+            <div id="manage-blocks-list"></div>
+            <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="addNewBlockStructure()">+ Aggiungi Sotto-Sezione</button>
+        </div>
+        
+        <button class="btn btn-confirm" onclick="closeAllSheets()" style="margin-top:6px;">Salva e Chiudi</button>
     </div>
 
     <script>
-        // CONFIGURAZIONE PALETTE (10 LIGHT E 10 DARK)
+        // CONFIGURAZIONE 10 TAVOLOZZE CHIARE E 10 SCURE
         const PALETTES = {
             light: {
-                default:     { name: 'Smeraldo',      bg: '#f8fafc', tile: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #e2e8f0', text: '#0f172a', accent: '#10b981', btnSec: '#e2e8f0', btnText: '#ffffff' },
-                pureWhite:   { name: 'Minimal White', bg: '#ffffff', tile: '#ffffff', shadow: 'none', border: 'none', text: '#1c1c1e', accent: '#007aff', btnSec: '#f2f2f7', btnText: '#ffffff' },
-                nordic:      { name: 'Nordic Ice',    bg: '#f0f4f8', tile: '#ffffff', shadow: '0 2px 6px rgba(0,0,0,0.03)', border: '1px solid #d9e2ec', text: '#102a43', accent: '#48bb78', btnSec: '#bcccdc', btnText: '#ffffff' },
-                cream:       { name: 'Warm Cream',    bg: '#faf7f2', tile: '#ffffff', shadow: '0 2px 6px rgba(0,0,0,0.03)', border: '1px solid #e7dfd5', text: '#2d241e', accent: '#d97706', btnSec: '#e7dfd5', btnText: '#ffffff' },
-                mint:        { name: 'Soft Mint',     bg: '#f2f9f6', tile: '#ffffff', shadow: '0 2px 6px rgba(0,0,0,0.03)', border: '1px solid #dceff2', text: '#1a3a2a', accent: '#059669', btnSec: '#dceff2', btnText: '#ffffff' },
-                lavender:    { name: 'Lavanda',       bg: '#f7f5fa', tile: '#ffffff', shadow: '0 2px 6px rgba(0,0,0,0.03)', border: '1px solid #e8e3f0', text: '#2a1a3a', accent: '#7c3aed', btnSec: '#e8e3f0', btnText: '#ffffff' },
-                rose:        { name: 'Quartz Rose',   bg: '#fdf6f6', tile: '#ffffff', shadow: '0 2px 6px rgba(0,0,0,0.03)', border: '1px solid #f7e3e3', text: '#3a1a1a', accent: '#db2777', btnSec: '#f7e3e3', btnText: '#ffffff' },
-                ocean:       { name: 'Ocean Breeze',  bg: '#f0f7ff', tile: '#ffffff', shadow: '0 2px 6px rgba(0,0,0,0.03)', border: '1px solid #d0e7ff', text: '#0f2d4a', accent: '#2563eb', btnSec: '#d0e7ff', btnText: '#ffffff' },
-                sage:        { name: 'Salvia',        bg: '#f4f6f4', tile: '#ffffff', shadow: '0 2px 6px rgba(0,0,0,0.03)', border: '1px solid #e2e8e2', text: '#242c24', accent: '#16a34a', btnSec: '#e2e8e2', btnText: '#ffffff' },
-                gray:        { name: 'Monochrome',    bg: '#f1f5f9', tile: '#ffffff', shadow: '0 2px 6px rgba(0,0,0,0.03)', border: '1px solid #cbd5e1', text: '#1e293b', accent: '#475569', btnSec: '#cbd5e1', btnText: '#ffffff' }
+                default:     { bg: '#f1f5f9', surf: '#ffffff', item: '#f0f4f8', text: '#0f172a', sec: '#64748b', acc: '#2563eb', accL: '#eff6ff', border: '#cbd5e1', itemB: '#e2e8f0', delB: '#e2e8f0', delC: '#334155' },
+                pureWhite:   { bg: '#ffffff', surf: '#ffffff', item: '#f8fafc', text: '#1c1c1e', sec: '#8e8e93', acc: '#007aff', accL: '#e5f2ff', border: '#e5e5ea', itemB: '#f2f2f7', delB: '#f2f2f7', delC: '#1c1c1e' },
+                emerald:     { bg: '#f4fbf7', surf: '#ffffff', item: '#eef9f3', text: '#064e3b', sec: '#475569', acc: '#10b981', accL: '#e6fbf3', border: '#d1fae5', itemB: '#e6fbf3', delB: '#e6fbf3', delC: '#064e3b' },
+                nordic:      { bg: '#f0f4f8', surf: '#ffffff', item: '#e2e8f0', text: '#102a43', sec: '#627d98', acc: '#48bb78', accL: '#f0fff4', border: '#d9e2ec', itemB: '#e2e8f0', delB: '#bcccdc', delC: '#102a43' },
+                cream:       { bg: '#faf7f2', surf: '#ffffff', item: '#f3ede2', text: '#2d241e', sec: '#85766c', acc: '#d97706', accL: '#fef3c7', border: '#e7dfd5', itemB: '#f3ede2', delB: '#e7dfd5', delC: '#2d241e' },
+                lavender:    { bg: '#f7f5fa', surf: '#ffffff', item: '#efeaf5', text: '#2a1a3a', sec: '#716580', acc: '#7c3aed', accL: '#f5f3ff', border: '#e8e3f0', itemB: '#efeaf5', delB: '#e8e3f0', delC: '#2a1a3a' },
+                rose:        { bg: '#fdf6f6', surf: '#ffffff', item: '#faeaea', text: '#3a1a1a', sec: '#806565', acc: '#db2777', accL: '#fdf2f8', border: '#f7e3e3', itemB: '#faeaea', delB: '#f7e3e3', delC: '#3a1a1a' },
+                ocean:       { bg: '#f0f7ff', surf: '#ffffff', item: '#e0f0ff', text: '#0f2d4a', sec: '#527599', acc: '#0284c7', accL: '#e0f2fe', border: '#d0e7ff', itemB: '#e0f0ff', delB: '#d0e7ff', delC: '#0f2d4a' },
+                sage:        { bg: '#f4f6f4', surf: '#ffffff', item: '#e7ebe7', text: '#242c24', sec: '#667366', acc: '#16a34a', accL: '#f0fdf4', border: '#e2e8e2', itemB: '#e7ebe7', delB: '#e2e8e2', delC: '#242c24' },
+                monochrome:  { bg: '#f8fafc', surf: '#ffffff', item: '#f1f5f9', text: '#0f172a', sec: '#475569', acc: '#334155', accL: '#f8fafc', border: '#cbd5e1', itemB: '#e2e8f0', delB: '#cbd5e1', delC: '#0f172a' }
             },
             dark: {
-                default:     { name: 'LiFa Classic',  bg: '#121612', tile: '#1c221c', shadow: '0 4px 12px rgba(0,0,0,0.2)', border: '1px solid #273027', text: '#e2e8f0', accent: '#10b981', btnSec: '#273027', btnText: '#ffffff' },
-                amoled:      { name: 'Pure AMOLED',   bg: '#000000', tile: '#000000', shadow: 'none', border: 'none', text: '#ffffff', accent: '#007aff', btnSec: '#1c1c1e', btnText: '#ffffff' },
-                synth:       { name: 'Synth Magenta', bg: '#0f051d', tile: '#1a0b2e', shadow: '0 0 15px rgba(255,0,127,0.15)', border: '1px solid #33145a', text: '#f8f0ff', accent: '#ff007f', btnSec: '#33145a', btnText: '#ffffff' },
-                nordicNight: { name: 'Nordic Night',  bg: '#0b132b', tile: '#1c2541', shadow: '0 4px 12px rgba(0,0,0,0.2)', border: '1px solid #233156', text: '#edf2f4', accent: '#4ea8de', btnSec: '#233156', btnText: '#ffffff' },
-                midnight:    { name: 'Midnight Blue', bg: '#0a0f1d', tile: '#141b2d', shadow: '0 4px 12px rgba(0,0,0,0.2)', border: '1px solid #222d4a', text: '#e2e8f0', accent: '#3b82f6', btnSec: '#222d4a', btnText: '#ffffff' },
-                forest:      { name: 'Forest Dark',   bg: '#0d140d', tile: '#172217', shadow: '0 4px 12px rgba(0,0,0,0.2)', border: '1px solid #243524', text: '#e6efe6', accent: '#22c55e', btnSec: '#243524', btnText: '#ffffff' },
-                cyberpunk:   { name: 'Cyber Amber',   bg: '#141414', tile: '#1f1f1f', shadow: '0 4px 12px rgba(0,0,0,0.2)', border: '1px solid #2d2d2d', text: '#ffffff', accent: '#f59e0b', btnSec: '#2d2d2d', btnText: '#000000' },
-                slate:       { name: 'Slate Dark',    bg: '#0f172a', tile: '#1e293b', shadow: '0 4px 12px rgba(0,0,0,0.2)', border: '1px solid #334155', text: '#f1f5f9', accent: '#38bdf8', btnSec: '#334155', btnText: '#000000' },
-                dracula:     { name: 'Dracula',       bg: '#282a36', tile: '#44475a', shadow: '0 4px 12px rgba(0,0,0,0.2)', border: '1px solid #6272a4', text: '#f8f8f2', accent: '#ff79c6', btnSec: '#6272a4', btnText: '#ffffff' },
-                teal:        { name: 'Obsidian Teal', bg: '#0c1013', tile: '#172026', shadow: '0 4px 12px rgba(0,0,0,0.2)', border: '1px solid #24323c', text: '#e2eaf0', accent: '#0ea5e9', btnSec: '#24323c', btnText: '#ffffff' }
+                default:     { bg: '#000000', surf: '#121314', item: '#1a1c1e', text: '#ffffff', sec: '#94a3b8', acc: '#10b981', accL: rgba(16, 185, 129, 0.15), border: '#232527', itemB: '#2c2e31', delB: '#2c2e31', delC: '#cbd5e1' },
+                amoled:      { bg: '#000000', surf: '#000000', item: '#121212', text: '#ffffff', sec: '#a1a1aa', acc: '#007aff', accL: 'rgba(0,122,255,0.15)', border: '#27272a', itemB: '#18181b', delB: '#27272a', delC: '#ffffff' },
+                classicDark: { bg: '#121612', surf: '#1c221c', item: '#252c25', text: '#e2e8f0', sec: '#8da28d', acc: '#10b981', accL: 'rgba(16,185,129,0.15)', border: '#273027', itemB: '#2f3b2f', delB: '#273027', delC: '#e2e8f0' },
+                synth:       { bg: '#0f051d', surf: '#1a0b2e', item: '#251242', text: '#f8f0ff', sec: '#a894c0', acc: '#ff007f', accL: 'rgba(255,0,127,0.15)', border: '#33145a', itemB: '#3f1b6d', delB: '#33145a', delC: '#f8f0ff' },
+                nordicNight: { bg: '#0b132b', surf: '#1c2541', item: '#233156', text: '#edf2f4', sec: '#8d99ae', acc: '#4ea8de', accL: 'rgba(78,168,222,0.15)', border: '#233156', itemB: '#2b3e6c', delB: '#233156', delC: '#edf2f4' },
+                midnight:    { bg: '#0a0f1d', surf: '#141b2d', item: '#1d273e', text: '#e2e8f0', sec: '#7c8ba1', acc: '#3b82f6', accL: 'rgba(59,130,246,0.15)', border: '#222d4a', itemB: '#2b395c', delB: '#222d4a', delC: '#e2e8f0' },
+                forest:      { bg: '#0d140d', surf: '#172217', item: '#203020', text: '#e6efe6', sec: '#8fa38f', acc: '#22c55e', accL: 'rgba(34,197,94,0.15)', border: '#243524', itemB: '#2d432d', delB: '#243524', delC: '#e6efe6' },
+                cyberpunk:   { bg: '#141414', surf: '#1f1f1f', item: '#2a2a2a', text: '#ffffff', sec: '#a0a0a0', acc: '#f59e0b', accL: 'rgba(245,158,11,0.15)', border: '#2d2d2d', itemB: '#383838', delB: '#2d2d2d', delC: '#ffffff' },
+                dracula:     { bg: '#282a36', surf: '#44475a', item: '#383a48', text: '#f8f8f2', sec: '#6272a4', acc: '#ff79c6', accL: 'rgba(255,121,198,0.15)', border: '#6272a4', itemB: '#4f5268', delB: '#6272a4', delC: '#f8f8f2' },
+                obsidian:    { bg: '#0c1013', surf: '#172026', item: '#202c35', text: '#e2eaf0', sec: '#788996', acc: '#0ea5e9', accL: 'rgba(14,165,233,0.15)', border: '#24323c', itemB: '#2e3f4b', delB: '#24323c', delC: '#e2eaf0' }
             }
         };
 
-        // TODO: Inserisci le tue credenziali Firebase qui sotto
-        const firebaseConfig = { databaseURL: "https://IL_TUO_FIREBASE_URL.firebaseio.com/" };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAM0QE9NR7V_xwQ8UjfEc9M5y_HiCnV1fo",
+            authDomain: "homehub-96c18.firebaseapp.com",
+            databaseURL: "https://homehub-96c18-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "homehub-96c18",
+            storageBucket: "homehub-96c18.firebasestorage.app",
+            messagingSenderId: "31651198901",
+            appId: "1:31651198901:web:f62c8a6e3621c951da8bfc"
+        };
+        
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref("lifa_shared_data");
+        const db = firebase.database();
 
-        let structure = { tabs: [], blocks: {}, items: {} };
-        let activeTab = "";
-        let currentActionType = "item"; 
-        let currentTargetBlockId = "";
-        let showAI = localStorage.getItem('showAI') !== 'false';
+        let structure = {
+            tabs: ['spesa', 'film', 'famiglia'],
+            blocks: {
+                spesa: ['LIDL', 'EUROSPIN', 'SOLE365', 'ACTION'],
+                film: ['DA VEDERE'],
+                famiglia: ['LISTA']
+            }
+        };
 
-        // GESTIONE DEI TEMI E DELLE TAVOLOZZE DINAMICHE
-        function applyPalette(themeMode, paletteKey) {
-            const palette = PALETTES[themeMode][paletteKey] || PALETTES[themeMode]['default'];
-            const root = document.documentElement;
-            
-            root.style.setProperty('--bg-color', palette.bg);
-            root.style.setProperty('--tile-color', palette.tile);
-            root.style.setProperty('--tile-shadow', palette.shadow);
-            root.style.setProperty('--tile-border', palette.border);
-            root.style.setProperty('--text-color', palette.text);
-            root.style.setProperty('--accent-color', palette.accent);
-            root.style.setProperty('--btn-secondary-bg', palette.btnSec);
-            root.style.setProperty('--btn-primary-text', palette.btnText);
-            
-            if (themeMode === 'light') localStorage.setItem('selectedLightPalette', paletteKey);
-            else localStorage.setItem('selectedDarkPalette', paletteKey);
-            
-            updateAndroidBarColor(themeMode, palette.bg);
-            renderPaletteSelectors();
+        let state = {};
+        let aiHistory = {};
+        
+        let currentTabIdx = parseInt(localStorage.getItem('activeTabIdx')) || 0;
+        let selectedTarget = '';
+        let tStart = 0;
+        let showAI = localStorage.getItem('showAI') !== 'false'; 
+
+        function capitalizeFirstLetter(string) {
+            if (!string) return '';
+            const trimmed = string.trim();
+            return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
         }
 
-        function toggleTheme() { 
-            const currentMode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
-            document.documentElement.setAttribute('data-theme', currentMode); 
-            localStorage.setItem('theme', currentMode); 
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
             
-            const savedPalette = currentMode === 'light' 
+            // Applica la tavolozza memorizzata al caricamento
+            const savedPaletteKey = savedTheme === 'light' 
                 ? (localStorage.getItem('selectedLightPalette') || 'default')
                 : (localStorage.getItem('selectedDarkPalette') || 'default');
-                
-            applyPalette(currentMode, savedPalette);
-            updateAISwitchUI(); 
-            togglePaletteVisibility(currentMode);
-        }
+            applyPaletteStyle(savedTheme, savedPaletteKey);
 
-        function togglePaletteVisibility(mode) {
-            if(mode === 'light') {
-                document.querySelectorAll('.theme-light-only').forEach(el => el.style.display = 'block');
-                document.querySelectorAll('.theme-dark-only').forEach(el => el.style.display = 'none');
-            } else {
-                document.querySelectorAll('.theme-light-only').forEach(el => el.style.display = 'none');
-                document.querySelectorAll('.theme-dark-only').forEach(el => el.style.display = 'block');
-            }
-        }
-
-        function renderPaletteSelectors() {
-            const currentMode = document.documentElement.getAttribute('data-theme') || 'light';
-            const activeLight = localStorage.getItem('selectedLightPalette') || 'default';
-            const activeDark = localStorage.getItem('selectedDarkPalette') || 'default';
-            
-            const lightGrid = document.getElementById('light-palettes-grid');
-            const darkGrid = document.getElementById('dark-palettes-grid');
-            
-            if(!lightGrid || !darkGrid) return;
-            
-            lightGrid.innerHTML = '';
-            darkGrid.innerHTML = '';
-            
-            Object.keys(PALETTES.light).forEach(key => {
-                const p = PALETTES.light[key];
-                const circle = document.createElement('div');
-                circle.className = `palette-circle ${key === activeLight ? 'active' : ''}`;
-                circle.style.backgroundColor = p.bg;
-                if(key === 'pureWhite') circle.style.borderColor = '#e2e8f0'; 
-                
-                const dot = document.createElement('div');
-                dot.className = 'palette-accent-dot';
-                dot.style.backgroundColor = p.accent;
-                circle.appendChild(dot);
-                
-                circle.onclick = () => applyPalette('light', key);
-                lightGrid.appendChild(circle);
-            });
-            
-            Object.keys(PALETTES.dark).forEach(key => {
-                const p = PALETTES.dark[key];
-                const circle = document.createElement('div');
-                circle.className = `palette-circle ${key === activeDark ? 'active' : ''}`;
-                circle.style.backgroundColor = p.bg;
-                
-                const dot = document.createElement('div');
-                dot.className = 'palette-accent-dot';
-                dot.style.backgroundColor = p.accent;
-                circle.appendChild(dot);
-                
-                circle.onclick = () => applyPalette('dark', key);
-                darkGrid.appendChild(circle);
-            });
-        }
-
-        function updateAndroidBarColor(theme, bgColor) {
-            const meta = document.getElementById('meta-theme-color');
-            if(meta) meta.setAttribute('content', bgColor);
-        }
-
-        // SINCRONIZZAZIONE FIREBASE E LOGICA CORE (CORRETTA)
-        db.on('value', snapshot => {
-            const data = snapshot.val();
-            if (data) {
-                structure = data.structure || { tabs: [], blocks: {}, items: {} };
-                if(!structure.tabs) structure.tabs = [];
-                if(!structure.blocks) structure.blocks = {};
-                if(!structure.items) structure.items = {};
-                
-                if (!activeTab && structure.tabs.length > 0) activeTab = structure.tabs[0];
-                renderAll();
-            }
+            updateAISwitchUI();
+            initSwipe();
+            initFirebaseSync();
         });
 
-        function saveData() { db.set({ structure }); }
+        // APPLICAZIONE DINAMICA DELLO STILE CSS DELLA TAVOLOZZA SELEZIONATA
+        function applyPaletteStyle(theme, key) {
+            const p = PALETTES[theme][key] || PALETTES[theme]['default'];
+            const root = document.documentElement;
 
-        function renderAll() { renderTabs(); renderBlocks(); }
-
-        function renderTabs() {
-            const container = document.getElementById('tabs-bar');
-            container.innerHTML = '';
-            structure.tabs.forEach(tab => {
-                const btn = document.createElement('button');
-                btn.className = `tab-btn ${tab === activeTab ? 'active' : ''}`;
-                btn.innerText = tab;
-                btn.onclick = () => { activeTab = tab; renderAll(); };
-                btn.oncontextmenu = (e) => { e.preventDefault(); if(confirm(`Eliminare la lista "${tab}"?`)) removeTab(tab); };
-                container.appendChild(btn);
-            });
-            
-            const addTabBtn = document.createElement('button');
-            addTabBtn.className = 'tab-btn';
-            addTabBtn.innerText = '+ Nuova Lista';
-            addTabBtn.onclick = () => openAddPopup('tab');
-            container.appendChild(addTabBtn);
+            if (theme === 'light') {
+                root.style.setProperty('--bg-color', p.bg);
+                root.style.setProperty('--surface-color', p.surf);
+                root.style.setProperty('--item-bg', p.item);
+                root.style.setProperty('--text-color', p.text);
+                root.style.setProperty('--text-secondary', p.sec);
+                root.style.setProperty('--accent-color', p.acc);
+                root.style.setProperty('--accent-light', p.accL);
+                root.style.setProperty('--border-color', p.border);
+                root.style.setProperty('--item-border', p.itemB);
+                root.style.setProperty('--delete-bg', p.delB);
+                root.style.setProperty('--delete-color', p.delC);
+                localStorage.setItem('selectedLightPalette', key);
+            } else {
+                // Sovrascrive le regole CSS attive nel blocco html[data-theme="dark"]
+                root.style.setProperty('--bg-color', p.bg);
+                root.style.setProperty('--surface-color', p.surf);
+                root.style.setProperty('--item-bg', p.item);
+                root.style.setProperty('--text-color', p.text);
+                root.style.setProperty('--text-secondary', p.sec);
+                root.style.setProperty('--accent-color', p.acc);
+                root.style.setProperty('--accent-light', p.accL);
+                root.style.setProperty('--border-color', p.border);
+                root.style.setProperty('--item-border', p.itemB);
+                root.style.setProperty('--delete-bg', p.delB);
+                root.style.setProperty('--delete-color', p.delC);
+                localStorage.setItem('selectedDarkPalette', key);
+            }
+            updateAndroidBarColor(theme);
         }
 
-        function renderBlocks() {
-            const container = document.getElementById('blocks-list');
-            container.innerHTML = '';
+        function renderPaletteSelectorUI() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const grid = document.getElementById('palette-options-grid');
+            const title = document.getElementById('palette-section-title');
+            if(!grid) return;
+
+            grid.innerHTML = '';
+            title.innerText = currentTheme === 'light' ? 'Tavolozza Colori (Chiara)' : 'Tavolozza Colori (Scura)';
+
+            const activeKey = currentTheme === 'light'
+                ? (localStorage.getItem('selectedLightPalette') || 'default')
+                : (localStorage.getItem('selectedDarkPalette') || 'default');
+
+            Object.keys(PALETTES[currentTheme]).forEach(key => {
+                const paletteData = PALETTES[currentTheme][key];
+                const dot = document.createElement('div');
+                dot.className = `palette-dot ${key === activeKey ? 'active' : ''}`;
+                dot.style.backgroundColor = paletteData.bg;
+                if(key === 'pureWhite') dot.style.borderColor = '#e2e8f0';
+
+                const core = document.createElement('div');
+                core.className = 'palette-accent-core';
+                core.style.backgroundColor = paletteData.acc;
+                
+                dot.appendChild(core);
+                dot.onclick = () => {
+                    applyPaletteStyle(currentTheme, key);
+                    renderPaletteSelectorUI();
+                };
+                grid.appendChild(dot);
+            });
+        }
+
+        function initFirebaseSync() {
+            db.ref('homeHub/structure').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    structure = data;
+                    if(!structure.tabs) structure.tabs = [];
+                    if(!structure.blocks) structure.blocks = {};
+                } else {
+                    db.ref('homeHub/structure').set(structure);
+                }
+                buildTabsUI();
+                renderAll();
+            });
+
+            db.ref('homeHub/state').on('value', (snapshot) => {
+                state = snapshot.val() || {};
+                renderAll();
+            });
+
+            db.ref('homeHub/aiHistory').on('value', (snapshot) => {
+                aiHistory = snapshot.val() || {};
+                renderAll();
+            });
+        }
+
+        function buildTabsUI() {
+            const tabsContainer = document.getElementById('nav-tabs-container');
+            const slider = document.getElementById('tabs-slider');
+            const selectDropdown = document.getElementById('settings-tab-select');
             
-            if (!activeTab || !structure.blocks[activeTab]) {
-                container.innerHTML = '<p style="text-align:center; opacity:0.5; margin-top:40px;">Nessun blocco in questa lista. Creane uno!</p>';
-                return;
+            if (currentTabIdx >= structure.tabs.length || currentTabIdx < 0) {
+                currentTabIdx = 0;
             }
 
-            structure.blocks[activeTab].forEach(blockId => {
-                const blockTitle = blockId.split('_')[1] || blockId;
-                const card = document.createElement('div');
-                card.className = 'block-card';
-                card.dataset.id = blockId;
+            tabsContainer.innerHTML = '';
+            slider.innerHTML = '';
+            selectDropdown.innerHTML = '';
 
-                card.innerHTML = `
-                    <div class="block-header">
-                        <span class="block-title">${blockTitle}</span>
-                        <button class="icon-btn" style="font-size:16px;" onclick="removeBlock('${blockId}')">🗑️</button>
-                    </div>
-                    <div class="items-list" id="list-${blockId}"></div>
-                    <button class="tab-btn" style="margin-top:12px; width:100%; background:var(--bg-color);" onclick="openAddPopup('item', '${blockId}')">+ Aggiungi Prodotto</button>
-                `;
-                container.appendChild(card);
+            slider.style.width = `${structure.tabs.length * 100}%`;
 
-                const listCont = document.getElementById(`list-${blockId}`);
-                const itemsInBlock = structure.items[blockId] || [];
-                
-                itemsInBlock.forEach((item, index) => {
-                    const tile = document.createElement('div');
-                    tile.className = 'item-tile';
-                    tile.dataset.index = index;
-                    tile.innerHTML = `
-                        <div class="item-left" onclick="toggleItem('${blockId}', ${index})">
-                            <div class="checkbox ${item.checked ? 'checked' : ''}"></div>
-                            <span class="item-text ${item.checked ? 'checked' : ''}">${item.name}</span>
-                        </div>
-                        <button class="icon-btn" style="font-size:14px; opacity:0.4;" onclick="removeItem('${blockId}', ${index})">✕</button>
-                    `;
-                    listCont.appendChild(tile);
+            structure.tabs.forEach((tab, index) => {
+                const btn = document.createElement('div');
+                btn.id = `btn-tab-${index}`;
+                btn.className = `tab-btn ${index === currentTabIdx ? 'active' : ''}`;
+                btn.innerText = tab;
+                btn.onclick = () => switchTab(index);
+                tabsContainer.appendChild(btn);
+
+                const content = document.createElement('div');
+                content.id = `content-tab-${tab}`;
+                content.className = 'tab-content';
+                content.style.width = `${100 / structure.tabs.length}%`;
+                slider.appendChild(content);
+
+                const opt = document.createElement('option');
+                opt.value = tab;
+                opt.innerText = tab.toUpperCase();
+                selectDropdown.appendChild(opt);
+            });
+
+            slider.style.transform = `translateX(-${(currentTabIdx * 100) / structure.tabs.length}%)`;
+        }
+
+        function switchTab(index) {
+            if (index < 0 || index >= structure.tabs.length) return;
+            currentTabIdx = index;
+            
+            localStorage.setItem('activeTabIdx', currentTabIdx);
+
+            const slider = document.getElementById('tabs-slider');
+            slider.style.transform = `translateX(-${(currentTabIdx * 100) / structure.tabs.length}%)`;
+            
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-tab-${index}`);
+            if(activeBtn) activeBtn.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function initSwipe() {
+            const area = document.getElementById('swipe-area');
+            area.addEventListener('touchstart', e => { tStart = e.touches[0].clientX; }, {passive: true});
+            area.addEventListener('touchend', e => {
+                let tEnd = e.changedTouches[0].clientX;
+                let diff = tStart - tEnd;
+                if (Math.abs(diff) > 50 && structure.tabs.length > 0) {
+                    if (diff > 0 && currentTabIdx < structure.tabs.length - 1) switchTab(currentTabIdx + 1);
+                    else if (diff < 0 && currentTabIdx > 0) switchTab(currentTabIdx - 1);
+                }
+            }, {passive: true});
+        }
+
+        function renderAll() {
+            if (!structure.tabs.length) return;
+            
+            structure.tabs.forEach(tab => {
+                const container = document.getElementById(`content-tab-${tab}`);
+                if (!container) return;
+                container.innerHTML = '';
+
+                const blocksList = structure.blocks[tab] || [];
+                if(blocksList.length === 0) {
+                    container.innerHTML = '<div class="empty-text">Nessun sotto-blocco configurato in questa sezione.</div>';
+                }
+
+                blocksList.forEach(block => {
+                    const group = document.createElement('div'); group.className = 'block-group';
+                    
+                    const header = document.createElement('div'); 
+                    header.className = 'block-header-squircle'; 
+                    header.innerHTML = `<span>${block}</span><button class="block-add-btn" onclick="openAddSheetForBlock('${block}')">+</button>`;
+                    group.appendChild(header);
+                    
+                    const aiCont = document.createElement('div'); aiCont.id = `ai-${tab}-${block}`; aiCont.className = 'ai-suggestions-container'; if(!showAI) aiCont.style.display = 'none'; group.appendChild(aiCont);
+                    const body = document.createElement('div'); body.className = 'block-body-squircle';
+                    const listDiv = document.createElement('div'); listDiv.id = `list-${tab}-${block}`; listDiv.className = `list-container ${tab.toLowerCase() === 'film' ? 'film-list' : ''}`;
+                    
+                    body.appendChild(listDiv); group.appendChild(body); container.appendChild(group);
+
+                    const blockItems = (state[tab] && state[tab][block]) ? state[tab][block] : [];
+                    renderSingleListItems(`list-${tab}-${block}`, blockItems, tab, block);
+                    
+                    const blockHistory = (aiHistory[tab] && aiHistory[tab][block]) ? aiHistory[tab][block] : {};
+                    renderAISuggestionsItems(`ai-${tab}-${block}`, blockHistory, blockItems, tab, block);
                 });
+            });
+        }
 
-                new Sortable(listCont, {
-                    group: 'shared-items',
-                    animation: 150,
-                    onEnd: (evt) => {
-                        const fromBlock = evt.from.id.replace('list-', '');
-                        const toBlock = evt.to.id.replace('list-', '');
-                        const oldIdx = evt.oldIndex;
-                        const newIdx = evt.newIndex;
+        function renderSingleListItems(cId, data, tab, block) {
+            const container = document.getElementById(cId);
+            if (!container) return;
+            container.innerHTML = data.length ? '' : '<div class="empty-text">Nessun elemento</div>';
+            const isFilmTab = (tab.toLowerCase() === 'film');
 
-                        const movedItem = structure.items[fromBlock].splice(oldIdx, 1)[0];
-                        if(!structure.items[toBlock]) structure.items[toBlock] = [];
-                        structure.items[toBlock].splice(newIdx, 0, movedItem);
-                        saveData();
+            data.forEach((item, i) => {
+                const div = document.createElement('div'); div.className = 'list-item'; div.setAttribute('data-item-value', item);
+                let leftAction = isFilmTab ? `<div class="drag-handle">☰</div>` : '';
+                div.innerHTML = `
+                    ${leftAction}
+                    <div class="list-item-text">${item}</div>
+                    <div class="list-item-actions"><button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button></div>
+                `;
+                container.appendChild(div);
+            });
+
+            if (isFilmTab && data.length > 1) {
+                Sortable.create(container, {
+                    handle: '.drag-handle', animation: 180, ghostClass: 'sortable-ghost',
+                    onEnd: function () {
+                        let updatedArray = [];
+                        container.querySelectorAll('.list-item').forEach(el => { updatedArray.push(el.getAttribute('data-item-value')); });
+                        if (!state[tab]) state[tab] = {};
+                        state[tab][block] = updatedArray;
+                        db.ref('homeHub/state').set(state);
                     }
                 });
+            }
+        }
+
+        function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
+            const container = document.getElementById(cId);
+            if (!container) return;
+            
+            let lowerHistory = {};
+            Object.keys(hData).forEach(key => {
+                let lowKey = key.toLowerCase();
+                lowerHistory[lowKey] = (lowerHistory[lowKey] || 0) + hData[key];
             });
 
-            new Sortable(container, {
-                animation: 150,
-                handle: '.block-header',
-                onEnd: () => {
-                    const newOrder = Array.from(container.children).map(c => c.dataset.id);
-                    structure.blocks[activeTab] = newOrder;
-                    saveData();
-                }
+            let activeListLower = activeList.map(it => it.toLowerCase());
+
+            let sorted = Object.keys(lowerHistory).sort((a,b) => lowerHistory[b] - lowerHistory[a]);
+            let filtered = sorted.filter(it => lowerHistory[it] >= 3 && !activeListLower.includes(it));
+            let itemsToDisplay = filtered.slice(0, 3);
+            
+            container.innerHTML = '';
+            itemsToDisplay.forEach(it => {
+                let formattedItem = capitalizeFirstLetter(it);
+                
+                const chip = document.createElement('div'); 
+                chip.className = 'ai-chip'; 
+                chip.innerText = `+ ${formattedItem}`;
+                chip.onclick = () => {
+                    if(!state[tab]) state[tab] = {}; 
+                    if(!state[tab][block]) state[tab][block] = [];
+                    
+                    if (block.toLowerCase() === 'da vedere' || tab.toLowerCase() === 'film') {
+                        state[tab][block].unshift(formattedItem);
+                    } else {
+                        state[tab][block].push(formattedItem);
+                    }
+                    
+                    if(!aiHistory[tab]) aiHistory[tab] = {}; 
+                    if(!aiHistory[tab][block]) aiHistory[tab][block] = {};
+                    
+                    aiHistory[tab][block][formattedItem] = (aiHistory[tab][block][formattedItem] || 0) + 1;
+                    
+                    db.ref('homeHub/state').set(state); 
+                    db.ref('homeHub/aiHistory').set(aiHistory);
+                };
+                container.appendChild(chip);
             });
         }
 
-        // AZIONI DEI POPUP
-        function openAddPopup(type, blockId = "") {
-            currentActionType = type;
-            currentTargetBlockId = blockId;
-            const titleEl = document.getElementById('add-popup-title');
-            const inputEl = document.getElementById('item-input');
-            
-            inputEl.value = "";
-            if(type === 'tab') titleEl.innerText = "Nuova Lista principale";
-            else if(type === 'block') titleEl.innerText = "Nuovo Gruppo di Categoria";
-            else titleEl.innerText = "Aggiungi Prodotto";
+        function deleteItem(tab, block, idx) {
+            if(state[tab] && state[tab][block]) { state[tab][block].splice(idx, 1); db.ref('homeHub/state').set(state); }
+        }
 
+        function openAddSheetForBlock(blockName) {
+            selectedTarget = blockName;
+            document.getElementById('add-popup-title').innerText = `Aggiungi a ${blockName}`;
+            document.getElementById('item-input').value = '';
             document.getElementById('backdrop').classList.add('open');
             document.getElementById('addSheet').classList.add('open');
-            setTimeout(() => inputEl.focus(), 50);
-        }
-
-        function openSettings() {
-            document.getElementById('backdrop').classList.add('open');
-            document.getElementById('settingsSheet').classList.add('open');
-            renderPaletteSelectors();
-        }
-
-        function closeAllSheets() { 
-            document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); 
-            document.getElementById('item-input').blur(); 
+            setTimeout(() => document.getElementById('item-input').focus(), 60);
         }
 
         function addItem() {
-            const val = document.getElementById('item-input').value.trim();
-            if(!val) return;
+            const activeTab = structure.tabs[currentTabIdx];
+            let rawValue = document.getElementById('item-input').value.trim();
+            if(!rawValue || !activeTab || !selectedTarget) return;
+            
+            let v = capitalizeFirstLetter(rawValue);
 
-            if(currentActionType === 'tab') {
-                if(!structure.tabs.includes(val)) {
-                    structure.tabs.push(val);
-                    activeTab = val;
-                }
-            } else if(currentActionType === 'block') {
-                if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
-                const bId = Date.now() + "_" + val;
-                structure.blocks[activeTab].push(bId);
-            } else if(currentActionType === 'item') {
-                let targetBlock = currentTargetBlockId;
-                if(!targetBlock) {
-                    if(!structure.blocks[activeTab] || structure.blocks[activeTab].length === 0) {
-                        if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
-                        targetBlock = Date.now() + "_Generale";
-                        structure.blocks[activeTab].push(targetBlock);
-                    } else {
-                        targetBlock = structure.blocks[activeTab][0];
-                    }
-                }
-                if(!structure.items[targetBlock]) structure.items[targetBlock] = [];
-                structure.items[targetBlock].push({ name: val, checked: false });
+            if(!state[activeTab]) state[activeTab] = {}; 
+            if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = []; 
+            
+            if (selectedTarget.toLowerCase() === 'da vedere' || activeTab.toLowerCase() === 'film') {
+                state[activeTab][selectedTarget].unshift(v);
+            } else {
+                state[activeTab][selectedTarget].push(v);
             }
-            saveData();
+            
+            if(!aiHistory[activeTab]) aiHistory[activeTab] = {}; 
+            if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
+            aiHistory[activeTab][selectedTarget][v] = (aiHistory[activeTab][selectedTarget][v] || 0) + 1;
+            
+            db.ref('homeHub/state').set(state); 
+            db.ref('homeHub/aiHistory').set(aiHistory);
             closeAllSheets();
         }
 
-        function toggleItem(blockId, index) {
-            structure.items[blockId][index].checked = !structure.items[blockId][index].checked;
-            saveData();
+        function openSettingsSheet() {
+            document.getElementById('backdrop').classList.add('open'); document.getElementById('settingsSheet').classList.add('open');
+            renderPaletteSelectorUI(); renderSettingsTabs(); renderSettingsBlocks();
         }
 
-        function removeItem(blockId, index) {
-            structure.items[blockId].splice(index, 1);
-            saveData();
+        function renderSettingsTabs() {
+            const cont = document.getElementById('manage-tabs-list'); cont.innerHTML = '';
+            structure.tabs.forEach((tab, index) => {
+                const row = document.createElement('div'); row.className = 'manage-item';
+                row.innerHTML = `<input type="text" class="uppercase-input" value="${tab.toUpperCase()}" onchange="renameTab(${index}, this.value)"><button class="delete-btn" style="width:24px; height:24px;" onclick="removeTab(${index})">✕</button>`;
+                cont.appendChild(row);
+            });
         }
 
-        // CORREZIONI REFUSI LOGICI JS
-        function removeTab(tabName) {
-            structure.tabs = structure.tabs.filter(t => t !== tabName);
-            if(structure.blocks[tabName]) {
-                structure.blocks[tabName].forEach(bId => { delete structure.items[bId]; });
-                delete structure.blocks[tabName];
+        function renderSettingsBlocks() {
+            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value || structure.tabs[0];
+            const cont = document.getElementById('manage-blocks-list'); cont.innerHTML = '';
+            if(!activeTab) return;
+            const blocksList = structure.blocks[activeTab] || [];
+            blocksList.forEach((block, index) => {
+                const row = document.createElement('div'); row.className = 'manage-item manage-item-block';
+                row.innerHTML = `<input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)"><button class="delete-btn" onclick="removeBlock('${activeTab}', ${index})">✕</button>`;
+                cont.appendChild(row);
+            });
+        }
+
+        function renameTab(idx, newVal) {
+            let val = newVal.trim().toLowerCase(); if(!val) return;
+            let oldName = structure.tabs[idx]; structure.tabs[idx] = val;
+            if(structure.blocks[oldName]) { structure.blocks[val] = structure.blocks[oldName]; delete structure.blocks[oldName]; }
+            if(state[oldName]) { state[val] = state[oldName]; delete state[oldName]; db.ref('homeHub/state').set(state); }
+            if(aiHistory[oldName]) { aiHistory[val] = aiHistory[oldName]; delete aiHistory[oldName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+            db.ref('homeHub/structure').set(structure);
+        }
+
+        function removeTab(idx) {
+            let tabName = structure.tabs[idx];
+            if(confirm(`Vuoi davvero eliminare la sezione "${tabName.toUpperCase()}"?`)) {
+                structure.tabs.splice(idx, 1); if(structure.blocks[tabName]) delete structure.blocks[tabName];
+                if(state[tabName]) { delete state[tabName]; db.ref('homeHub/state').set(state); }
+                if(aiHistory[tabName]) { delete aiHistory[tabName]; delete aiHistory[tabName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+                db.ref('homeHub/structure').set(structure);
             }
-            activeTab = structure.tabs[0] || "";
-            saveData();
         }
 
-        function removeBlock(blockId) {
-            if(confirm("Eliminare questa categoria e tutti i suoi elementi?")) {
-                structure.blocks[activeTab] = structure.blocks[activeTab].filter(id => id !== blockId);
-                delete structure.items[blockId];
-                saveData();
+        function addNewTabStructure() {
+            let n = prompt("Inserisci il nome del nuovo Tab:"); if(!n) return;
+            let val = n.trim().toLowerCase(); if(structure.tabs.includes(val)) return alert("Tab già esistente!");
+            structure.tabs.push(val); structure.blocks[val] = ['GENERALE'];
+            db.ref('homeHub/structure').set(structure); renderSettingsTabs();
+        }
+
+        function renameBlock(tab, idx, newVal) {
+            let val = newVal.trim().toUpperCase(); if(!val) return;
+            let oldBlockName = structure.blocks[tab][idx]; structure.blocks[tab][idx] = val;
+            if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; db.ref('homeHub/state').set(state); }
+            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+            db.ref('homeHub/structure').set(structure);
+        }
+
+        function removeBlock(tab, idx) {
+            let bName = structure.blocks[tab][idx];
+            if(confirm(`Vuoi davvero eliminare questo elemento "${bName}"?`)) {
+                structure.blocks[tab].splice(idx, 1);
+                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
+                if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
+                db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
             }
         }
 
-        function toggleAI() { showAI = !showAI; localStorage.setItem('showAI', showAI); updateAISwitchUI(); }
+        function addNewBlockStructure() {
+            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value; if(!activeTab) return;
+            let n = prompt(`Aggiungi elemento a ${activeTab.toUpperCase()}:`); if(!n) return;
+            let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab] || !structure.blocks[activeTab]) structure.blocks[activeTab] = [];
+            if(structure.blocks[activeTab].includes(val)) return alert("Elemento già esistente!");
+            structure.blocks[activeTab].push(val); db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
+        }
+
+        function resetAllAIClicks() { if(confirm("Vuoi azzerare la cronologia dei suggerimenti?")) { aiHistory = {}; db.ref('homeHub/aiHistory').set(aiHistory); } }
+        
+        function toggleAISuggestions() { 
+            showAI = !showAI; 
+            localStorage.setItem('showAI', showAI); 
+            updateAISwitchUI(); 
+            renderAll(); 
+        }
+
         function updateAISwitchUI() {
             const sw = document.getElementById('ai-toggle-switch');
-            if(sw) { if(showAI) sw.classList.add('active'); else sw.classList.remove('active'); }
+            if(showAI) { sw.classList.add('active'); }
+            else { sw.classList.remove('active'); }
+        }
+
+        function closeAllSheets() { document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); document.getElementById('item-input').blur(); }
+        
+        function toggleTheme() { 
+            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
+            document.documentElement.setAttribute('data-theme', t); 
+            localStorage.setItem('theme', t); 
+            
+            // Ripristina la palette memorizzata del tema selezionato
+            const targetKey = t === 'light' 
+                ? (localStorage.getItem('selectedLightPalette') || 'default')
+                : (localStorage.getItem('selectedDarkPalette') || 'default');
+            applyPaletteStyle(t, targetKey);
+            updateAISwitchUI(); 
+        }
+
+        function updateAndroidBarColor(theme) {
+            const meta = document.getElementById('meta-theme-color');
+            if(meta) {
+                const currentPalette = PALETTES[theme][theme === 'light' ? (localStorage.getItem('selectedLightPalette') || 'default') : (localStorage.getItem('selectedDarkPalette') || 'default')];
+                meta.setAttribute('content', currentPalette ? currentPalette.bg : (theme === 'dark' ? '#000000' : '#f1f5f9'));
+            }
         }
 
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
 
-        // INIZIALIZZAZIONE STATO AL CARICAMENTO
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedMode = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedMode);
-            
-            const savedPalette = savedMode === 'light' 
-                ? (localStorage.getItem('selectedLightPalette') || 'default')
-                : (localStorage.getItem('selectedDarkPalette') || 'default');
-                
-            applyPalette(savedMode, savedPalette);
-            togglePaletteVisibility(savedMode);
-            updateAISwitchUI();
-        });
+        window.addEventListener('focus', () => { window.scrollTo(window.scrollX, window.scrollY + 1); window.scrollTo(window.scrollX, window.scrollY - 1); });
 
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/Liste-Famiglia/sw.js').catch(err => console.error(err));
+          navigator.serviceWorker.register('/Liste-Famiglia/sw.js')
+            .then(() => console.log('Service Worker Registrato!'))
+            .catch(err => console.log('Errore SW:', err));
         }
     </script>
 </body>

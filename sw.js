@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifa-cache-v2'; // Incrementato a v2 per forzare il refresh delle modifiche
+const CACHE_NAME = 'lifa-cache-v3';
 const ASSETS = [
   '/Liste-Famiglia/',
   '/Liste-Famiglia/index.html',
@@ -7,7 +7,6 @@ const ASSETS = [
   '/Liste-Famiglia/icon-512.png'
 ];
 
-// Installazione e caching degli asset stabili
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
@@ -16,7 +15,6 @@ self.addEventListener('install', e => {
   );
 });
 
-// Attivazione e pulizia automatica delle vecchie cache obsolete
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys => {
@@ -31,7 +29,6 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Strategia Network-First con Fallback su Cache per gli asset dinamici
 self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request).catch(() => {
