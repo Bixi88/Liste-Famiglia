@@ -42,6 +42,9 @@
             
             --delete-bg: #e2e8f0;
             --delete-color: #334155;
+
+            --tile-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            --tile-shadow-sm: 0 1px 3px rgba(0,0,0,0.01);
         }
 
         html[data-theme="dark"] {
@@ -159,7 +162,7 @@
             border-radius: var(--squircle-radius);
             padding: 12px; 
             margin-bottom: 12px; 
-            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            box-shadow: var(--tile-shadow);
         }
         
         .block-header-squircle {
@@ -214,7 +217,7 @@
             background: var(--item-bg);
             border-radius: var(--item-radius);
             border: 1px solid var(--item-border);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.01);
+            box-shadow: var(--tile-shadow-sm);
         }
         .list-item-text { font-size: 14px; font-weight: 700; flex: 1; color: var(--text-color); } 
         .list-item-actions { display: flex; align-items: center; gap: 10px; }
@@ -316,10 +319,7 @@
         .btn-confirm { background: var(--accent-color) !important; color: #ffffff !important; box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
 
         /* GRIGLIA SELEZIONE COLORI PALETTE */
-        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 10px 0 15px 0; }
-        .palette-dot { width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: transform 0.2s; justify-self: center; }
-        .palette-dot.active { border-color: var(--text-color); transform: scale(1.1); }
-        .palette-accent-core { width: 10px; height: 10px; border-radius: 50%; }
+        .palette-select-wrap { margin: 10px 0 15px 0; }
 
         .settings-section { margin-bottom: 18px; border-bottom: 2px solid var(--border-color); padding-bottom: 14px; }
         .settings-title { font-size: 12px; font-weight: 900; margin-bottom: 10px; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; }
@@ -403,8 +403,10 @@
         </div>
 
         <div class="settings-section">
-            <div class="settings-title" id="palette-section-title">Tavolozza Colori</div>
-            <div class="palette-grid" id="palette-options-grid"></div>
+            <div class="settings-title" id="palette-section-title">Stile interfaccia (Palette)</div>
+            <div class="palette-select-wrap">
+                <select id="palette-options-select" class="input-field" style="margin-bottom:0;" onchange="onPaletteSelectChange(this.value)"></select>
+            </div>
         </div>
 
         <div class="settings-section">
@@ -429,7 +431,7 @@
         const PALETTES = {
             light: {
                 default:     { bg: '#f1f5f9', surf: '#ffffff', item: '#f0f4f8', text: '#0f172a', sec: '#64748b', acc: '#2563eb', accL: '#eff6ff', border: '#cbd5e1', itemB: '#e2e8f0', delB: '#e2e8f0', delC: '#334155' },
-                pureWhite:   { bg: '#ffffff', surf: '#ffffff', item: '#f8fafc', text: '#1c1c1e', sec: '#8e8e93', acc: '#007aff', accL: '#e5f2ff', border: '#e5e5ea', itemB: '#f2f2f7', delB: '#f2f2f7', delC: '#1c1c1e' },
+                pureWhite:   { bg: '#ffffff', surf: '#ffffff', item: '#ffffff', text: '#111111', sec: '#8a8a8e', acc: '#007aff', accL: '#e5f2ff', border: '#ffffff', itemB: '#ffffff', delB: '#ffffff', delC: '#007aff', shadow: '0 4px 14px rgba(15,23,42,0.08)', shadowSm: '0 2px 6px rgba(15,23,42,0.05)' },
                 emerald:     { bg: '#f4fbf7', surf: '#ffffff', item: '#eef9f3', text: '#064e3b', sec: '#475569', acc: '#10b981', accL: '#e6fbf3', border: '#d1fae5', itemB: '#e6fbf3', delB: '#e6fbf3', delC: '#064e3b' },
                 nordic:      { bg: '#f0f4f8', surf: '#ffffff', item: '#e2e8f0', text: '#102a43', sec: '#627d98', acc: '#48bb78', accL: '#f0fff4', border: '#d9e2ec', itemB: '#e2e8f0', delB: '#bcccdc', delC: '#102a43' },
                 cream:       { bg: '#faf7f2', surf: '#ffffff', item: '#f3ede2', text: '#2d241e', sec: '#85766c', acc: '#d97706', accL: '#fef3c7', border: '#e7dfd5', itemB: '#f3ede2', delB: '#e7dfd5', delC: '#2d241e' },
@@ -441,7 +443,7 @@
             },
             dark: {
                 default:     { bg: '#000000', surf: '#121314', item: '#1a1c1e', text: '#ffffff', sec: '#94a3b8', acc: '#10b981', accL: 'rgba(16, 185, 129, 0.15)', border: '#232527', itemB: '#2c2e31', delB: '#2c2e31', delC: '#cbd5e1' },
-                amoled:      { bg: '#000000', surf: '#000000', item: '#121212', text: '#ffffff', sec: '#a1a1aa', acc: '#007aff', accL: 'rgba(0,122,255,0.15)', border: '#27272a', itemB: '#18181b', delB: '#27272a', delC: '#ffffff' },
+                amoled:      { bg: '#000000', surf: '#000000', item: '#000000', text: '#ffffff', sec: '#9a9a9e', acc: '#007aff', accL: 'rgba(0,122,255,0.15)', border: '#000000', itemB: '#000000', delB: '#000000', delC: '#007aff', shadow: '0 4px 14px rgba(255,255,255,0.05)', shadowSm: '0 2px 6px rgba(255,255,255,0.03)' },
                 classicDark: { bg: '#121612', surf: '#1c221c', item: '#252c25', text: '#e2e8f0', sec: '#8da28d', acc: '#10b981', accL: 'rgba(16,185,129,0.15)', border: '#273027', itemB: '#2f3b2f', delB: '#273027', delC: '#e2e8f0' },
                 synth:       { bg: '#0f051d', surf: '#1a0b2e', item: '#251242', text: '#f8f0ff', sec: '#a894c0', acc: '#ff007f', accL: 'rgba(255,0,127,0.15)', border: '#33145a', itemB: '#3f1b6d', delB: '#33145a', delC: '#f8f0ff' },
                 nordicNight: { bg: '#0b132b', surf: '#1c2541', item: '#233156', text: '#edf2f4', sec: '#8d99ae', acc: '#4ea8de', accL: 'rgba(78,168,222,0.15)', border: '#233156', itemB: '#2b3e6c', delB: '#233156', delC: '#edf2f4' },
@@ -450,6 +452,18 @@
                 cyberpunk:   { bg: '#141414', surf: '#1f1f1f', item: '#2a2a2a', text: '#ffffff', sec: '#a0a0a0', acc: '#f59e0b', accL: 'rgba(245,158,11,0.15)', border: '#2d2d2d', itemB: '#383838', delB: '#2d2d2d', delC: '#ffffff' },
                 dracula:     { bg: '#282a36', surf: '#44475a', item: '#383a48', text: '#f8f8f2', sec: '#6272a4', acc: '#ff79c6', accL: 'rgba(255,121,198,0.15)', border: '#6272a4', itemB: '#4f5268', delB: '#6272a4', delC: '#f8f8f2' },
                 obsidian:    { bg: '#0c1013', surf: '#172026', item: '#202c35', text: '#e2eaf0', sec: '#788996', acc: '#0ea5e9', accL: 'rgba(14,165,233,0.15)', border: '#24323c', itemB: '#2e3f4b', delB: '#24323c', delC: '#e2eaf0' }
+            }
+        };
+
+        const PALETTE_NAMES = {
+            light: {
+                default: 'Predefinito', pureWhite: 'Full White', emerald: 'Smeraldo', nordic: 'Nordico',
+                cream: 'Crema', lavender: 'Lavanda', rose: 'Rosa', ocean: 'Oceano', sage: 'Salvia', monochrome: 'Monocromo'
+            },
+            dark: {
+                default: 'Predefinito', amoled: 'Full AMOLED', classicDark: 'Verde Scuro', synth: 'Synthwave',
+                nordicNight: 'Notte Nordica', midnight: 'Mezzanotte', forest: 'Foresta', cyberpunk: 'Cyberpunk',
+                dracula: 'Dracula', obsidian: 'Ossidiana'
             }
         };
 
@@ -509,67 +523,54 @@
             const p = PALETTES[theme][key] || PALETTES[theme]['default'];
             const root = document.documentElement;
 
+            root.style.setProperty('--bg-color', p.bg);
+            root.style.setProperty('--surface-color', p.surf);
+            root.style.setProperty('--item-bg', p.item);
+            root.style.setProperty('--text-color', p.text);
+            root.style.setProperty('--text-secondary', p.sec);
+            root.style.setProperty('--accent-color', p.acc);
+            root.style.setProperty('--accent-light', p.accL);
+            root.style.setProperty('--border-color', p.border);
+            root.style.setProperty('--item-border', p.itemB);
+            root.style.setProperty('--delete-bg', p.delB);
+            root.style.setProperty('--delete-color', p.delC);
+            root.style.setProperty('--tile-shadow', p.shadow || '0 4px 16px rgba(0,0,0,0.03)');
+            root.style.setProperty('--tile-shadow-sm', p.shadowSm || '0 1px 3px rgba(0,0,0,0.01)');
+
             if (theme === 'light') {
-                root.style.setProperty('--bg-color', p.bg);
-                root.style.setProperty('--surface-color', p.surf);
-                root.style.setProperty('--item-bg', p.item);
-                root.style.setProperty('--text-color', p.text);
-                root.style.setProperty('--text-secondary', p.sec);
-                root.style.setProperty('--accent-color', p.acc);
-                root.style.setProperty('--accent-light', p.accL);
-                root.style.setProperty('--border-color', p.border);
-                root.style.setProperty('--item-border', p.itemB);
-                root.style.setProperty('--delete-bg', p.delB);
-                root.style.setProperty('--delete-color', p.delC);
                 localStorage.setItem('selectedLightPalette', key);
             } else {
-                // Sovrascrive le regole CSS attive nel blocco html[data-theme="dark"]
-                root.style.setProperty('--bg-color', p.bg);
-                root.style.setProperty('--surface-color', p.surf);
-                root.style.setProperty('--item-bg', p.item);
-                root.style.setProperty('--text-color', p.text);
-                root.style.setProperty('--text-secondary', p.sec);
-                root.style.setProperty('--accent-color', p.acc);
-                root.style.setProperty('--accent-light', p.accL);
-                root.style.setProperty('--border-color', p.border);
-                root.style.setProperty('--item-border', p.itemB);
-                root.style.setProperty('--delete-bg', p.delB);
-                root.style.setProperty('--delete-color', p.delC);
                 localStorage.setItem('selectedDarkPalette', key);
             }
             updateAndroidBarColor(theme);
         }
 
+        function onPaletteSelectChange(key) {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            applyPaletteStyle(currentTheme, key);
+        }
+
         function renderPaletteSelectorUI() {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const grid = document.getElementById('palette-options-grid');
+            const select = document.getElementById('palette-options-select');
             const title = document.getElementById('palette-section-title');
-            if(!grid) return;
+            if(!select) return;
 
-            grid.innerHTML = '';
-            title.innerText = currentTheme === 'light' ? 'Tavolozza Colori (Chiara)' : 'Tavolozza Colori (Scura)';
+            title.innerText = currentTheme === 'light' ? 'Stile interfaccia (Palette Chiara)' : 'Stile interfaccia (Palette Scura)';
 
             const activeKey = currentTheme === 'light'
                 ? (localStorage.getItem('selectedLightPalette') || 'default')
                 : (localStorage.getItem('selectedDarkPalette') || 'default');
 
+            select.innerHTML = '';
             Object.keys(PALETTES[currentTheme]).forEach(key => {
-                const paletteData = PALETTES[currentTheme][key];
-                const dot = document.createElement('div');
-                dot.className = `palette-dot ${key === activeKey ? 'active' : ''}`;
-                dot.style.backgroundColor = paletteData.bg;
-                if(key === 'pureWhite') dot.style.borderColor = '#e2e8f0';
-
-                const core = document.createElement('div');
-                core.className = 'palette-accent-core';
-                core.style.backgroundColor = paletteData.acc;
-                
-                dot.appendChild(core);
-                dot.onclick = () => {
-                    applyPaletteStyle(currentTheme, key);
-                    renderPaletteSelectorUI();
-                };
-                grid.appendChild(dot);
+                const p = PALETTES[currentTheme][key];
+                const label = PALETTE_NAMES[currentTheme][key] || key;
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = `${label} (${p.bg}, ${p.acc})`;
+                if(key === activeKey) opt.selected = true;
+                select.appendChild(opt);
             });
         }
 
