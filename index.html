@@ -332,10 +332,11 @@
         .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
         .switch-label { font-size: 14px; font-weight: 700; }
 
+        /* SWITCH GENERALE RIGUARDANTE LE ANIMAZIONI */
         .theme-switch { 
             width: 46px; height: 26px; background: var(--border-color); 
             border-radius: 26px; position: relative; cursor: pointer; 
-            border: 1px solid transparent;
+            border: 1px solid transparent; transition: background-color var(--transition-speed);
         }
         .theme-switch-handle { 
             width: 20px; height: 20px; background: #ffffff; 
@@ -344,6 +345,10 @@
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); 
         }
         
+        /* Gestione stato attivo/scuro degli switch */
+        .theme-switch.active { background: var(--accent-color); }
+        .theme-switch.active .theme-switch-handle { transform: translateX(20px); }
+
         #ai-toggle-switch { background: var(--border-color); }
         #ai-toggle-switch.active { background: var(--accent-color); }
 
@@ -361,7 +366,7 @@
                 <div class="header-subtitle">La tua lista della spesa</div>
             </div>
         </div>
-        <div class="theme-switch" onclick="toggleTheme()"><div class="theme-switch-handle"></div></div>
+        <div class="theme-switch" id="main-theme-switch" onclick="toggleTheme()"><div class="theme-switch-handle"></div></div>
     </header>
 
     <div class="nav-tabs" id="nav-tabs-container"></div>
@@ -427,7 +432,7 @@
     </div>
 
     <script>
-        // CONFIGURAZIONE 10 TAVOLOZZE CHIARE E 10 SCURE
+        // CONFIGURAZIONE COLORI
         const PALETTES = {
             light: {
                 default:     { bg: '#f1f5f9', surf: '#ffffff', item: '#f0f4f8', text: '#0f172a', sec: '#64748b', acc: '#2563eb', accL: '#eff6ff', border: '#cbd5e1', itemB: '#e2e8f0', delB: '#e2e8f0', delC: '#334155' },
@@ -507,7 +512,14 @@
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             
-            // Applica la tavolozza memorizzata al caricamento
+            // Inizializza graficamente lo switch del tema principale
+            const themeSwitch = document.getElementById('main-theme-switch');
+            if (savedTheme === 'dark') {
+                themeSwitch.classList.add('active');
+            } else {
+                themeSwitch.classList.remove('active');
+            }
+            
             const savedPaletteKey = savedTheme === 'light' 
                 ? (localStorage.getItem('selectedLightPalette') || 'default')
                 : (localStorage.getItem('selectedDarkPalette') || 'default');
@@ -516,9 +528,19 @@
             updateAISwitchUI();
             initSwipe();
             initFirebaseSync();
+
+            // GESTIONE DEL TASTO INDIETRO PER DISPOSITIVI ANDROID
+            window.addEventListener('popstate', (e) => {
+                // Se c'è un popup aperto, lo chiudiamo
+                const isAnySheetOpen = document.querySelector('.sheet.open');
+                if (isAnySheetOpen) {
+                    // Chiude tutto senza attivare ulteriori modifiche alla cronologia
+                    document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open'));
+                    document.getElementById('item-input').blur();
+                }
+            });
         });
 
-        // APPLICAZIONE DINAMICA DELLO STILE CSS DELLA TAVOLOZZA SELEZIONATA
         function applyPaletteStyle(theme, key) {
             const p = PALETTES[theme][key] || PALETTES[theme]['default'];
             const root = document.documentElement;
@@ -785,6 +807,10 @@
             selectedTarget = blockName;
             document.getElementById('add-popup-title').innerText = `Aggiungi a ${blockName}`;
             document.getElementById('item-input').value = '';
+            
+            // Gestione History Back di Android
+            history.pushState({ modalOpen: true }, "");
+
             document.getElementById('backdrop').classList.add('open');
             document.getElementById('addSheet').classList.add('open');
             setTimeout(() => document.getElementById('item-input').focus(), 60);
@@ -816,7 +842,11 @@
         }
 
         function openSettingsSheet() {
-            document.getElementById('backdrop').classList.add('open'); document.getElementById('settingsSheet').classList.add('open');
+            // Gestione History Back di Android
+            history.pushState({ modalOpen: true }, "");
+
+            document.getElementById('backdrop').classList.add('open'); 
+            document.getElementById('settingsSheet').classList.add('open');
             renderPaletteSelectorUI(); renderSettingsTabs(); renderSettingsBlocks();
         }
 
@@ -908,14 +938,28 @@
             else { sw.classList.remove('active'); }
         }
 
-        function closeAllSheets() { document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); document.getElementById('item-input').blur(); }
+        function closeAllSheets() {
+            // Rimuove lo stato fittizio dalla cronologia se l'utente chiude manualmente con i tasti in-app
+            if (window.history.state && window.history.state.modalOpen) {
+                window.history.back();
+            }
+            document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); 
+            document.getElementById('item-input').blur(); 
+        }
         
         function toggleTheme() { 
+            const themeSwitch = document.getElementById('main-theme-switch');
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
             document.documentElement.setAttribute('data-theme', t); 
             localStorage.setItem('theme', t); 
             
-            // Ripristina la palette memorizzata del tema selezionato
+            // Gestione animazione switch pallino bianco
+            if (t === 'dark') {
+                themeSwitch.classList.add('active');
+            } else {
+                themeSwitch.classList.remove('active');
+            }
+            
             const targetKey = t === 'light' 
                 ? (localStorage.getItem('selectedLightPalette') || 'default')
                 : (localStorage.getItem('selectedDarkPalette') || 'default');
