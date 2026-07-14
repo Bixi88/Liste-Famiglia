@@ -272,8 +272,8 @@
         }
         .sheet.open { transform: translate(-50%, 0); }
 
-        /* MODIFICA POPUP AGGIUNGI: PULSANTI AFFIANCATI */
-        #addSheet.sheet {
+        /* MODIFICA POPUP AGGIUNGI: PULSANTI AFFIANCATI (riusabile per tutti i popup centrali) */
+        .center-popup.sheet {
             bottom: auto;
             top: 25%;
             transform: translate(-50%, -20%) scale(0.9);
@@ -286,11 +286,15 @@
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s, visibility 0.2s;
             padding: 18px;
         }
-        #addSheet.sheet.open {
+        .center-popup.sheet.open {
             transform: translate(-50%, -20%) scale(1);
             opacity: 1;
             visibility: visible;
         }
+
+        /* Popup annidato (es. aggiungi tab/sotto-sezione) sopra al foglio impostazioni */
+        .stacked-popup.backdrop { z-index: 200; }
+        .stacked-popup.sheet { z-index: 201; }
         
         .sheet-actions-row {
             display: flex;
@@ -320,6 +324,41 @@
 
         /* GRIGLIA SELEZIONE COLORI PALETTE */
         .palette-select-wrap { margin: 10px 0 15px 0; }
+
+        /* SELETTORE PALETTE CUSTOM (non nativo, resta dentro l'app) */
+        .custom-select { position: relative; }
+        .custom-select-trigger {
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; user-select: none; -webkit-user-select: none;
+        }
+        .custom-select-trigger .custom-select-arrow {
+            color: var(--text-secondary); font-size: 12px; margin-left: 8px;
+            transition: transform var(--transition-speed);
+        }
+        .custom-select-trigger.open .custom-select-arrow { transform: rotate(180deg); }
+
+        .custom-select-dropdown {
+            position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+            background: var(--surface-color); border: 2px solid var(--border-color);
+            border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            max-height: 240px; overflow-y: auto; z-index: 150;
+            display: none; padding: 6px;
+        }
+        .custom-select-dropdown.open { display: block; }
+
+        .custom-select-option {
+            padding: 10px 12px; border-radius: 8px; font-size: 15px; font-weight: 700;
+            color: var(--text-color); cursor: pointer; transition: background-color var(--transition-speed);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .custom-select-option:active { background: var(--item-bg); }
+        .custom-select-option.selected { background: var(--accent-light); color: var(--accent-color); }
+        .custom-select-option .check-mark { color: var(--accent-color); font-weight: 900; }
+
+        @media (hover: hover) {
+            .custom-select-option:hover { background: var(--item-bg); }
+            .custom-select-option.selected:hover { background: var(--accent-light); }
+        }
 
         .settings-section { margin-bottom: 18px; border-bottom: 2px solid var(--border-color); padding-bottom: 14px; }
         .settings-title { font-size: 12px; font-weight: 900; margin-bottom: 10px; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; }
@@ -377,7 +416,7 @@
 
     <div class="backdrop" id="backdrop" onclick="closeAllSheets()"></div>
 
-    <div class="sheet" id="addSheet">
+    <div class="sheet center-popup" id="addSheet">
         <h3 id="add-popup-title">Aggiungi Elemento</h3>
         <input type="search" 
                inputmode="text"
@@ -396,6 +435,27 @@
         </div>
     </div>
 
+    <div class="backdrop stacked-popup" id="structureBackdrop" onclick="closeStructureInputSheet()"></div>
+
+    <div class="sheet center-popup stacked-popup" id="structureInputSheet">
+        <h3 id="structure-input-title">Aggiungi Nuovo Tab</h3>
+        <input type="text"
+               inputmode="text"
+               id="structure-input-field"
+               class="input-field"
+               placeholder="Nome"
+               onkeyup="handleStructureInputKeyUp(event)"
+               autocomplete="off"
+               autocorrect="off"
+               autocapitalize="off"
+               spellcheck="false">
+
+        <div class="sheet-actions-row">
+            <button class="btn btn-secondary" onclick="closeStructureInputSheet()">Annulla</button>
+            <button class="btn btn-confirm" onclick="confirmStructureInput()">Aggiungi</button>
+        </div>
+    </div>
+
     <div class="sheet" id="settingsSheet">
         <h3>Impostazioni Struttura</h3>
         
@@ -409,15 +469,19 @@
 
         <div class="settings-section">
             <div class="settings-title" id="palette-section-title">Stile interfaccia (Palette)</div>
-            <div class="palette-select-wrap">
-                <select id="palette-options-select" class="input-field" style="margin-bottom:0;" onchange="onPaletteSelectChange(this.value)"></select>
+            <div class="palette-select-wrap custom-select" id="palette-select-wrap">
+                <button type="button" class="input-field custom-select-trigger" id="palette-select-trigger" style="margin-bottom:0;" onclick="togglePaletteDropdown()">
+                    <span id="palette-select-label">Seleziona palette</span>
+                    <span class="custom-select-arrow">&#9662;</span>
+                </button>
+                <div class="custom-select-dropdown" id="palette-select-dropdown"></div>
             </div>
         </div>
 
         <div class="settings-section">
             <div class="settings-title">Gestisci Tab Principali</div>
             <div id="manage-tabs-list"></div>
-            <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="addNewTabStructure()">+ Aggiungi Nuovo Tab</button>
+            <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="openAddTabPopup()">+ Aggiungi Nuovo Tab</button>
         </div>
 
         <div class="settings-section">
@@ -425,7 +489,7 @@
             <label class="selector-label">Seleziona il tab da modificare:</label>
             <select id="settings-tab-select" class="input-field" style="padding:10px; margin-bottom:10px; border-radius: 8px; font-size: 14px;" onchange="renderSettingsBlocks()"></select>
             <div id="manage-blocks-list"></div>
-            <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="addNewBlockStructure()">+ Aggiungi Sotto-Sezione</button>
+            <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="openAddBlockPopup()">+ Aggiungi Sotto-Sezione</button>
         </div>
         
         <button class="btn btn-confirm" onclick="closeAllSheets()" style="margin-top:6px;">Salva e Chiudi</button>
@@ -580,24 +644,59 @@
             applyPaletteStyle(currentTheme, key, true);
         }
 
+        function togglePaletteDropdown(forceState) {
+            const dropdown = document.getElementById('palette-select-dropdown');
+            const trigger = document.getElementById('palette-select-trigger');
+            if(!dropdown || !trigger) return;
+            const shouldOpen = typeof forceState === 'boolean' ? forceState : !dropdown.classList.contains('open');
+            dropdown.classList.toggle('open', shouldOpen);
+            trigger.classList.toggle('open', shouldOpen);
+        }
+
+        function selectPalette(key) {
+            onPaletteSelectChange(key);
+            renderPaletteSelectorUI();
+            togglePaletteDropdown(false);
+        }
+
+        // Chiude il dropdown della palette se si clicca fuori
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('palette-select-wrap');
+            if(wrap && !wrap.contains(e.target)) togglePaletteDropdown(false);
+        });
+
         function renderPaletteSelectorUI() {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const select = document.getElementById('palette-options-select');
+            const dropdown = document.getElementById('palette-select-dropdown');
+            const label = document.getElementById('palette-select-label');
             const title = document.getElementById('palette-section-title');
-            if(!select) return;
+            if(!dropdown || !label) return;
 
             title.innerText = currentTheme === 'light' ? 'Stile interfaccia (Palette Chiara)' : 'Stile interfaccia (Palette Scura)';
 
             const activeKey = currentTheme === 'light' ? serverSettings.selectedLightPalette : serverSettings.selectedDarkPalette;
 
-            select.innerHTML = '';
+            dropdown.innerHTML = '';
             Object.keys(PALETTES[currentTheme]).forEach(key => {
-                const label = PALETTE_NAMES[currentTheme][key] || key;
-                const opt = document.createElement('option');
-                opt.value = key;
-                opt.innerText = label;
-                if(key === activeKey) opt.selected = true;
-                select.appendChild(opt);
+                const paletteLabel = PALETTE_NAMES[currentTheme][key] || key;
+                const opt = document.createElement('div');
+                opt.className = 'custom-select-option' + (key === activeKey ? ' selected' : '');
+                opt.setAttribute('role', 'option');
+                opt.onclick = (e) => { e.stopPropagation(); selectPalette(key); };
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = paletteLabel;
+                opt.appendChild(textSpan);
+
+                if(key === activeKey) {
+                    const check = document.createElement('span');
+                    check.className = 'check-mark';
+                    check.innerText = '✓';
+                    opt.appendChild(check);
+                    label.innerText = paletteLabel;
+                }
+
+                dropdown.appendChild(opt);
             });
         }
 
@@ -918,9 +1017,58 @@
             }
         }
 
-        function addNewTabStructure() {
-            let n = prompt("Inserisci il nome del nuovo Tab:"); if(!n) return;
-            let val = n.trim().toLowerCase(); if(structure.tabs.includes(val)) return alert("Tab già esistente!");
+        // Variabili di stato del popup "aggiungi struttura" (tab o sotto-sezione)
+        let structureInputMode = null; // 'tab' | 'block'
+        let structureInputContextTab = null;
+
+        function openAddTabPopup() {
+            structureInputMode = 'tab';
+            structureInputContextTab = null;
+            document.getElementById('structure-input-title').innerText = 'Aggiungi Nuovo Tab';
+            const input = document.getElementById('structure-input-field');
+            input.placeholder = 'Nome del nuovo tab';
+            input.value = '';
+            document.getElementById('structureBackdrop').classList.add('open');
+            document.getElementById('structureInputSheet').classList.add('open');
+            setTimeout(() => input.focus(), 60);
+        }
+
+        function openAddBlockPopup() {
+            const dropdown = document.getElementById('settings-tab-select');
+            const activeTab = dropdown.value;
+            if(!activeTab) return;
+            structureInputMode = 'block';
+            structureInputContextTab = activeTab;
+            document.getElementById('structure-input-title').innerText = `Aggiungi a ${activeTab.toUpperCase()}`;
+            const input = document.getElementById('structure-input-field');
+            input.placeholder = 'Nome della sotto-sezione';
+            input.value = '';
+            document.getElementById('structureBackdrop').classList.add('open');
+            document.getElementById('structureInputSheet').classList.add('open');
+            setTimeout(() => input.focus(), 60);
+        }
+
+        function closeStructureInputSheet() {
+            document.getElementById('structureBackdrop').classList.remove('open');
+            document.getElementById('structureInputSheet').classList.remove('open');
+            document.getElementById('structure-input-field').blur();
+        }
+
+        function handleStructureInputKeyUp(e) { if(e.key === 'Enter') confirmStructureInput(); }
+
+        function confirmStructureInput() {
+            const val = document.getElementById('structure-input-field').value.trim();
+            if(!val) return;
+            if(structureInputMode === 'tab') {
+                addNewTabStructure(val);
+            } else if (structureInputMode === 'block') {
+                addNewBlockStructure(structureInputContextTab, val);
+            }
+            closeStructureInputSheet();
+        }
+
+        function addNewTabStructure(n) {
+            let val = n.trim().toLowerCase(); if(!val) return; if(structure.tabs.includes(val)) return alert("Tab già esistente!");
             structure.tabs.push(val); structure.blocks[val] = ['GENERALE'];
             db.ref('homeHub/structure').set(structure); renderSettingsTabs();
         }
@@ -943,10 +1091,9 @@
             }
         }
 
-        function addNewBlockStructure() {
-            const dropdown = document.getElementById('settings-tab-select'); const activeTab = dropdown.value; if(!activeTab) return;
-            let n = prompt(`Aggiungi elemento a ${activeTab.toUpperCase()}:`); if(!n) return;
-            let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab] || !structure.blocks[activeTab]) structure.blocks[activeTab] = [];
+        function addNewBlockStructure(activeTab, n) {
+            if(!activeTab || !n) return;
+            let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
             if(structure.blocks[activeTab].includes(val)) return alert("Elemento già esistente!");
             structure.blocks[activeTab].push(val); db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
         }
@@ -972,6 +1119,7 @@
             }
             document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); 
             document.getElementById('item-input').blur(); 
+            togglePaletteDropdown(false);
         }
         
         // INTERRUTTORE DI MODALITÀ LOCALE (Non sincronizza "theme" sul DB)
