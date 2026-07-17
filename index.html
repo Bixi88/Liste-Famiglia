@@ -19,6 +19,10 @@
     
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -77,8 +81,8 @@
 
         header {
             padding: 12px 14px; 
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
             max-width: 600px;
             margin: 0 auto;
@@ -88,14 +92,24 @@
             z-index: 10;
         }
 
-        .header-left { display: flex; align-items: center; gap: 10px; }
+        .header-left { display: flex; align-items: center; justify-self: start; }
+        #main-theme-switch { justify-self: end; }
         
         .header-titles {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
         
-        h1 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.1; } 
+        h1 {
+            margin: 0;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 23px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            line-height: 1.1;
+        }
         
         .header-subtitle {
             margin: 1px 0 0 0;
@@ -107,11 +121,18 @@
         
         .settings-btn {
             background: var(--surface-color); border: 2px solid var(--border-color); color: var(--text-color);
-            font-size: 15px; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; 
+            cursor: pointer; width: 36px; height: 36px; border-radius: 12px; 
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.04); transition: transform 0.2s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.04); transition: transform 0.15s, background-color var(--transition-speed);
+            flex-shrink: 0;
         }
         .settings-btn:active { transform: scale(0.9); }
+        .settings-btn svg { width: 18px; height: 18px; }
+        .settings-btn .bar {
+            stroke: var(--text-color);
+            stroke-width: 2.4;
+            stroke-linecap: round;
+        }
 
         .nav-tabs {
             display: flex;
@@ -399,11 +420,16 @@
 
     <header>
         <div class="header-left">
-            <button class="settings-btn" onclick="openSettingsSheet()">⚙️</button>
-            <div class="header-titles">
-                <h1>LiFa</h1>
-                <div class="header-subtitle">La tua lista della spesa</div>
-            </div>
+            <button class="settings-btn" onclick="openSettingsSheet()" aria-label="Impostazioni">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <line class="bar" x1="4" y1="9" x2="20" y2="9"/>
+                    <line class="bar" x1="4" y1="15" x2="20" y2="15"/>
+                </svg>
+            </button>
+        </div>
+        <div class="header-titles">
+            <h1>LiFa</h1>
+            <div class="header-subtitle">La tua lista della spesa</div>
         </div>
         <div class="theme-switch" id="main-theme-switch" onclick="toggleTheme()"><div class="theme-switch-handle"></div></div>
     </header>
@@ -460,14 +486,6 @@
         <h3>Impostazioni Struttura</h3>
         
         <div class="settings-section">
-            <div class="toggle-row">
-                <span class="switch-label">Mostra suggerimenti AI predittivi</span>
-                <div class="theme-switch" id="ai-toggle-switch" onclick="toggleAISuggestions()"><div class="theme-switch-handle" id="ai-toggle-handle"></div></div>
-            </div>
-            <button class="btn btn-danger" style="padding: 10px; font-size: 12px; margin-top: 6px;" onclick="resetAllAIClicks()">Reset Totale Cache Suggerimenti</button>
-        </div>
-
-        <div class="settings-section">
             <div class="settings-title" id="palette-section-title">Stile interfaccia (Palette)</div>
             <div class="palette-select-wrap custom-select" id="palette-select-wrap">
                 <button type="button" class="input-field custom-select-trigger" id="palette-select-trigger" style="margin-bottom:0;" onclick="togglePaletteDropdown()">
@@ -490,6 +508,14 @@
             <select id="settings-tab-select" class="input-field" style="padding:10px; margin-bottom:10px; border-radius: 8px; font-size: 14px;" onchange="renderSettingsBlocks()"></select>
             <div id="manage-blocks-list"></div>
             <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="openAddBlockPopup()">+ Aggiungi Sotto-Sezione</button>
+        </div>
+
+        <div class="settings-section">
+            <div class="toggle-row">
+                <span class="switch-label">Mostra suggerimenti AI predittivi</span>
+                <div class="theme-switch" id="ai-toggle-switch" onclick="toggleAISuggestions()"><div class="theme-switch-handle" id="ai-toggle-handle"></div></div>
+            </div>
+            <button class="btn btn-danger" style="padding: 10px; font-size: 12px; margin-top: 6px;" onclick="resetAllAIClicks()">Reset Totale Cache Suggerimenti</button>
         </div>
         
         <button class="btn btn-confirm" onclick="closeAllSheets()" style="margin-top:6px;">Salva e Chiudi</button>
@@ -520,7 +546,31 @@
                 forest:      { bg: '#0d140d', surf: '#172217', item: '#203020', text: '#e6efe6', sec: '#8fa38f', acc: '#22c55e', accL: 'rgba(34,197,94,0.15)', border: '#243524', itemB: '#2d432d', delB: '#243524', delC: '#e6efe6' },
                 cyberpunk:   { bg: '#141414', surf: '#1f1f1f', item: '#2a2a2a', text: '#ffffff', sec: '#a0a0a0', acc: '#f59e0b', accL: 'rgba(245,158,11,0.15)', border: '#2d2d2d', itemB: '#383838', delB: '#2d2d2d', delC: '#ffffff' },
                 dracula:     { bg: '#282a36', surf: '#44475a', item: '#383a48', text: '#f8f8f2', sec: '#6272a4', acc: '#ff5555', accL: 'rgba(255, 85, 85, 0.15)', border: '#6272a4', itemB: '#4f5268', delB: '#6272a4', delC: '#f8f8f2' },
-                obsidian:    { bg: '#0c1013', surf: '#172026', item: '#202c35', text: '#e2eaf0', sec: '#788996', acc: '#0ea5e9', accL: 'rgba(14,165,233,0.15)', border: '#24323c', itemB: '#2e3f4b', delB: '#24323c', delC: '#e2eaf0' }
+                obsidian:    { bg: '#0c1013', surf: '#172026', item: '#202c35', text: '#e2eaf0', sec: '#788996', acc: '#0ea5e9', accL: 'rgba(14,165,233,0.15)', border: '#24323c', itemB: '#2e3f4b', delB: '#24323c', delC: '#e2eaf0' },
+                monokai:     { bg: '#161712', surf: '#221f1a', item: '#2d2a24', text: '#f8f8f2', sec: '#9a9990', acc: '#a6e22e', accL: 'rgba(166,226,46,0.15)', border: '#3a362e', itemB: '#3e3a32', delB: '#3a362e', delC: '#f8f8f2' },
+                oneDark:     { bg: '#0f1115', surf: '#21252b', item: '#282c34', text: '#abb2bf', sec: '#7d8493', acc: '#61afef', accL: 'rgba(97,175,239,0.15)', border: '#3b4048', itemB: '#323842', delB: '#3b4048', delC: '#abb2bf' },
+                solarized:   { bg: '#00212b', surf: '#073642', item: '#0d4351', text: '#93a1a1', sec: '#657b83', acc: '#268bd2', accL: 'rgba(38,139,210,0.15)', border: '#0d4351', itemB: '#0d4351', delB: '#0d4351', delC: '#eee8d5' },
+                tokyoNight:  { bg: '#1a1b26', surf: '#24283b', item: '#2a2e42', text: '#c0caf5', sec: '#787c99', acc: '#7aa2f7', accL: 'rgba(122,162,247,0.15)', border: '#343a52', itemB: '#343a52', delB: '#343a52', delC: '#c0caf5' },
+                gruvbox:     { bg: '#1d2021', surf: '#282828', item: '#32302f', text: '#ebdbb2', sec: '#a89984', acc: '#fabd2f', accL: 'rgba(250,189,47,0.15)', border: '#3c3836', itemB: '#3c3836', delB: '#3c3836', delC: '#ebdbb2' },
+                nord:        { bg: '#242933', surf: '#2e3440', item: '#3b4252', text: '#eceff4', sec: '#9aa5b8', acc: '#88c0d0', accL: 'rgba(136,192,208,0.15)', border: '#434c5e', itemB: '#434c5e', delB: '#434c5e', delC: '#eceff4' },
+                catppuccin:  { bg: '#181825', surf: '#1e1e2e', item: '#292c3c', text: '#cdd6f4', sec: '#9399b2', acc: '#f5c2e7', accL: 'rgba(245,194,231,0.15)', border: '#313244', itemB: '#313244', delB: '#313244', delC: '#cdd6f4' },
+                materialOcean:{ bg: '#0f111a', surf: '#171a26', item: '#212433', text: '#c3cee3', sec: '#7d8398', acc: '#82aaff', accL: 'rgba(130,170,255,0.15)', border: '#2b2f42', itemB: '#2b2f42', delB: '#2b2f42', delC: '#c3cee3' },
+                oceanicNext: { bg: '#131a20', surf: '#1b2b34', item: '#22333d', text: '#d8dee9', sec: '#7e93a7', acc: '#6699cc', accL: 'rgba(102,153,204,0.15)', border: '#2c3e4c', itemB: '#2c3e4c', delB: '#2c3e4c', delC: '#d8dee9' },
+                palenight:   { bg: '#191a24', surf: '#292d3e', item: '#333750', text: '#a6accd', sec: '#767c9d', acc: '#c792ea', accL: 'rgba(199,146,234,0.15)', border: '#3b3f58', itemB: '#3b3f58', delB: '#3b3f58', delC: '#a6accd' },
+                ayuDark:     { bg: '#0a0e14', surf: '#0f151e', item: '#171d28', text: '#b3b1ad', sec: '#6c7380', acc: '#ffb454', accL: 'rgba(255,180,84,0.15)', border: '#232937', itemB: '#232937', delB: '#232937', delC: '#b3b1ad' },
+                vscodeDark:  { bg: '#181818', surf: '#1e1e1e', item: '#252526', text: '#d4d4d4', sec: '#858585', acc: '#0e70c0', accL: 'rgba(14,112,192,0.15)', border: '#2d2d2d', itemB: '#2d2d2d', delB: '#2d2d2d', delC: '#d4d4d4' },
+                deepPurple:  { bg: '#12081f', surf: '#1c0f2e', item: '#26163b', text: '#e9defa', sec: '#9b87b5', acc: '#a855f7', accL: 'rgba(168,85,247,0.15)', border: '#331f4d', itemB: '#331f4d', delB: '#331f4d', delC: '#e9defa' },
+                crimson:     { bg: '#160707', surf: '#210d0d', item: '#2b1313', text: '#f5dede', sec: '#b08585', acc: '#ef4444', accL: 'rgba(239,68,68,0.15)', border: '#3a1a1a', itemB: '#3a1a1a', delB: '#3a1a1a', delC: '#f5dede' },
+                amber:       { bg: '#171310', surf: '#221c16', item: '#2c241c', text: '#f5e9d6', sec: '#b3a189', acc: '#f59e0b', accL: 'rgba(245,158,11,0.15)', border: '#3a2f22', itemB: '#3a2f22', delB: '#3a2f22', delC: '#f5e9d6' },
+                teal:        { bg: '#071615', surf: '#0d211f', item: '#132b28', text: '#d6f5f0', sec: '#7fb3aa', acc: '#14b8a6', accL: 'rgba(20,184,166,0.15)', border: '#1a3733', itemB: '#1a3733', delB: '#1a3733', delC: '#d6f5f0' },
+                indigo:      { bg: '#0b0e1f', surf: '#141830', item: '#1d2340', text: '#dfe3fa', sec: '#8b90b8', acc: '#6366f1', accL: 'rgba(99,102,241,0.15)', border: '#282e52', itemB: '#282e52', delB: '#282e52', delC: '#dfe3fa' },
+                rosePineMoon:{ bg: '#1f1d2e', surf: '#26233a', item: '#2f2c47', text: '#e0def4', sec: '#908caa', acc: '#eb6f92', accL: 'rgba(235,111,146,0.15)', border: '#3a3552', itemB: '#3a3552', delB: '#3a3552', delC: '#e0def4' },
+                everforest:  { bg: '#232a2e', surf: '#2d353b', item: '#374247', text: '#d3c6aa', sec: '#8a9a8b', acc: '#a7c080', accL: 'rgba(167,192,128,0.15)', border: '#414b50', itemB: '#414b50', delB: '#414b50', delC: '#d3c6aa' },
+                horizon:     { bg: '#16141f', surf: '#1c1a29', item: '#252336', text: '#e0d3d3', sec: '#a08a8a', acc: '#e95678', accL: 'rgba(233,86,120,0.15)', border: '#2e2b3f', itemB: '#2e2b3f', delB: '#2e2b3f', delC: '#e0d3d3' },
+                cobalt:      { bg: '#0a1930', surf: '#0f2440', item: '#173156', text: '#e2ecfa', sec: '#7f96b8', acc: '#0088ff', accL: 'rgba(0,136,255,0.15)', border: '#1c3d66', itemB: '#1c3d66', delB: '#1c3d66', delC: '#e2ecfa' },
+                mint:        { bg: '#08160f', surf: '#0e2117', item: '#152c1f', text: '#d7f5e4', sec: '#7fb69b', acc: '#34d399', accL: 'rgba(52,211,153,0.15)', border: '#1b3a29', itemB: '#1b3a29', delB: '#1b3a29', delC: '#d7f5e4' },
+                blackGold:   { bg: '#0d0d0d', surf: '#161616', item: '#1f1f1f', text: '#f5e9c8', sec: '#a8987a', acc: '#d4af37', accL: 'rgba(212,175,55,0.15)', border: '#2a2a2a', itemB: '#2a2a2a', delB: '#2a2a2a', delC: '#f5e9c8' },
+                steel:       { bg: '#101317', surf: '#181c22', item: '#20252d', text: '#dbe2ea', sec: '#828d9c', acc: '#64748b', accL: 'rgba(100,116,139,0.15)', border: '#2b323d', itemB: '#2b323d', delB: '#2b323d', delC: '#dbe2ea' }
             }
         };
 
@@ -547,7 +597,31 @@
                 forest: 'Foresta (Dark Green/Green)', 
                 cyberpunk: 'Cyberpunk (Charcoal/Amber)',
                 dracula: 'Dracula (Grey/Red)', 
-                obsidian: 'Ossidiana (Dark Grey/Sky Blue)'
+                obsidian: 'Ossidiana (Dark Grey/Sky Blue)',
+                monokai: 'Monokai (Charcoal/Lime)',
+                oneDark: 'One Dark (Slate/Blue)',
+                solarized: 'Solarized Dark (Teal/Blue)',
+                tokyoNight: 'Tokyo Night (Indigo/Blue)',
+                gruvbox: 'Gruvbox Dark (Brown/Amber)',
+                nord: 'Nord (Slate/Ice Blue)',
+                catppuccin: 'Catppuccin Mocha (Plum/Pink)',
+                materialOcean: 'Material Ocean (Navy/Blue)',
+                oceanicNext: 'Oceanic Next (Teal/Blue)',
+                palenight: 'Palenight (Purple/Lilac)',
+                ayuDark: 'Ayu Dark (Charcoal/Orange)',
+                vscodeDark: 'VS Code Dark+ (Grey/Blue)',
+                deepPurple: 'Viola Profondo (Purple/Violet)',
+                crimson: 'Crimson (Dark Red/Red)',
+                amber: 'Ambra (Brown/Amber)',
+                teal: 'Teal Scuro (Dark Teal/Teal)',
+                indigo: 'Indaco (Navy/Indigo)',
+                rosePineMoon: 'Rosé Pine Moon (Plum/Rose)',
+                everforest: 'Everforest (Green/Sage)',
+                horizon: 'Horizon (Plum/Coral)',
+                cobalt: 'Cobalto (Navy/Blue)',
+                mint: 'Menta Scura (Dark Green/Mint)',
+                blackGold: 'Nero e Oro (Black/Gold)',
+                steel: 'Acciaio (Slate/Steel Blue)'
             }
         };
 
