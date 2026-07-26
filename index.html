@@ -412,6 +412,27 @@
         #ai-toggle-switch { background: var(--border-color); }
         #ai-toggle-switch.active { background: var(--accent-color); }
 
+        .offline-pill {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.1px;
+            white-space: nowrap;
+        }
+        .offline-pill.show { display: inline-flex; }
+        .offline-pill-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #ef4444; flex-shrink: 0;
+            animation: offlinePulse 1.6s ease-in-out infinite;
+        }
+        @keyframes offlinePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
         .selector-label { font-size: 11px; font-weight: 800; color: var(--text-secondary); margin-bottom: 8px; display: block; letter-spacing: 0.3px; }
         .empty-text { color: var(--text-secondary); font-size: 13px; font-weight: 600; opacity: 0.5; padding: 2px; }
     </style>
@@ -430,6 +451,7 @@
         <div class="header-titles">
             <h1>LiFa</h1>
             <div class="header-subtitle">La tua lista della spesa</div>
+            <div class="offline-pill" id="offline-pill"><span class="offline-pill-dot"></span><span id="offline-pill-text">Server offline · Copia cache</span></div>
         </div>
         <div class="theme-switch" id="main-theme-switch" onclick="toggleTheme()"><div class="theme-switch-handle"></div></div>
     </header>
@@ -672,7 +694,28 @@
             
             updateAISwitchUI();
             initSwipe();
+
+            // Carica subito l'ultima copia salvata in locale, così l'interfaccia
+            // non resta mai vuota anche se il server non risponde
+            const hasCache = loadLocalCache();
+            if (hasCache) {
+                buildTabsUI();
+                renderAll();
+            }
+            if (!navigator.onLine) {
+                setOfflineStatus(true, 'Nessuna connessione · Copia cache');
+            }
+
             initFirebaseSync();
+
+            window.addEventListener('online', () => {
+                // Il device è tornato online: se anche Firebase risponde,
+                // la pillola sparirà da sola tramite markOnline()
+                checkOverallStatus();
+            });
+            window.addEventListener('offline', () => {
+                setOfflineStatus(true, 'Nessuna connessione · Copia cache');
+            });
 
             window.addEventListener('popstate', (e) => {
                 const isAnySheetOpen = document.querySelector('.sheet.open');
@@ -682,6 +725,76 @@
                 }
             });
         });
+
+        // ---- Cache locale (localStorage) ----
+        function saveLocalCache() {
+            try {
+                localStorage.setItem('lifa_cache_structure', JSON.stringify(structure));
+                localStorage.setItem('lifa_cache_state', JSON.stringify(state));
+                localStorage.setItem('lifa_cache_aiHistory', JSON.stringify(aiHistory));
+                localStorage.setItem('lifa_cache_settings', JSON.stringify(serverSettings));
+                localStorage.setItem('lifa_cache_timestamp', Date.now().toString());
+            } catch (e) {
+                console.warn('Impossibile salvare la cache locale:', e);
+            }
+        }
+
+        function loadLocalCache() {
+            try {
+                const s = localStorage.getItem('lifa_cache_structure');
+                if (!s) return false;
+                structure = JSON.parse(s);
+                const st = localStorage.getItem('lifa_cache_state');
+                const ai = localStorage.getItem('lifa_cache_aiHistory');
+                const set = localStorage.getItem('lifa_cache_settings');
+                if (st) state = JSON.parse(st);
+                if (ai) aiHistory = JSON.parse(ai);
+                if (set) serverSettings = JSON.parse(set);
+                return true;
+            } catch (e) {
+                console.warn('Impossibile leggere la cache locale:', e);
+                return false;
+            }
+        }
+
+        // ---- Stato di connessione / pillola "Server offline · Copia cache" ----
+        let fbStatus = { structure: 'pending', state: 'pending', aiHistory: 'pending', settings: 'pending' };
+
+        function markOnline(key) { fbStatus[key] = 'ok'; checkOverallStatus(); }
+        function markOffline(key) { fbStatus[key] = 'error'; checkOverallStatus(); }
+
+        function checkOverallStatus() {
+            if (!navigator.onLine) { setOfflineStatus(true, 'Nessuna connessione · Copia cache'); return; }
+            const values = Object.values(fbStatus);
+            if (values.some(v => v === 'error')) {
+                setOfflineStatus(true, 'Server offline · Copia cache');
+            } else if (values.every(v => v === 'ok')) {
+                setOfflineStatus(false);
+            }
+        }
+
+        function setOfflineStatus(isOffline, message) {
+            const pill = document.getElementById('offline-pill');
+            const text = document.getElementById('offline-pill-text');
+            if (!pill || !text) return;
+            if (isOffline) {
+                if (message) text.innerText = message;
+                pill.classList.add('show');
+            } else {
+                pill.classList.remove('show');
+            }
+        }
+
+        // Scrive su Firebase in background senza bloccare l'interfaccia.
+        // Se la scrittura fallisce (offline, permessi, server giù) non succede
+        // nulla di grave: il dato resta comunque valido in locale e in cache,
+        // e la pillola rossa segnala che non è stato sincronizzato.
+        function pushUpdate(path, data) {
+            db.ref(path).set(data).catch(err => {
+                console.warn(`Sincronizzazione non riuscita per ${path}:`, err.message);
+                setOfflineStatus(true, 'Server offline · Copia cache');
+            });
+        }
 
         function applyPaletteStyle(theme, key, saveToServer = true) {
             const p = PALETTES[theme][key] || PALETTES[theme]['default'];
@@ -708,7 +821,8 @@
             }
             
             if (saveToServer) {
-                db.ref('homeHub/settings').set(serverSettings);
+                saveLocalCache();
+                pushUpdate('homeHub/settings', serverSettings);
             }
             updateAndroidBarColor(theme);
         }
@@ -782,20 +896,35 @@
                     if(!structure.tabs) structure.tabs = [];
                     if(!structure.blocks) structure.blocks = {};
                 } else {
-                    db.ref('homeHub/structure').set(structure);
+                    pushUpdate('homeHub/structure', structure);
                 }
                 buildTabsUI();
                 renderAll();
+                saveLocalCache();
+                markOnline('structure');
+            }, (error) => {
+                console.warn('Structure non raggiungibile, uso la copia in cache:', error.message);
+                markOffline('structure');
             });
 
             db.ref('homeHub/state').on('value', (snapshot) => {
                 state = snapshot.val() || {};
                 renderAll();
+                saveLocalCache();
+                markOnline('state');
+            }, (error) => {
+                console.warn('State non raggiungibile, uso la copia in cache:', error.message);
+                markOffline('state');
             });
 
             db.ref('homeHub/aiHistory').on('value', (snapshot) => {
                 aiHistory = snapshot.val() || {};
                 renderAll();
+                saveLocalCache();
+                markOnline('aiHistory');
+            }, (error) => {
+                console.warn('AiHistory non raggiungibile, uso la copia in cache:', error.message);
+                markOffline('aiHistory');
             });
 
             db.ref('homeHub/settings').on('value', (snapshot) => {
@@ -809,8 +938,13 @@
                 } else {
                     serverSettings.selectedLightPalette = 'default';
                     serverSettings.selectedDarkPalette = 'default';
-                    db.ref('homeHub/settings').set(serverSettings);
+                    pushUpdate('homeHub/settings', serverSettings);
                 }
+                saveLocalCache();
+                markOnline('settings');
+            }, (error) => {
+                console.warn('Settings non raggiungibili, uso la copia in cache:', error.message);
+                markOffline('settings');
             });
         }
 
@@ -951,7 +1085,8 @@
                         container.querySelectorAll('.list-item').forEach(el => { updatedArray.push(el.getAttribute('data-item-value')); });
                         if (!state[tab]) state[tab] = {};
                         state[tab][block] = updatedArray;
-                        db.ref('homeHub/state').set(state);
+                        saveLocalCache();
+                        pushUpdate('homeHub/state', state);
                     }
                 });
             }
@@ -995,15 +1130,22 @@
                     
                     aiHistory[tab][block][formattedItem] = (aiHistory[tab][block][formattedItem] || 0) + 1;
                     
-                    db.ref('homeHub/state').set(state); 
-                    db.ref('homeHub/aiHistory').set(aiHistory);
+                    renderAll();
+                    saveLocalCache();
+                    pushUpdate('homeHub/state', state);
+                    pushUpdate('homeHub/aiHistory', aiHistory);
                 };
                 container.appendChild(chip);
             });
         }
 
         function deleteItem(tab, block, idx) {
-            if(state[tab] && state[tab][block]) { state[tab][block].splice(idx, 1); db.ref('homeHub/state').set(state); }
+            if(state[tab] && state[tab][block]) {
+                state[tab][block].splice(idx, 1);
+                renderAll();
+                saveLocalCache();
+                pushUpdate('homeHub/state', state);
+            }
         }
 
         function openAddSheetForBlock(blockName) {
@@ -1038,8 +1180,10 @@
             if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
             aiHistory[activeTab][selectedTarget][v] = (aiHistory[activeTab][selectedTarget][v] || 0) + 1;
             
-            db.ref('homeHub/state').set(state); 
-            db.ref('homeHub/aiHistory').set(aiHistory);
+            renderAll();
+            saveLocalCache();
+            pushUpdate('homeHub/state', state);
+            pushUpdate('homeHub/aiHistory', aiHistory);
             closeAllSheets();
         }
 
@@ -1076,18 +1220,20 @@
             let val = newVal.trim().toLowerCase(); if(!val) return;
             let oldName = structure.tabs[idx]; structure.tabs[idx] = val;
             if(structure.blocks[oldName]) { structure.blocks[val] = structure.blocks[oldName]; delete structure.blocks[oldName]; }
-            if(state[oldName]) { state[val] = state[oldName]; delete state[oldName]; db.ref('homeHub/state').set(state); }
-            if(aiHistory[oldName]) { aiHistory[val] = aiHistory[oldName]; delete aiHistory[oldName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-            db.ref('homeHub/structure').set(structure);
+            if(state[oldName]) { state[val] = state[oldName]; delete state[oldName]; pushUpdate('homeHub/state', state); }
+            if(aiHistory[oldName]) { aiHistory[val] = aiHistory[oldName]; delete aiHistory[oldName]; pushUpdate('homeHub/aiHistory', aiHistory); }
+            buildTabsUI(); renderAll(); saveLocalCache();
+            pushUpdate('homeHub/structure', structure);
         }
 
         function removeTab(idx) {
             let tabName = structure.tabs[idx];
             if(confirm(`Vuoi davvero eliminare la sezione "${tabName.toUpperCase()}"?`)) {
                 structure.tabs.splice(idx, 1); if(structure.blocks[tabName]) delete structure.blocks[tabName];
-                if(state[tabName]) { delete state[tabName]; db.ref('homeHub/state').set(state); }
-                if(aiHistory[tabName]) { delete aiHistory[tabName]; delete aiHistory[tabName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-                db.ref('homeHub/structure').set(structure);
+                if(state[tabName]) { delete state[tabName]; pushUpdate('homeHub/state', state); }
+                if(aiHistory[tabName]) { delete aiHistory[tabName]; delete aiHistory[tabName]; pushUpdate('homeHub/aiHistory', aiHistory); }
+                buildTabsUI(); renderAll(); saveLocalCache(); renderSettingsTabs();
+                pushUpdate('homeHub/structure', structure);
             }
         }
 
@@ -1144,24 +1290,27 @@
         function addNewTabStructure(n) {
             let val = n.trim().toLowerCase(); if(!val) return; if(structure.tabs.includes(val)) return alert("Tab già esistente!");
             structure.tabs.push(val); structure.blocks[val] = ['GENERALE'];
-            db.ref('homeHub/structure').set(structure); renderSettingsTabs();
+            buildTabsUI(); renderAll(); saveLocalCache(); renderSettingsTabs();
+            pushUpdate('homeHub/structure', structure);
         }
 
         function renameBlock(tab, idx, newVal) {
             let val = newVal.trim().toUpperCase(); if(!val) return;
             let oldBlockName = structure.blocks[tab][idx]; structure.blocks[tab][idx] = val;
-            if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; db.ref('homeHub/state').set(state); }
-            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-            db.ref('homeHub/structure').set(structure);
+            if(state[tab] && state[tab][oldBlockName]) { state[tab][val] = state[tab][oldBlockName]; delete state[tab][oldBlockName]; pushUpdate('homeHub/state', state); }
+            if(aiHistory[tab] && aiHistory[tab][oldBlockName]) { aiHistory[tab][val] = aiHistory[tab][oldBlockName]; delete aiHistory[tab][oldBlockName]; pushUpdate('homeHub/aiHistory', aiHistory); }
+            renderAll(); saveLocalCache();
+            pushUpdate('homeHub/structure', structure);
         }
 
         function removeBlock(tab, idx) {
             let bName = structure.blocks[tab][idx];
             if(confirm(`Vuoi davvero eliminare questo elemento "${bName}"?`)) {
                 structure.blocks[tab].splice(idx, 1);
-                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; db.ref('homeHub/state').set(state); }
-                if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; delete aiHistory[tab][bName]; db.ref('homeHub/aiHistory').set(aiHistory); }
-                db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
+                if(state[tab] && state[tab][bName]) { delete state[tab][bName]; pushUpdate('homeHub/state', state); }
+                if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; delete aiHistory[tab][bName]; pushUpdate('homeHub/aiHistory', aiHistory); }
+                renderAll(); saveLocalCache(); renderSettingsBlocks();
+                pushUpdate('homeHub/structure', structure);
             }
         }
 
@@ -1169,10 +1318,12 @@
             if(!activeTab || !n) return;
             let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
             if(structure.blocks[activeTab].includes(val)) return alert("Elemento già esistente!");
-            structure.blocks[activeTab].push(val); db.ref('homeHub/structure').set(structure); renderSettingsBlocks();
+            structure.blocks[activeTab].push(val);
+            renderAll(); saveLocalCache(); renderSettingsBlocks();
+            pushUpdate('homeHub/structure', structure);
         }
 
-        function resetAllAIClicks() { if(confirm("Vuoi azzerare la cronologia dei suggerimenti?")) { aiHistory = {}; db.ref('homeHub/aiHistory').set(aiHistory); } }
+        function resetAllAIClicks() { if(confirm("Vuoi azzerare la cronologia dei suggerimenti?")) { aiHistory = {}; renderAll(); saveLocalCache(); pushUpdate('homeHub/aiHistory', aiHistory); } }
         
         function toggleAISuggestions() { 
             showAI = !showAI; 
