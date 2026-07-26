@@ -506,8 +506,18 @@
             appId: "1:31651198901:web:f62c8a6e3621c951da8bfc"
         };
         
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // Se siamo offline e lo script di Firebase non è (ancora) in cache,
+        // "firebase" potrebbe non esistere: non deve bloccare il resto dell'app,
+        // che deve comunque partire mostrando la copia salvata in locale.
+        let db = null;
+        let firebaseAvailable = false;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            firebaseAvailable = true;
+        } catch (e) {
+            console.warn('Firebase non disponibile (probabilmente offline), uso solo la cache locale:', e.message);
+        }
 
         let structure = {
             tabs: ['spesa', 'film', 'famiglia'],
@@ -553,9 +563,19 @@
                 setOfflineStatus(true, 'Nessuna connessione · Copia cache');
             }
 
-            initFirebaseSync();
+            if (firebaseAvailable) {
+                initFirebaseSync();
+            } else {
+                setOfflineStatus(true, 'Nessuna connessione · Copia cache');
+            }
 
             window.addEventListener('online', () => {
+                if (!firebaseAvailable) {
+                    // Firebase non si era caricato (eravamo offline): ora che
+                    // la connessione è tornata, ricarica per riagganciarsi al server
+                    window.location.reload();
+                    return;
+                }
                 // Il device è tornato online: se anche Firebase risponde,
                 // la pillola sparirà da sola tramite markOnline()
                 checkOverallStatus();
@@ -634,6 +654,10 @@
         // nulla di grave: il dato resta comunque valido in locale e in cache,
         // e la pillola rossa segnala che non è stato sincronizzato.
         function pushUpdate(path, data) {
+            if (!db) {
+                setOfflineStatus(true, 'Nessuna connessione · Copia cache');
+                return;
+            }
             db.ref(path).set(data).catch(err => {
                 console.warn(`Sincronizzazione non riuscita per ${path}:`, err.message);
                 setOfflineStatus(true, 'Server offline · Copia cache');
@@ -814,7 +838,7 @@
                 container.appendChild(div);
             });
 
-            if (isFilmTab && data.length > 1) {
+            if (isFilmTab && data.length > 1 && typeof Sortable !== 'undefined') {
                 Sortable.create(container, {
                     handle: '.drag-handle', animation: 180, ghostClass: 'sortable-ghost',
                     onEnd: function () {
