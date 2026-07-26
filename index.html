@@ -654,11 +654,20 @@
         // nulla di grave: il dato resta comunque valido in locale e in cache,
         // e la pillola rossa segnala che non è stato sincronizzato.
         function pushUpdate(path, data) {
+            // Segniamo subito questo ramo come "non sincronizzato": il flag resta
+            // salvato in localStorage anche se l'app viene chiusa/riavviata prima
+            // che la scrittura vada a buon fine, così non perdiamo la modifica
+            // quando torniamo online.
+            const branchKey = path.split('/')[1];
+            try { localStorage.setItem('lifa_dirty_' + branchKey, '1'); } catch (e) {}
+
             if (!db) {
                 setOfflineStatus(true, 'Nessuna connessione · Copia cache');
                 return;
             }
-            db.ref(path).set(data).catch(err => {
+            db.ref(path).set(data).then(() => {
+                try { localStorage.removeItem('lifa_dirty_' + branchKey); } catch (e) {}
+            }).catch(err => {
                 console.warn(`Sincronizzazione non riuscita per ${path}:`, err.message);
                 setOfflineStatus(true, 'Server offline · Copia cache');
             });
@@ -669,43 +678,71 @@
             if (meta) meta.setAttribute('content', theme === 'dark' ? '#000000' : '#f7f5fa');
         }
 
+        // Se, mentre eravamo offline, abbiamo delle modifiche non ancora
+        // sincronizzate su un certo ramo (homeHub/structure, /state o /aiHistory),
+        // le rimandiamo PRIMA di metterci in ascolto dei dati del server.
+        // Altrimenti rischiamo di ricevere il vecchio valore del server e di
+        // sovrascrivere con quello le modifiche fatte offline (perdendo l'elemento
+        // appena aggiunto).
+        function syncBranchThenListen(branchKey, localValueGetter, attachListenerFn) {
+            const path = 'homeHub/' + branchKey;
+            const isDirty = localStorage.getItem('lifa_dirty_' + branchKey) === '1';
+
+            if (!isDirty) {
+                attachListenerFn();
+                return;
+            }
+
+            db.ref(path).set(localValueGetter()).then(() => {
+                try { localStorage.removeItem('lifa_dirty_' + branchKey); } catch (e) {}
+            }).catch(err => {
+                console.warn(`Impossibile inviare le modifiche offline (${branchKey}):`, err.message);
+            }).finally(attachListenerFn);
+        }
+
         function initFirebaseSync() {
-            db.ref('homeHub/structure').on('value', (snapshot) => {
-                const data = snapshot.val();
-                if(data) {
-                    structure = data;
-                    if(!structure.tabs) structure.tabs = [];
-                    if(!structure.blocks) structure.blocks = {};
-                } else {
-                    pushUpdate('homeHub/structure', structure);
-                }
-                buildTabsUI();
-                renderAll();
-                saveLocalCache();
-                markOnline('structure');
-            }, (error) => {
-                console.warn('Structure non raggiungibile, uso la copia in cache:', error.message);
-                markOffline('structure');
+            syncBranchThenListen('structure', () => structure, () => {
+                db.ref('homeHub/structure').on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if(data) {
+                        structure = data;
+                        if(!structure.tabs) structure.tabs = [];
+                        if(!structure.blocks) structure.blocks = {};
+                    } else {
+                        pushUpdate('homeHub/structure', structure);
+                    }
+                    buildTabsUI();
+                    renderAll();
+                    saveLocalCache();
+                    markOnline('structure');
+                }, (error) => {
+                    console.warn('Structure non raggiungibile, uso la copia in cache:', error.message);
+                    markOffline('structure');
+                });
             });
 
-            db.ref('homeHub/state').on('value', (snapshot) => {
-                state = snapshot.val() || {};
-                renderAll();
-                saveLocalCache();
-                markOnline('state');
-            }, (error) => {
-                console.warn('State non raggiungibile, uso la copia in cache:', error.message);
-                markOffline('state');
+            syncBranchThenListen('state', () => state, () => {
+                db.ref('homeHub/state').on('value', (snapshot) => {
+                    state = snapshot.val() || {};
+                    renderAll();
+                    saveLocalCache();
+                    markOnline('state');
+                }, (error) => {
+                    console.warn('State non raggiungibile, uso la copia in cache:', error.message);
+                    markOffline('state');
+                });
             });
 
-            db.ref('homeHub/aiHistory').on('value', (snapshot) => {
-                aiHistory = snapshot.val() || {};
-                renderAll();
-                saveLocalCache();
-                markOnline('aiHistory');
-            }, (error) => {
-                console.warn('AiHistory non raggiungibile, uso la copia in cache:', error.message);
-                markOffline('aiHistory');
+            syncBranchThenListen('aiHistory', () => aiHistory, () => {
+                db.ref('homeHub/aiHistory').on('value', (snapshot) => {
+                    aiHistory = snapshot.val() || {};
+                    renderAll();
+                    saveLocalCache();
+                    markOnline('aiHistory');
+                }, (error) => {
+                    console.warn('AiHistory non raggiungibile, uso la copia in cache:', error.message);
+                    markOffline('aiHistory');
+                });
             });
         }
 

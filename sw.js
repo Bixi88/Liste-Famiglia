@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifa-cache-v4';
+const CACHE_NAME = 'lifa-cache-v5';
 const APP_SHELL = '/Liste-Famiglia/index.html';
 
 // File dell'app
