@@ -818,9 +818,8 @@
         }
 
         function initSwipe() {
-            const area = document.getElementById('swipe-area');
-            area.addEventListener('touchstart', e => { tStart = e.touches[0].clientX; }, {passive: true});
-            area.addEventListener('touchend', e => {
+            document.addEventListener('touchstart', e => { tStart = e.touches[0].clientX; }, {passive: true});
+            document.addEventListener('touchend', e => {
                 let tEnd = e.changedTouches[0].clientX;
                 let diff = tStart - tEnd;
                 if (Math.abs(diff) > 50 && structure.tabs.length > 0) {
