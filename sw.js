@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifa-cache-v5';
+const CACHE_NAME = 'lifa-cache-v6';
 const APP_SHELL = '/Liste-Famiglia/index.html';
 
 // File dell'app
@@ -20,9 +20,12 @@ const CDN_ASSETS = [
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(APP_ASSETS).then(() => {
-        // Le risorse CDN sono cross-origin: le mettiamo in cache singolarmente
-        // e non blocchiamo l'installazione se una di queste fallisse
+      // no-store: forza il download reale dei file dell'app, ignorando la cache HTTP del telefono
+      return Promise.all(
+        APP_ASSETS.map(url =>
+          fetch(url, { cache: 'no-store' }).then(res => cache.put(url, res)).catch(() => {})
+        )
+      ).then(() => {
         return Promise.all(
           CDN_ASSETS.map(url =>
             cache.add(new Request(url, { mode: 'no-cors' })).catch(() => {})
@@ -52,13 +55,13 @@ self.addEventListener('fetch', e => {
   // se offline, mostra sempre la app dalla cache, mai la pagina di errore del browser
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match(APP_SHELL))
+      fetch(e.request, { cache: 'no-store' }).catch(() => caches.match(APP_SHELL))
     );
     return;
   }
 
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'no-store' })
       .then(response => {
         // Aggiorna la cache in background con la versione più recente
         const copy = response.clone();
@@ -67,4 +70,9 @@ self.addEventListener('fetch', e => {
       })
       .catch(() => caches.match(e.request))
   );
+});
+
+// Su richiesta della pagina, salta l'attesa e attiva subito la nuova versione
+self.addEventListener('message', e => {
+  if (e.data === 'skipWaiting') self.skipWaiting();
 });

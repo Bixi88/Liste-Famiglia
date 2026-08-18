@@ -192,10 +192,11 @@
             margin-bottom: 10px; 
         }
         .block-header-squircle span {
-            font-size: 15px; 
-            font-weight: 900;
-            color: var(--text-color);
-            letter-spacing: -0.3px;
+            font-size: 12px; 
+            font-weight: 800;
+            color: var(--accent-color);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
         }
 
         .block-add-btn {
@@ -239,7 +240,7 @@
             border-bottom: 1px solid var(--border-color);
         }
         .list-item:last-child { border-bottom: none; }
-        .list-item-text { font-size: 14px; font-weight: 700; flex: 1; color: var(--text-color); } 
+        .list-item-text { font-size: 15px; font-weight: 500; flex: 1; color: var(--text-color); } 
         .list-item-actions { display: flex; align-items: center; gap: 10px; }
         
         /* --- OPTIMIZATION TAB FILM --- */
@@ -1159,9 +1160,38 @@
         window.addEventListener('focus', () => { window.scrollTo(window.scrollX, window.scrollY + 1); window.scrollTo(window.scrollX, window.scrollY - 1); });
 
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/Liste-Famiglia/sw.js')
-            .then(() => console.log('Service Worker Registrato!'))
+          navigator.serviceWorker.register('/Liste-Famiglia/sw.js', { updateViaCache: 'none' })
+            .then(reg => {
+              console.log('Service Worker Registrato!');
+
+              // Se c'è già un nuovo SW in attesa (installato ma non ancora attivo), attivalo subito
+              if (reg.waiting) reg.waiting.postMessage('skipWaiting');
+
+              // Controlla se il SW appena trovato diventa "installed" mentre uno vecchio è già attivo
+              reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    newWorker.postMessage('skipWaiting');
+                  }
+                });
+              });
+
+              // Ogni volta che l'app torna in primo piano (riaperta dopo essere stata chiusa), ricontrolla subito
+              document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') reg.update();
+              });
+              window.addEventListener('pageshow', () => reg.update());
+            })
             .catch(err => console.log('Errore SW:', err));
+
+          // Quando il nuovo SW prende il controllo, ricarica la pagina per mostrare subito i cambiamenti
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+          });
         }
     </script>
 </body>
