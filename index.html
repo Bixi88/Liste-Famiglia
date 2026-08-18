@@ -75,6 +75,8 @@
             padding: 0;
             transition: background-color var(--transition-speed), color var(--transition-speed);
             overscroll-behavior-y: contain;
+            overscroll-behavior-x: none;
+            touch-action: pan-y;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
@@ -400,7 +402,7 @@
         @keyframes offlinePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
         .selector-label { font-size: 11px; font-weight: 800; color: var(--text-secondary); margin-bottom: 8px; display: block; letter-spacing: 0.3px; }
         .empty-text { color: var(--text-secondary); font-size: 13px; font-weight: 600; opacity: 0.5; padding: 2px; }
-        .swipe-catcher { position: fixed; inset: 0; z-index: -1; }
+        .swipe-catcher { position: fixed; inset: 0; z-index: -1; touch-action: pan-y; }
     </style>
 </head>
 <body>
@@ -829,11 +831,16 @@
         }
 
         function initSwipe() {
-            document.addEventListener('touchstart', e => { tStart = e.touches[0].clientX; }, {passive: true});
+            let tStartY = 0;
+            document.addEventListener('touchstart', e => { tStart = e.touches[0].clientX; tStartY = e.touches[0].clientY; }, {passive: true});
             document.addEventListener('touchend', e => {
                 let tEnd = e.changedTouches[0].clientX;
+                let tEndY = e.changedTouches[0].clientY;
                 let diff = tStart - tEnd;
-                if (Math.abs(diff) > 50 && structure.tabs.length > 0) {
+                let diffY = tStartY - tEndY;
+                // Accetta lo swipe solo se il movimento orizzontale è chiaramente
+                // dominante rispetto al verticale, per evitare gesti diagonali combinati.
+                if (Math.abs(diff) > 50 && Math.abs(diff) > Math.abs(diffY) * 1.5 && structure.tabs.length > 0) {
                     if (diff > 0 && currentTabIdx < structure.tabs.length - 1) switchTab(currentTabIdx + 1);
                     else if (diff < 0 && currentTabIdx > 0) switchTab(currentTabIdx - 1);
                 }
