@@ -175,7 +175,8 @@
             transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
             will-change: transform; 
         }
-        .tab-content { width: 100%; flex-shrink: 0; padding: 10px 14px; max-width: 600px; margin: 0 auto; padding-bottom: 70px; min-height: calc(100vh - 130px); }
+        .tab-content { width: 100%; flex-shrink: 0; padding: 10px 14px; max-width: 600px; margin: 0 auto; padding-bottom: 70px; height: 0; overflow: hidden; }
+        .tab-content.active { height: auto; overflow: visible; }
 
         .block-group { 
             background-color: var(--surface-color);
@@ -783,7 +784,7 @@
 
                 const content = document.createElement('div');
                 content.id = `content-tab-${tab}`;
-                content.className = 'tab-content';
+                content.className = 'tab-content' + (index === currentTabIdx ? ' active' : '');
                 content.style.width = `${100 / structure.tabs.length}%`;
                 slider.appendChild(content);
 
@@ -808,6 +809,11 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             const activeBtn = document.getElementById(`btn-tab-${index}`);
             if(activeBtn) activeBtn.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const activeContent = document.getElementById(`content-tab-${structure.tabs[index]}`);
+            if(activeContent) activeContent.classList.add('active');
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
