@@ -539,6 +539,7 @@
         let currentTabIdx = parseInt(localStorage.getItem('activeTabIdx')) || 0;
         let selectedTarget = '';
         let tStart = 0;
+        let tabSwitchCleanupTimer = null;
         let showAI = localStorage.getItem('showAI') !== 'false'; 
 
         function capitalizeFirstLetter(string) {
@@ -812,11 +813,19 @@
             const activeBtn = document.getElementById(`btn-tab-${index}`);
             if(activeBtn) activeBtn.classList.add('active');
 
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            // La scheda in entrata prende subito l'altezza piena, ma quella in uscita
+            // resta "active" (e quindi alla sua altezza) finché lo slide orizzontale
+            // non è terminato, per evitare che collassi di scatto mentre è ancora visibile.
+            const outgoingContents = document.querySelectorAll('.tab-content.active');
             const activeContent = document.getElementById(`content-tab-${structure.tabs[index]}`);
             if(activeContent) activeContent.classList.add('active');
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            clearTimeout(tabSwitchCleanupTimer);
+            tabSwitchCleanupTimer = setTimeout(() => {
+                outgoingContents.forEach(c => { if (c !== activeContent) c.classList.remove('active'); });
+            }, 320);
+
+            window.scrollTo({ top: 0, behavior: 'auto' });
         }
 
         function initSwipe() {
