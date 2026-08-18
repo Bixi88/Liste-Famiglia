@@ -400,9 +400,11 @@
         @keyframes offlinePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
         .selector-label { font-size: 11px; font-weight: 800; color: var(--text-secondary); margin-bottom: 8px; display: block; letter-spacing: 0.3px; }
         .empty-text { color: var(--text-secondary); font-size: 13px; font-weight: 600; opacity: 0.5; padding: 2px; }
+        .swipe-catcher { position: fixed; inset: 0; z-index: -1; }
     </style>
 </head>
 <body>
+    <div class="swipe-catcher"></div>
 
     <header>
         <div class="header-left">
