@@ -250,8 +250,8 @@
         .film-list { gap: 4px !important; background: transparent !important; border: none !important; border-radius: 0px !important; overflow: visible; }
         .film-list .list-item { background: transparent !important; border: none !important; border-radius: 0px !important; padding: 6px 0px; box-shadow: none !important; }
         .film-list .list-item-text { font-size: 16px; font-weight: 700; }
-        .film-list .drag-handle { font-size: 14px; margin-right: 8px; opacity: 0.5; }
-        .film-list .delete-btn { width: 24px; height: 24px; font-size: 9px; }
+        .film-list .drag-handle { font-size: 15px; margin-right: 10px; opacity: 0.3; }
+        .film-list .delete-btn { width: 20px; height: 20px; font-size: 8px; opacity: 0.7; }
         
         .drag-handle { 
             color: var(--text-secondary); 
@@ -269,18 +269,19 @@
             background: var(--delete-bg); 
             border: none; 
             color: var(--delete-color); 
-            width: 26px; 
-            height: 26px; 
+            width: 21px; 
+            height: 21px; 
             border-radius: 50%; 
-            font-size: 10px; 
+            font-size: 8px; 
             font-weight: 900;
+            opacity: 0.75;
             display: flex; 
             align-items: center; 
             justify-content: center;
             cursor: pointer; 
             transition: transform 0.1s, opacity 0.2s; 
         }
-        .delete-btn:active { transform: scale(0.85); }
+        .delete-btn:active { transform: scale(0.85); opacity: 1; }
 
         .backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 100; display: none; opacity: 0; transition: opacity var(--transition-speed); }
         .backdrop.open { display: block; opacity: 1; }
@@ -867,7 +868,7 @@
 
             data.forEach((item, i) => {
                 const div = document.createElement('div'); div.className = 'list-item'; div.setAttribute('data-item-value', item);
-                let leftAction = isFilmTab ? `<div class="drag-handle">☰</div>` : '';
+                let leftAction = isFilmTab ? `<div class="drag-handle">⠿</div>` : '';
                 div.innerHTML = `
                     ${leftAction}
                     <div class="list-item-text">${item}</div>
