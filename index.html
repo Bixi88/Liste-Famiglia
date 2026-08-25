@@ -242,8 +242,15 @@
             border-radius: 0;
             border: none;
             border-bottom: 1px solid var(--border-color);
+            -webkit-user-select: none;
+            user-select: none;
+            transition: background-color 0.15s ease, transform 0.15s ease;
         }
         .list-item:last-child { border-bottom: none; }
+        .list-item.pressing {
+            background-color: var(--accent-light);
+            transform: scale(0.98);
+        }
         .list-item-text { font-size: 15.5px; font-weight: 400; flex: 1; color: var(--text-color); } 
         .list-item-actions { display: flex; align-items: center; gap: 10px; }
         
@@ -435,7 +442,7 @@
 
     <div class="sheet center-popup" id="addSheet">
         <h3 id="add-popup-title">Aggiungi Elemento</h3>
-        <input type="search" 
+        <input type="text" 
                inputmode="text"
                id="item-input" 
                class="input-field" 
@@ -540,6 +547,7 @@
         
         let currentTabIdx = parseInt(localStorage.getItem('activeTabIdx')) || 0;
         let selectedTarget = '';
+        let editingContext = null; // { tab, block, idx } quando il popup è in modalità "Modifica"
         let tStart = 0;
         let tabSwitchCleanupTimer = null;
         let showAI = localStorage.getItem('showAI') !== 'false'; 
@@ -897,6 +905,7 @@
                     <div class="list-item-text">${item}</div>
                     <div class="list-item-actions"><button class="delete-btn" onclick="deleteItem('${tab}', '${block}', ${i})">✕</button></div>
                 `;
+                attachLongPress(div, tab, block, i);
                 container.appendChild(div);
             });
 
@@ -913,6 +922,80 @@
                     }
                 });
             }
+        }
+
+        // Tenendo premuto un elemento per 1 secondo si apre il popup di modifica
+        // (utile per correggere errori di battitura su elementi già inseriti).
+        const LONG_PRESS_MS = 1000;
+        const LONG_PRESS_MOVE_TOLERANCE = 10;
+
+        function attachLongPress(el, tab, block, idx) {
+            let pressTimer = null;
+            let startX = 0, startY = 0;
+
+            const clearPress = () => {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+                el.classList.remove('pressing');
+            };
+
+            const startPress = (x, y) => {
+                startX = x; startY = y;
+                el.classList.add('pressing');
+                pressTimer = setTimeout(() => {
+                    el.classList.remove('pressing');
+                    if (navigator.vibrate) navigator.vibrate(15);
+                    openEditItemSheet(tab, block, idx);
+                }, LONG_PRESS_MS);
+            };
+
+            const movePress = (x, y) => {
+                if (!pressTimer) return;
+                if (Math.abs(x - startX) > LONG_PRESS_MOVE_TOLERANCE || Math.abs(y - startY) > LONG_PRESS_MOVE_TOLERANCE) {
+                    clearPress();
+                }
+            };
+
+            el.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.delete-btn') || e.target.closest('.drag-handle')) return;
+                const t = e.touches[0];
+                startPress(t.clientX, t.clientY);
+            }, { passive: true });
+            el.addEventListener('touchmove', (e) => {
+                const t = e.touches[0];
+                movePress(t.clientX, t.clientY);
+            }, { passive: true });
+            el.addEventListener('touchend', clearPress);
+            el.addEventListener('touchcancel', clearPress);
+
+            el.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.delete-btn') || e.target.closest('.drag-handle')) return;
+                startPress(e.clientX, e.clientY);
+            });
+            el.addEventListener('mousemove', (e) => movePress(e.clientX, e.clientY));
+            el.addEventListener('mouseup', clearPress);
+            el.addEventListener('mouseleave', clearPress);
+        }
+
+        function openEditItemSheet(tab, block, idx) {
+            const currentValue = (state[tab] && state[tab][block]) ? state[tab][block][idx] : undefined;
+            if (currentValue === undefined) return;
+
+            selectedTarget = block;
+            editingContext = { tab, block, idx };
+
+            document.getElementById('add-popup-title').innerText = 'Modifica';
+            document.getElementById('item-input').value = currentValue;
+
+            history.pushState({ modalOpen: true }, "");
+
+            document.getElementById('backdrop').classList.add('open');
+            document.getElementById('addSheet').classList.add('open');
+            setTimeout(() => {
+                const inp = document.getElementById('item-input');
+                inp.focus();
+                inp.select();
+            }, 60);
         }
 
         function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
@@ -973,6 +1056,7 @@
 
         function openAddSheetForBlock(blockName) {
             selectedTarget = blockName;
+            editingContext = null;
             document.getElementById('add-popup-title').innerText = `Aggiungi a ${blockName}`;
             document.getElementById('item-input').value = '';
             
@@ -984,11 +1068,26 @@
         }
 
         function addItem() {
-            const activeTab = structure.tabs[currentTabIdx];
             let rawValue = document.getElementById('item-input').value.trim();
-            if(!rawValue || !activeTab || !selectedTarget) return;
-            
+            if(!rawValue) return;
             let v = capitalizeFirstLetter(rawValue);
+
+            // Modalità "Modifica": sovrascrive l'elemento esistente invece di aggiungerne uno nuovo
+            if (editingContext) {
+                const { tab, block, idx } = editingContext;
+                if (state[tab] && state[tab][block] && state[tab][block][idx] !== undefined) {
+                    state[tab][block][idx] = v;
+                    renderAll();
+                    saveLocalCache();
+                    pushUpdate('homeHub/state', state);
+                }
+                editingContext = null;
+                closeAllSheets();
+                return;
+            }
+
+            const activeTab = structure.tabs[currentTabIdx];
+            if(!activeTab || !selectedTarget) return;
 
             if(!state[activeTab]) state[activeTab] = {}; 
             if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = []; 
@@ -1167,6 +1266,7 @@
             }
             document.querySelectorAll('.sheet, .backdrop').forEach(el => el.classList.remove('open')); 
             document.getElementById('item-input').blur(); 
+            editingContext = null;
         }
         
         // INTERRUTTORE DI MODALITÀ LOCALE (Non sincronizza "theme" sul DB)
