@@ -1069,38 +1069,49 @@
             // Modalità "Modifica": sovrascrive l'elemento esistente invece di aggiungerne uno nuovo
             if (editingContext) {
                 const { tab, block, idx } = editingContext;
-                if (state[tab] && state[tab][block] && state[tab][block][idx] !== undefined) {
-                    state[tab][block][idx] = v;
-                    renderAll();
-                    saveLocalCache();
-                    pushUpdate('homeHub/state', state);
-                }
-                editingContext = null;
+                // Il popup si chiude SUBITO: se qualcosa nei passaggi successivi (render,
+                // cache, sync) genera un errore, non deve più poter lasciare la finestra aperta.
                 closeAllSheets();
+                try {
+                    if (state[tab] && state[tab][block] && state[tab][block][idx] !== undefined) {
+                        state[tab][block][idx] = v;
+                        renderAll();
+                        saveLocalCache();
+                        pushUpdate('homeHub/state', state);
+                    }
+                } catch (e) {
+                    console.error('Errore modificando elemento:', e);
+                }
                 return;
             }
 
             const activeTab = structure.tabs[currentTabIdx];
             if(!activeTab || !selectedTarget) return;
 
-            if(!state[activeTab]) state[activeTab] = {}; 
-            if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = []; 
-            
-            if (selectedTarget.toLowerCase() === 'da vedere' || activeTab.toLowerCase() === 'film') {
-                state[activeTab][selectedTarget].unshift(v);
-            } else {
-                state[activeTab][selectedTarget].push(v);
-            }
-            
-            if(!aiHistory[activeTab]) aiHistory[activeTab] = {}; 
-            if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
-            aiHistory[activeTab][selectedTarget][v] = (aiHistory[activeTab][selectedTarget][v] || 0) + 1;
-            
-            renderAll();
-            saveLocalCache();
-            pushUpdate('homeHub/state', state);
-            pushUpdate('homeHub/aiHistory', aiHistory);
+            // Stessa logica: chiudiamo il popup prima di render/salvataggio/sync.
             closeAllSheets();
+
+            try {
+                if(!state[activeTab]) state[activeTab] = {}; 
+                if(!state[activeTab][selectedTarget]) state[activeTab][selectedTarget] = []; 
+
+                if (selectedTarget.toLowerCase() === 'da vedere' || activeTab.toLowerCase() === 'film') {
+                    state[activeTab][selectedTarget].unshift(v);
+                } else {
+                    state[activeTab][selectedTarget].push(v);
+                }
+
+                if(!aiHistory[activeTab]) aiHistory[activeTab] = {}; 
+                if(!aiHistory[activeTab][selectedTarget]) aiHistory[activeTab][selectedTarget] = {};
+                aiHistory[activeTab][selectedTarget][v] = (aiHistory[activeTab][selectedTarget][v] || 0) + 1;
+
+                renderAll();
+                saveLocalCache();
+                pushUpdate('homeHub/state', state);
+                pushUpdate('homeHub/aiHistory', aiHistory);
+            } catch (e) {
+                console.error('Errore aggiungendo elemento:', e);
+            }
         }
 
         function openSettingsSheet() {
