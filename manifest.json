@@ -4,6 +4,7 @@
   "start_url": "/Liste-Famiglia/index.html",
   "display": "standalone",
   "background_color": "#121612",
+  "theme_color": "#0B0D0B",
   "orientation": "portrait",
   "icons": [
     {
