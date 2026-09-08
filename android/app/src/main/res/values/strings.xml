@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">LiFa</string>
+    <string name="title_activity_main">LiFa</string>
+    <string name="package_name">com.bixi88.lifa</string>
+    <string name="custom_url_scheme">com.bixi88.lifa</string>
+</resources>
