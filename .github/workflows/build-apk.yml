@@ -29,15 +29,59 @@ jobs:
       - name: Sync Capacitor -> Android
         run: npx cap sync android
 
-      - name: Prepara icona per Capacitor Assets
+      - name: Sostituisci l'icona dell'app con la tua icona
         run: |
-          mkdir -p assets
-          cp icon-512.png assets/icon.png
-          cp icon-512.png assets/icon-foreground.png
-          cp icon-512.png assets/splash.png
+          set -e
+          declare -A sizes=( [mdpi]=48 [hdpi]=72 [xhdpi]=96 [xxhdpi]=144 [xxxhdpi]=192 )
+          for density in "${!sizes[@]}"; do
+            size=${sizes[$density]}
+            dir="android/app/src/main/res/mipmap-${density}"
+            mkdir -p "$dir"
+            convert icon-512.png -resize ${size}x${size} "$dir/ic_launcher.png"
+            convert icon-512.png -resize ${size}x${size} "$dir/ic_launcher_round.png"
+            convert icon-512.png -resize ${size}x${size} "$dir/ic_launcher_foreground.png"
+          done
 
-      - name: Genera icone Android dalla tua icona
-        run: npx @capacitor/assets generate --android --iconBackgroundColor '#0B0D0B' --iconBackgroundColorDark '#0B0D0B'
+      - name: Ripristina chiave di firma stabile
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "Nessun segreto ANDROID_KEYSTORE_BASE64 trovato: verrà usata la chiave di debug temporanea (richiederà disinstallazione tra un aggiornamento e l'altro)."
+          else
+            echo "$KEYSTORE_BASE64" | base64 -d > android/lifa-release.keystore
+            python3 - << 'PYEOF'
+import re
+path = "android/app/build.gradle"
+with open(path) as f:
+    content = f.read()
+
+signing_block = '''
+    signingConfigs {
+        debug {
+            storeFile file("../lifa-release.keystore")
+            storePassword "LifaFamiglia2026!"
+            keyAlias "lifa"
+            keyPassword "LifaFamiglia2026!"
+        }
+    }
+'''
+
+if "signingConfigs {" not in content:
+    content = content.replace("android {", "android {" + signing_block, 1)
+
+if re.search(r'debug\s*\{[^}]*signingConfig signingConfigs\.debug', content) is None:
+    content = re.sub(
+        r'(buildTypes\s*\{)',
+        r'\1\n        debug {\n            signingConfig signingConfigs.debug\n        }',
+        content, count=1
+    )
+
+with open(path, "w") as f:
+    f.write(content)
+print("build.gradle aggiornato con la firma stabile.")
+PYEOF
+          fi
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -54,6 +98,9 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
+      - name: Rinomina APK in LiFa.apk
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk LiFa.apk
+
       - name: Pubblica APK come release "latest"
         uses: ncipollo/release-action@v1
         with:
@@ -61,5 +108,5 @@ jobs:
           name: LiFa (ultima build)
           allowUpdates: true
           removeArtifacts: true
-          artifacts: android/app/build/outputs/apk/debug/app-debug.apk
+          artifacts: LiFa.apk
           body: "APK generato automaticamente dall'ultimo push su main."
