@@ -215,26 +215,6 @@
         }
         .block-add-btn:active { transform: scale(0.85); }
 
-        .ai-suggestions-container { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 10px 0; }
-        .ai-suggestions-container::-webkit-scrollbar { display: none; }
-        
-        .ai-chip {
-            padding: 4.5px 9px; 
-            background-color: var(--item-bg); 
-            border: 1px solid var(--accent-color); 
-            border-radius: 7.2px; 
-            font-size: 9.9px; 
-            font-weight: 700; 
-            color: var(--text-secondary); 
-            white-space: nowrap; 
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            transition: background-color var(--transition-speed);
-        }
-        .ai-chip:active {
-            background-color: var(--accent-light);
-        }
-
         .list-container { display: flex; flex-direction: column; gap: 0; } 
 
         .list-item { 
@@ -386,8 +366,6 @@
         .theme-switch.active { background: var(--accent-color); }
         .theme-switch.active .theme-switch-handle { transform: translateX(20px); }
 
-        #ai-toggle-switch { background: var(--border-color); }
-        #ai-toggle-switch.active { background: var(--accent-color); }
 
         .offline-pill {
             display: none;
@@ -500,14 +478,6 @@
             <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="openAddBlockPopup()">+ Aggiungi Sotto-Sezione</button>
         </div>
 
-        <div class="settings-section">
-            <div class="toggle-row">
-                <span class="switch-label">Mostra suggerimenti AI predittivi</span>
-                <div class="theme-switch" id="ai-toggle-switch" onclick="toggleAISuggestions()"><div class="theme-switch-handle" id="ai-toggle-handle"></div></div>
-            </div>
-            <button class="btn btn-danger" style="padding: 10px; font-size: 12px; margin-top: 6px;" onclick="resetAllAIClicks()">Reset Totale Cache Suggerimenti</button>
-        </div>
-        
         <button class="btn btn-confirm" onclick="closeAllSheets()" style="margin-top:6px;">Salva e Chiudi</button>
     </div>
 
@@ -553,7 +523,6 @@
         let editingContext = null; // { tab, block, idx } quando il popup è in modalità "Modifica"
         let tStart = 0;
         let tabSwitchCleanupTimer = null;
-        let showAI = localStorage.getItem('showAI') !== 'false'; 
 
         function capitalizeFirstLetter(string) {
             if (!string) return '';
@@ -568,7 +537,6 @@
             updateThemeSwitchUI(initialTheme);
             updateAndroidBarColor(initialTheme);
             
-            updateAISwitchUI();
             initSwipe();
 
             // Carica subito l'ultima copia salvata in locale, così l'interfaccia
@@ -695,6 +663,19 @@
         function updateAndroidBarColor(theme) {
             const meta = document.getElementById('meta-theme-color');
             if (meta) meta.setAttribute('content', theme === 'dark' ? '#000000' : '#f7f5fa');
+
+            // Se giriamo dentro l'app nativa Android (Capacitor), controlliamo
+            // la vera barra di stato del sistema tramite il plugin StatusBar,
+            // invece di affidarci al meta tag (che nell'app nativa il sistema ignora).
+            if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+                const StatusBar = window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar;
+                if (StatusBar) {
+                    const bg = theme === 'dark' ? '#0B0D0B' : '#f7f5fa';
+                    StatusBar.setBackgroundColor({ color: bg }).catch(() => {});
+                    // style Light = icone scure (per sfondo chiaro), Dark = icone chiare (per sfondo scuro)
+                    StatusBar.setStyle({ style: theme === 'dark' ? 'DARK' : 'LIGHT' }).catch(() => {});
+                }
+            }
         }
 
         // Se, mentre eravamo offline, abbiamo delle modifiche non ancora
@@ -879,7 +860,6 @@
                     header.innerHTML = `<span>${block}</span><button class="block-add-btn" onclick="openAddSheetForBlock('${block}')">+</button>`;
                     group.appendChild(header);
                     
-                    const aiCont = document.createElement('div'); aiCont.id = `ai-${tab}-${block}`; aiCont.className = 'ai-suggestions-container'; if(!showAI) aiCont.style.display = 'none'; group.appendChild(aiCont);
                     const body = document.createElement('div'); body.className = 'block-body-squircle';
                     const listDiv = document.createElement('div'); listDiv.id = `list-${tab}-${block}`; listDiv.className = `list-container ${tab.toLowerCase() === 'film' ? 'film-list' : ''}`;
                     
@@ -887,9 +867,6 @@
 
                     const blockItems = (state[tab] && state[tab][block]) ? state[tab][block] : [];
                     renderSingleListItems(`list-${tab}-${block}`, blockItems, tab, block);
-                    
-                    const blockHistory = (aiHistory[tab] && aiHistory[tab][block]) ? aiHistory[tab][block] : {};
-                    renderAISuggestionsItems(`ai-${tab}-${block}`, blockHistory, blockItems, tab, block);
                 });
             });
         }
@@ -994,53 +971,6 @@
 
             document.getElementById('backdrop').classList.add('open');
             document.getElementById('addSheet').classList.add('open');
-        }
-
-        function renderAISuggestionsItems(cId, hData, activeList, tab, block) {
-            const container = document.getElementById(cId);
-            if (!container) return;
-            
-            let lowerHistory = {};
-            Object.keys(hData).forEach(key => {
-                let lowKey = key.toLowerCase();
-                lowerHistory[lowKey] = (lowerHistory[lowKey] || 0) + hData[key];
-            });
-
-            let activeListLower = activeList.map(it => it.toLowerCase());
-
-            let sorted = Object.keys(lowerHistory).sort((a,b) => lowerHistory[b] - lowerHistory[a]);
-            let filtered = sorted.filter(it => lowerHistory[it] >= 3 && !activeListLower.includes(it));
-            let itemsToDisplay = filtered.slice(0, 3);
-            
-            container.innerHTML = '';
-            itemsToDisplay.forEach(it => {
-                let formattedItem = capitalizeFirstLetter(it);
-                
-                const chip = document.createElement('div'); 
-                chip.className = 'ai-chip'; 
-                chip.innerText = `+ ${formattedItem}`;
-                chip.onclick = () => {
-                    if(!state[tab]) state[tab] = {}; 
-                    if(!state[tab][block]) state[tab][block] = [];
-                    
-                    if (block.toLowerCase() === 'da vedere' || tab.toLowerCase() === 'film') {
-                        state[tab][block].unshift(formattedItem);
-                    } else {
-                        state[tab][block].push(formattedItem);
-                    }
-                    
-                    if(!aiHistory[tab]) aiHistory[tab] = {}; 
-                    if(!aiHistory[tab][block]) aiHistory[tab][block] = {};
-                    
-                    aiHistory[tab][block][formattedItem] = (aiHistory[tab][block][formattedItem] || 0) + 1;
-                    
-                    renderAll();
-                    saveLocalCache();
-                    pushUpdate('homeHub/state', state);
-                    pushUpdate('homeHub/aiHistory', aiHistory);
-                };
-                container.appendChild(chip);
-            });
         }
 
         function deleteItem(tab, block, idx) {
@@ -1255,21 +1185,6 @@
             pushUpdate('homeHub/structure', structure);
         }
 
-        function resetAllAIClicks() { if(confirm("Vuoi azzerare la cronologia dei suggerimenti?")) { aiHistory = {}; renderAll(); saveLocalCache(); pushUpdate('homeHub/aiHistory', aiHistory); } }
-        
-        function toggleAISuggestions() { 
-            showAI = !showAI; 
-            localStorage.setItem('showAI', showAI); 
-            updateAISwitchUI(); 
-            renderAll(); 
-        }
-
-        function updateAISwitchUI() {
-            const sw = document.getElementById('ai-toggle-switch');
-            if(showAI) { sw.classList.add('active'); }
-            else { sw.classList.remove('active'); }
-        }
-
         function closeAllSheets() {
             if (window.history.state && window.history.state.modalOpen) {
                 window.history.back();
@@ -1288,7 +1203,6 @@
             
             updateThemeSwitchUI(t);
             updateAndroidBarColor(t);
-            updateAISwitchUI(); 
         }
 
         function handleKeyUp(e) { if(e.key === 'Enter') addItem(); }
