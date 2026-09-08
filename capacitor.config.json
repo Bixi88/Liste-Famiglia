@@ -1,0 +1,11 @@
+{
+  "appId": "com.bixi88.lifa",
+  "appName": "LiFa",
+  "webDir": ".",
+  "android": {
+    "backgroundColor": "#0B0D0B"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
