@@ -20,6 +20,12 @@ jobs:
       - name: Install dipendenze npm
         run: npm install
 
+      - name: Prepara cartella www/
+        run: |
+          mkdir -p www
+          cp index.html manifest.json sw.js www/
+          cp icon-192.png icon-512.png www/ 2>/dev/null || true
+
       - name: Sync Capacitor -> Android
         run: npx cap sync android
 
