@@ -29,6 +29,16 @@ jobs:
       - name: Sync Capacitor -> Android
         run: npx cap sync android
 
+      - name: Prepara icona per Capacitor Assets
+        run: |
+          mkdir -p assets
+          cp icon-512.png assets/icon.png
+          cp icon-512.png assets/icon-foreground.png
+          cp icon-512.png assets/splash.png
+
+      - name: Genera icone Android dalla tua icona
+        run: npx @capacitor/assets generate --android --iconBackgroundColor '#0B0D0B' --iconBackgroundColorDark '#0B0D0B'
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
