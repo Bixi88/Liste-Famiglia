@@ -7,7 +7,7 @@
     
     <link rel="manifest" href="/Liste-Famiglia/manifest.json?v=3">
     
-    <meta id="meta-theme-color" name="theme-color" content="#0B0D0B">
+    <meta id="meta-theme-color" name="theme-color" content="#000000">
     <meta name="msapplication-navbutton-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -670,7 +670,7 @@
             if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
                 const StatusBar = window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar;
                 if (StatusBar) {
-                    const bg = theme === 'dark' ? '#0B0D0B' : '#f7f5fa';
+                    const bg = theme === 'dark' ? '#000000' : '#f7f5fa';
                     StatusBar.setBackgroundColor({ color: bg }).catch(() => {});
                     // style Light = icone scure (per sfondo chiaro), Dark = icone chiare (per sfondo scuro)
                     StatusBar.setStyle({ style: theme === 'dark' ? 'DARK' : 'LIGHT' }).catch(() => {});

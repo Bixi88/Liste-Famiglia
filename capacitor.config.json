@@ -3,7 +3,7 @@
   "appName": "LiFa",
   "webDir": "www",
   "android": {
-    "backgroundColor": "#0B0D0B"
+    "backgroundColor": "#000000"
   },
   "server": {
     "androidScheme": "https"
@@ -12,7 +12,7 @@
     "StatusBar": {
       "overlaysWebView": false,
       "style": "DARK",
-      "backgroundColor": "#0B0D0B"
+      "backgroundColor": "#000000"
     }
   }
 }
