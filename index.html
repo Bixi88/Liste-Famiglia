@@ -403,6 +403,8 @@
         
         .uppercase-input { text-transform: uppercase; }
         .manage-item-block .delete-btn { width: 30px; height: 30px; }
+        .manage-handle { color: var(--text-secondary); opacity: 0.5; font-size: 20px; width: 28px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: grab; user-select: none; touch-action: none; flex-shrink: 0; }
+        .manage-item-block.sortable-chosen { opacity: 0.9; }
 
         .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
         .switch-label { font-size: 14px; font-weight: 700; }
@@ -1253,9 +1255,27 @@
             const blocksList = structure.blocks[activeTab] || [];
             blocksList.forEach((block, index) => {
                 const row = document.createElement('div'); row.className = 'manage-item manage-item-block';
-                row.innerHTML = `<input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)"><button class="delete-btn" onclick="removeBlock('${activeTab}', ${index})">✕</button>`;
+                row.innerHTML = `<div class="manage-handle" aria-label="Trascina per riordinare">⠿</div><input type="text" value="${block}" onchange="renameBlock('${activeTab}', ${index}, this.value)"><button class="delete-btn" onclick="removeBlock('${activeTab}', ${index})">✕</button>`;
                 cont.appendChild(row);
             });
+
+            // Riordino delle sotto-sezioni tramite trascinamento (maniglia a sinistra).
+            // L'ordine salvato in structure.blocks viene usato anche dalla schermata principale.
+            if (typeof Sortable !== 'undefined' && !Sortable.get(cont)) {
+                Sortable.create(cont, {
+                    handle: '.manage-handle', animation: 180, ghostClass: 'sortable-ghost',
+                    onEnd: function (evt) {
+                        const tabNow = document.getElementById('settings-tab-select').value || structure.tabs[0];
+                        const arr = structure.blocks[tabNow];
+                        if (!arr || evt.oldIndex === evt.newIndex || evt.oldIndex == null || evt.newIndex == null) return;
+                        const moved = arr.splice(evt.oldIndex, 1)[0];
+                        arr.splice(evt.newIndex, 0, moved);
+                        if (navigator.vibrate) navigator.vibrate(10);
+                        renderAll(); saveLocalCache(); renderSettingsBlocks();
+                        pushUpdate('homeHub/structure', structure);
+                    }
+                });
+            }
         }
 
         function renameTab(idx, newVal) {
