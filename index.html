@@ -593,6 +593,31 @@
         let selectedTarget = '';
         let editingContext = null; // { tab, block, idx } quando il popup è in modalità "Modifica"
         let tStart = 0;
+
+        // --- Feedback aptico (vibrazione) ---
+        // Nell'app Android usa il plugin Capacitor Haptics; sul web ripiega su navigator.vibrate.
+        const HAPTIC_MAP = {
+            tap:     { style: 'LIGHT',  ms: 12 },
+            swipe:   { style: 'LIGHT',  ms: 15 },
+            pick:    { style: 'MEDIUM', ms: 20 },
+            drop:    { style: 'LIGHT',  ms: 12 },
+            long:    { style: 'HEAVY',  ms: 30 },
+            delete:  { style: 'MEDIUM', ms: 22 },
+            success: { notify: 'SUCCESS', ms: [10, 40, 14] }
+        };
+        function haptic(kind) {
+            const cfg = HAPTIC_MAP[kind] || HAPTIC_MAP.tap;
+            try {
+                const H = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics;
+                if (H) {
+                    const r = cfg.notify ? H.notification({ type: cfg.notify }) : H.impact({ style: cfg.style });
+                    if (r && r.catch) r.catch(() => {});
+                    return;
+                }
+                if (navigator.vibrate) navigator.vibrate(cfg.ms);
+            } catch (e) { /* la vibrazione non deve mai rompere l'app */ }
+        }
+
         let tabSwitchCleanupTimer = null;
 
         function capitalizeFirstLetter(string) {
@@ -931,7 +956,7 @@
                 btn.id = `btn-tab-${index}`;
                 btn.className = `tab-btn ${index === currentTabIdx ? 'active' : ''}`;
                 btn.innerText = tab;
-                btn.onclick = () => switchTab(index);
+                btn.onclick = () => { haptic('tap'); switchTab(index); };
                 tabsContainer.appendChild(btn);
 
                 const content = document.createElement('div');
@@ -1001,7 +1026,7 @@
                 if (settingsOpen) {
                     // Cassetto aperto: uno swipe verso sinistra (fuori da elementi cliccabili) lo richiude
                     if (diff > 0 && !startedOnClickable) {
-                        if (navigator.vibrate) navigator.vibrate(15);
+                        haptic('swipe');
                         closeAllSheets();
                     }
                     return;
@@ -1009,14 +1034,14 @@
 
                 // Cassetto chiuso, sulla prima scheda (Spesa): swipe verso destra apre le impostazioni
                 if (diff < 0 && currentTabIdx === 0 && !startedOnClickable) {
-                    if (navigator.vibrate) navigator.vibrate(15);
-                    openSettingsSheet();
+                    haptic('swipe');
+                    openSettingsSheet(true);
                     return;
                 }
 
                 if (structure.tabs.length > 0) {
-                    if (diff > 0 && currentTabIdx < structure.tabs.length - 1) { if (navigator.vibrate) navigator.vibrate(15); switchTab(currentTabIdx + 1); }
-                    else if (diff < 0 && currentTabIdx > 0) { if (navigator.vibrate) navigator.vibrate(15); switchTab(currentTabIdx - 1); }
+                    if (diff > 0 && currentTabIdx < structure.tabs.length - 1) { haptic('swipe'); switchTab(currentTabIdx + 1); }
+                    else if (diff < 0 && currentTabIdx > 0) { haptic('swipe'); switchTab(currentTabIdx - 1); }
                 }
             }, {passive: true});
         }
@@ -1074,7 +1099,9 @@
             if (isFilmTab && data.length > 1 && typeof Sortable !== 'undefined') {
                 Sortable.create(container, {
                     handle: '.drag-handle', animation: 180, ghostClass: 'sortable-ghost',
+                    onStart: function () { haptic('pick'); },
                     onEnd: function () {
+                        haptic('drop');
                         let updatedArray = [];
                         container.querySelectorAll('.list-item').forEach(el => { updatedArray.push(el.getAttribute('data-item-value')); });
                         if (!state[tab]) state[tab] = {};
@@ -1106,7 +1133,7 @@
                 el.classList.add('pressing');
                 pressTimer = setTimeout(() => {
                     el.classList.remove('pressing');
-                    if (navigator.vibrate) navigator.vibrate(15);
+                    haptic('long');
                     openEditItemSheet(tab, block, idx);
                 }, LONG_PRESS_MS);
             };
@@ -1156,6 +1183,7 @@
         }
 
         function deleteItem(tab, block, idx) {
+            haptic('delete');
             if(state[tab] && state[tab][block]) {
                 state[tab][block].splice(idx, 1);
                 renderAll();
@@ -1165,6 +1193,7 @@
         }
 
         function openAddSheetForBlock(blockName) {
+            haptic('tap');
             selectedTarget = blockName;
             editingContext = null;
             document.getElementById('add-popup-title').innerText = `Aggiungi a ${blockName}`;
@@ -1181,6 +1210,7 @@
             let rawValue = document.getElementById('item-input').value.trim();
             if(!rawValue) return;
             let v = capitalizeFirstLetter(rawValue);
+            haptic('success');
 
             // Modalità "Modifica": sovrascrive l'elemento esistente invece di aggiungerne uno nuovo
             if (editingContext) {
@@ -1230,8 +1260,8 @@
             }
         }
 
-        function openSettingsSheet() {
-            if (navigator.vibrate) navigator.vibrate(15);
+        function openSettingsSheet(fromSwipe) {
+            if (!fromSwipe) haptic('tap');
             history.pushState({ modalOpen: true }, "");
 
             document.getElementById('backdrop').classList.add('open'); 
@@ -1264,13 +1294,14 @@
             if (typeof Sortable !== 'undefined' && !Sortable.get(cont)) {
                 Sortable.create(cont, {
                     handle: '.manage-handle', animation: 180, ghostClass: 'sortable-ghost',
+                    onStart: function () { haptic('pick'); },
                     onEnd: function (evt) {
                         const tabNow = document.getElementById('settings-tab-select').value || structure.tabs[0];
                         const arr = structure.blocks[tabNow];
                         if (!arr || evt.oldIndex === evt.newIndex || evt.oldIndex == null || evt.newIndex == null) return;
                         const moved = arr.splice(evt.oldIndex, 1)[0];
                         arr.splice(evt.newIndex, 0, moved);
-                        if (navigator.vibrate) navigator.vibrate(10);
+                        haptic('drop');
                         renderAll(); saveLocalCache(); renderSettingsBlocks();
                         pushUpdate('homeHub/structure', structure);
                     }
@@ -1291,6 +1322,7 @@
         function removeTab(idx) {
             let tabName = structure.tabs[idx];
             if(confirm(`Vuoi davvero eliminare la sezione "${tabName.toUpperCase()}"?`)) {
+                haptic('delete');
                 structure.tabs.splice(idx, 1); if(structure.blocks[tabName]) delete structure.blocks[tabName];
                 if(state[tabName]) { delete state[tabName]; pushUpdate('homeHub/state', state); }
                 if(aiHistory[tabName]) { delete aiHistory[tabName]; delete aiHistory[tabName]; pushUpdate('homeHub/aiHistory', aiHistory); }
@@ -1351,7 +1383,7 @@
 
         function addNewTabStructure(n) {
             let val = n.trim().toLowerCase(); if(!val) return; if(structure.tabs.includes(val)) return alert("Tab già esistente!");
-            structure.tabs.push(val); structure.blocks[val] = ['GENERALE'];
+            haptic('success'); structure.tabs.push(val); structure.blocks[val] = ['GENERALE'];
             buildTabsUI(); renderAll(); saveLocalCache(); renderSettingsTabs();
             pushUpdate('homeHub/structure', structure);
         }
@@ -1368,6 +1400,7 @@
         function removeBlock(tab, idx) {
             let bName = structure.blocks[tab][idx];
             if(confirm(`Vuoi davvero eliminare questo elemento "${bName}"?`)) {
+                haptic('delete');
                 structure.blocks[tab].splice(idx, 1);
                 if(state[tab] && state[tab][bName]) { delete state[tab][bName]; pushUpdate('homeHub/state', state); }
                 if(aiHistory[tab] && aiHistory[tab][bName]) { delete aiHistory[tab][bName]; delete aiHistory[tab][bName]; pushUpdate('homeHub/aiHistory', aiHistory); }
@@ -1380,6 +1413,7 @@
             if(!activeTab || !n) return;
             let val = n.trim().toUpperCase(); if(!structure.blocks[activeTab]) structure.blocks[activeTab] = [];
             if(structure.blocks[activeTab].includes(val)) return alert("Elemento già esistente!");
+            haptic('success');
             structure.blocks[activeTab].push(val);
             renderAll(); saveLocalCache(); renderSettingsBlocks();
             pushUpdate('homeHub/structure', structure);
@@ -1396,7 +1430,7 @@
         
         // INTERRUTTORE DI MODALITÀ LOCALE (Non sincronizza "theme" sul DB)
         function toggleTheme() { 
-            if (navigator.vibrate) navigator.vibrate(15);
+            haptic('tap');
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
             document.documentElement.setAttribute('data-theme', t); 
             localStorage.setItem('theme', t); 
